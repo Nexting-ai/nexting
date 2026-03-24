@@ -104,6 +104,38 @@ Run OpenClaw on your own machine. Install the plugin, connect via relay. Your AI
 - [firmware](firmware) — Zephyr RTOS firmware for XIAO nRF52840 Sense, C
 - [hardware](hardware) — 3D case designs (Fusion 360 / STL), PCB files
 
+## 🔧 Firmware v1.0
+
+基于 Zephyr RTOS (nRF Connect SDK 2.7.0)，适用于 Seeed XIAO nRF52840 Sense。
+
+### 下载
+
+| 文件 | 说明 |
+| --- | --- |
+| [`pinclaw_v1.0.0.uf2`](firmware/pinclaw_zephyr/pinclaw_v1.0.0.uf2) | 固件 v1.0.0 |
+| [`bootloader0.9.0.uf2`](firmware/pinclaw_zephyr/bootloader0.9.0.uf2) | Bootloader v0.9.0（首次烧录需要） |
+
+### 烧录指南
+
+**第一次烧录（需先升级 Bootloader）：**
+
+1. 双击 Reset 进入 bootloader 模式，电脑出现 `XIAO-SENSE` USB 驱动器
+2. 将 `bootloader0.9.0.uf2` 拷贝到驱动器，等待自动重启
+3. 再次双击 Reset，将 `pinclaw_v1.0.0.uf2` 拷贝到 `XIAO-SENSE` 驱动器，等待自动重启
+
+**后续烧录（已升级过 Bootloader）：**
+
+1. 拔 USB → 按住 Reset → 插 USB → 松开 → 双击 Reset
+2. 将 `pinclaw_v1.0.0.uf2` 拷贝到 `XIAO-SENSE` 驱动器
+
+**macOS 命令行：**
+
+```bash
+cp firmware/pinclaw_zephyr/pinclaw_v1.0.0.uf2 /Volumes/XIAO-SENSE/
+```
+
+完整固件文档见 [`firmware/pinclaw_zephyr/README.md`](firmware/pinclaw_zephyr/README.md)
+
 ## 📖 Documentation:
 
 - [Introduction](https://pinclaw.ai/doc)
