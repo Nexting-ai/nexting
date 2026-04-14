@@ -28,6 +28,9 @@ LOG_MODULE_REGISTER(speaker, CONFIG_LOG_DEFAULT_LEVEL);
 #define MAX_HAPTIC_DURATION 5000
 K_MEM_SLAB_DEFINE_STATIC(mem_slab, MAX_BLOCK_SIZE, BLOCK_COUNT, 2);
 
+// Flag to interrupt ongoing speaker playback
+volatile bool speaker_stop_requested = false;
+
 struct device *audio_speaker;
 
 static void *rx_buffer;
@@ -38,12 +41,13 @@ static int16_t *clear_ptr;
 static uint16_t current_length;
 static uint16_t offset;
 
-struct gpio_dt_spec haptic_gpio_pin = {.port = DEVICE_DT_GET(DT_NODELABEL(gpio1)),
-                                       .pin = 11,
-                                       .dt_flags = GPIO_INT_DISABLE};
+// Haptic motor removed — vibration feedback is now via speaker (I2S low-freq buzz).
+// D6 (P1.11) haptic_gpio_pin is no longer used.
 
-struct gpio_dt_spec speaker_gpio_pin = {.port = DEVICE_DT_GET(DT_NODELABEL(gpio0)),
-                                        .pin = 4,
+// Speaker amp enable moved off D4 (button pin). Using D6 (P1.11) which is unused.
+// NOTE: speaker hardware doesn't work anyway (I2S/PAM8302A pin mismatch).
+struct gpio_dt_spec speaker_gpio_pin = {.port = DEVICE_DT_GET(DT_NODELABEL(gpio1)),
+                                        .pin = 11,
                                         .dt_flags = GPIO_INT_DISABLE};
 
 // ble service
@@ -119,13 +123,19 @@ static ssize_t speaker_haptic_handler(struct bt_conn *conn,
 
 int speaker_init()
 {
-    LOG_INF("Speaker init");
+    printk("[speaker] init start\n");
     audio_speaker = device_get_binding("I2S_0");
+    printk("[speaker] device_get_binding returned %p\n", audio_speaker);
 
-    if (!device_is_ready(audio_speaker)) {
-        LOG_ERR("Speaker device is not supported : %s", audio_speaker->name);
+    if (!audio_speaker) {
+        printk("[speaker] ERROR: I2S_0 device not found!\n");
         return -1;
     }
+    if (!device_is_ready(audio_speaker)) {
+        printk("[speaker] ERROR: I2S_0 not ready\n");
+        return -1;
+    }
+    printk("[speaker] I2S_0 device ready\n");
 
     if (gpio_is_ready_dt(&speaker_gpio_pin)) {
         LOG_PRINTK("Speaker Pin ready\n");
@@ -149,8 +159,7 @@ int speaker_init()
         .frame_clk_freq = SAMPLE_FREQUENCY,                                            /* Sampling rate */
         .mem_slab = &mem_slab,        /* Memory slab to store rx/tx data */
         .block_size = MAX_BLOCK_SIZE, /* size of ONE memory block in bytes */
-        .timeout = -1, /* Number of milliseconds to wait in case Tx queue is full or RX queue is empty, or 0, or
-                          SYS_FOREVER_MS */
+        .timeout = 2000, /* 2s timeout — prevents I2S blocking forever if hardware doesn't respond */
     };
     int err = i2s_configure(audio_speaker, I2S_DIR_TX, &config);
     if (err) {
@@ -179,12 +188,22 @@ uint16_t speak(uint16_t len, const void *buf) // direct from bt
 {
     uint16_t amount = 0;
     amount = len;
+
+    // If stop was requested, discard incoming audio data
+    if (speaker_stop_requested) {
+        current_length = 0;
+        offset = 0;
+        speaker_stop_requested = false;
+        return amount;
+    }
+
     if (len == 4) // if stage 1
     {
         current_length = ((uint32_t *) buf)[0];
         LOG_INF("About to write %u bytes", current_length);
         ptr2 = (int16_t *) rx_buffer;
         clear_ptr = (int16_t *) rx_buffer;
+        speaker_stop_requested = false;
     } else { // if not stage 1
         if (current_length > PACKET_SIZE) {
             LOG_INF("Data length: %u", len);
@@ -201,7 +220,6 @@ uint16_t speak(uint16_t len, const void *buf) // direct from bt
             LOG_INF("Data length: %u", len);
             current_length = current_length - len;
             LOG_INF("remaining data: %u", current_length);
-            // memcpy(rx_buffer+offset, buf, len);
             for (int i = 0; i < len / 2; i++) {
                 *ptr2++ = ((int16_t *) buf)[i];
                 *ptr2++ = ((int16_t *) buf)[i];
@@ -213,7 +231,7 @@ uint16_t speak(uint16_t len, const void *buf) // direct from bt
             if (res < 0) {
                 LOG_PRINTK("Failed to write I2S data: %d\n", res);
             }
-            i2s_trigger(audio_speaker, I2S_DIR_TX, I2S_TRIGGER_START); // calls are probably non blocking
+            i2s_trigger(audio_speaker, I2S_DIR_TX, I2S_TRIGGER_START);
             if (res != 0) {
                 LOG_PRINTK("Failed to drain I2S transmission: %d\n", res);
             }
@@ -221,8 +239,16 @@ uint16_t speak(uint16_t len, const void *buf) // direct from bt
             if (res != 0) {
                 LOG_PRINTK("Failed to drain I2S transmission: %d\n", res);
             }
-            // clear the buffer
-            k_sleep(K_MSEC(4000));
+            // Wait for playback but allow interruption
+            for (int i = 0; i < 40; i++) {  // 40 x 100ms = 4s max
+                if (speaker_stop_requested) {
+                    i2s_trigger(audio_speaker, I2S_DIR_TX, I2S_TRIGGER_DROP);
+                    speaker_stop_requested = false;
+                    LOG_INF("Playback interrupted by button");
+                    break;
+                }
+                k_sleep(K_MSEC(100));
+            }
 
             memset(clear_ptr, 0, MAX_BLOCK_SIZE);
         }
@@ -282,29 +308,10 @@ int play_boot_sound(void)
 
 int init_haptic_pin()
 {
-    if (gpio_is_ready_dt(&haptic_gpio_pin)) {
-        LOG_INF("Haptic Pin ready");
-    } else {
-        LOG_ERR("Error setting up Haptic Pin");
-        return -1;
-    }
-    if (gpio_pin_configure_dt(&haptic_gpio_pin, GPIO_OUTPUT_INACTIVE) < 0) {
-        LOG_ERR("Error setting up Haptic Pin");
-        return -1;
-    }
-    gpio_pin_set_dt(&haptic_gpio_pin, 0);
-
+    // No GPIO haptic motor — feedback is via speaker I2S.
+    // Nothing to init; speaker_init() handles I2S setup.
+    LOG_INF("Haptic via speaker (no motor)");
     return 0;
-}
-K_SEM_DEFINE(haptic_sem, 0, 1);
-void haptic_timer_callback(struct k_timer *timer);
-
-K_TIMER_DEFINE(my_status_timer, haptic_timer_callback, NULL);
-
-void haptic_timer_callback(struct k_timer *timer)
-{
-    // k_sem_give(&haptic_sem);
-    gpio_pin_set_dt(&haptic_gpio_pin, 0);
 }
 
 void play_haptic_milli(uint32_t duration)
@@ -313,15 +320,62 @@ void play_haptic_milli(uint32_t duration)
         LOG_ERR("Duration is too long");
         return;
     }
-    gpio_pin_set_dt(&haptic_gpio_pin, 1);
-    // if (k_sem_take(&haptic_sem, K_MSEC(50)) != 0)
-    // {
+    if (!audio_speaker || !device_is_ready(audio_speaker)) {
+        LOG_WRN("Speaker not ready for haptic buzz");
+        return;
+    }
 
-    // }
-    // else
-    // {
-    k_timer_start(&my_status_timer, K_MSEC(duration), K_NO_WAIT);
-    // }
+    // Generate a low-frequency buzz in buzz_buffer (150 Hz square-ish wave)
+    int16_t *buffer = (int16_t *) buzz_buffer;
+    const int samples_per_block = MAX_BLOCK_SIZE / (NUM_CHANNELS * sizeof(int16_t));
+    // Limit samples to requested duration
+    int duration_samples = (SAMPLE_FREQUENCY * duration) / 1000;
+    if (duration_samples > samples_per_block) {
+        duration_samples = samples_per_block;
+    }
+
+    const float freq = 150.0f;  // low rumble frequency
+    const float amplitude = 0.8f;
+    for (int i = 0; i < samples_per_block; i++) {
+        int16_t val = 0;
+        if (i < duration_samples) {
+            float t = (float) i / SAMPLE_FREQUENCY;
+            // Square-ish wave: clipped sine for stronger tactile feel
+            float s = sinf(2.0f * PI * freq * t);
+            if (s > 0.3f) s = 1.0f;
+            else if (s < -0.3f) s = -1.0f;
+            else s = s / 0.3f;
+            val = (int16_t)(s * 32767.0f * amplitude);
+        }
+        buffer[i * NUM_CHANNELS] = val;
+        buffer[i * NUM_CHANNELS + 1] = val;
+    }
+
+    int ret = i2s_write(audio_speaker, buffer, MAX_BLOCK_SIZE);
+    if (ret) {
+        LOG_ERR("Haptic buzz i2s_write failed: %d", ret);
+        return;
+    }
+    ret = i2s_trigger(audio_speaker, I2S_DIR_TX, I2S_TRIGGER_START);
+    if (ret) {
+        LOG_ERR("Haptic buzz i2s start failed: %d", ret);
+        return;
+    }
+    i2s_trigger(audio_speaker, I2S_DIR_TX, I2S_TRIGGER_DRAIN);
+
+    // Wait for playback to finish
+    uint32_t wait = (duration < 100) ? 200 : duration + 100;
+    k_sleep(K_MSEC(wait));
+    LOG_INF("Haptic buzz %u ms via speaker", duration);
+}
+
+void speaker_stop()
+{
+    if (!audio_speaker || !device_is_ready(audio_speaker)) return;
+    speaker_stop_requested = true;
+    // Stop I2S immediately — DROP discards queued data
+    i2s_trigger(audio_speaker, I2S_DIR_TX, I2S_TRIGGER_DROP);
+    LOG_INF("Speaker playback stopped");
 }
 
 void speaker_off()

@@ -146,6 +146,7 @@ static struct bt_gatt_attr dfu_service_attr[] = {
 };
 
 static struct bt_gatt_service dfu_service = BT_GATT_SERVICE(dfu_service_attr);
+#ifdef CONFIG_OMI_ENABLE_ACCELEROMETER
 // Acceleration data
 // this code activates the onboard accelerometer. some cute ideas may include shaking the necklace to color strobe
 //
@@ -273,6 +274,7 @@ int accel_start()
 
     return 1;
 }
+#endif // CONFIG_OMI_ENABLE_ACCELEROMETER
 // Advertisement data
 static const struct bt_data bt_ad[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
@@ -365,17 +367,7 @@ static ssize_t dfu_control_point_write_handler(struct bt_conn *conn,
                                                uint16_t offset,
                                                uint8_t flags)
 {
-    LOG_INF("dfu_control_point_write_handler");
-    if (len == 1 && ((uint8_t *) buf)[0] == 0x06) {
-        NRF_POWER->GPREGRET = 0xA8;
-        NVIC_SystemReset();
-    } else if (len == 2 && ((uint8_t *) buf)[0] == 0x01) {
-        uint8_t notification_value = 0x10;
-        bt_gatt_notify(conn, attr, &notification_value, sizeof(notification_value));
-
-        NRF_POWER->GPREGRET = 0xA8;
-        NVIC_SystemReset();
-    }
+    LOG_INF("Legacy DFU control point write (ignored — use MCUmgr SMP for OTA)");
     return len;
 }
 
@@ -384,10 +376,27 @@ static ssize_t dfu_control_point_write_handler(struct bt_conn *conn,
 //
 
 #define BATTERY_REFRESH_INTERVAL 15000 // 15 seconds
+#define HEARTBEAT_INTERVAL 10000 // 10 seconds — keeps iOS BLE alive in background
+#define HEARTBEAT_RETRY_INTERVAL 500 // retry after 500ms if BLE TX buffer full
+#define HEARTBEAT_MAX_RETRIES 3
+
+// Cached battery millivolts — updated by battery_work, read by heartbeat (no ADC in heartbeat)
+static volatile uint16_t cached_battery_mv = 0;
 
 void broadcast_battery_level(struct k_work *work_item);
+void broadcast_heartbeat(struct k_work *work_item);
+
+// Dedicated work queue for heartbeat — isolated from system work queue
+// so battery reads or other tasks can never block heartbeat
+#define HEARTBEAT_STACK_SIZE 1024
+K_THREAD_STACK_DEFINE(heartbeat_stack, HEARTBEAT_STACK_SIZE);
+static struct k_work_q heartbeat_work_q;
 
 K_WORK_DELAYABLE_DEFINE(battery_work, broadcast_battery_level);
+K_WORK_DELAYABLE_DEFINE(heartbeat_work, broadcast_heartbeat);
+
+static uint16_t heartbeat_counter = 0;
+static uint8_t heartbeat_retry_count = 0;
 
 void broadcast_battery_level(struct k_work *work_item)
 {
@@ -395,6 +404,9 @@ void broadcast_battery_level(struct k_work *work_item)
     uint8_t battery_percentage;
     if (battery_get_millivolt(&battery_millivolt) == 0 &&
         battery_get_percentage(&battery_percentage, battery_millivolt) == 0) {
+
+        // Update cached value for heartbeat to use
+        cached_battery_mv = battery_millivolt;
 
         LOG_PRINTK("Battery at %d mV (capacity %d%%)\n", battery_millivolt, battery_percentage);
 
@@ -408,6 +420,51 @@ void broadcast_battery_level(struct k_work *work_item)
     }
 
     k_work_reschedule(&battery_work, K_MSEC(BATTERY_REFRESH_INTERVAL));
+}
+
+void broadcast_heartbeat(struct k_work *work_item)
+{
+    struct bt_conn *conn = current_connection;
+    if (!conn) {
+        heartbeat_retry_count = 0;
+        k_work_reschedule_for_queue(&heartbeat_work_q, &heartbeat_work, K_MSEC(HEARTBEAT_INTERVAL));
+        return;
+    }
+
+    // Heartbeat packet: [0x04][counter:2B BE][flags:1B][battMv:2B BE]
+    uint8_t pkt[6];
+    pkt[0] = 0x04;  // PACKET_HEARTBEAT
+    pkt[1] = (heartbeat_counter >> 8) & 0xFF;
+    pkt[2] = heartbeat_counter & 0xFF;
+
+    uint8_t flags = 0;
+    extern volatile bool recording_active;
+    extern bool usb_charge;
+    if (recording_active) flags |= 0x01;
+    if (usb_charge) flags |= 0x02;
+    pkt[3] = flags;
+
+    // Use cached battery value — never read ADC in heartbeat
+    uint16_t batt_mv = cached_battery_mv;
+    pkt[4] = (batt_mv >> 8) & 0xFF;
+    pkt[5] = batt_mv & 0xFF;
+
+    // Send on speaker/heartbeat characteristic (attrs[8] = ...9ABF value)
+    // attrs layout: [0]svc [1-2]audio decl+val [3]ccc [4-5]format decl+val [6]ccc [7-8]speaker decl+val [9]ccc
+    int err = bt_gatt_notify(conn, &audio_service.attrs[8], pkt, sizeof(pkt));
+    if (err) {
+        LOG_WRN("Heartbeat notify err %d (retry %d/%d)", err, heartbeat_retry_count, HEARTBEAT_MAX_RETRIES);
+        if (heartbeat_retry_count < HEARTBEAT_MAX_RETRIES) {
+            heartbeat_retry_count++;
+            k_work_reschedule_for_queue(&heartbeat_work_q, &heartbeat_work, K_MSEC(HEARTBEAT_RETRY_INTERVAL));
+            return;
+        }
+        LOG_ERR("Heartbeat failed after %d retries, resuming normal interval", HEARTBEAT_MAX_RETRIES);
+    }
+
+    heartbeat_retry_count = 0;
+    heartbeat_counter++;
+    k_work_reschedule_for_queue(&heartbeat_work_q, &heartbeat_work, K_MSEC(HEARTBEAT_INTERVAL));
 }
 
 //
@@ -443,23 +500,46 @@ static void _transport_connected(struct bt_conn *conn, uint8_t err)
             info.le.data_len->rx_max_time);
 
     k_work_schedule(&battery_work, K_MSEC(100)); // run immediately
+    k_work_schedule_for_queue(&heartbeat_work_q, &heartbeat_work, K_MSEC(1000)); // first heartbeat after 1s
 
     is_connected = true;
+
+    // Keep advertising so other devices can also discover and connect
+    int adv_err = bt_le_adv_start(BT_LE_ADV_CONN, bt_ad, ARRAY_SIZE(bt_ad), bt_sd, ARRAY_SIZE(bt_sd));
+    if (adv_err && adv_err != -EALREADY) {
+        LOG_WRN("Failed to restart advertising after connect (err %d)", adv_err);
+    } else {
+        LOG_INF("Advertising continues after connect");
+    }
 }
 
 static void _transport_disconnected(struct bt_conn *conn, uint8_t err)
 {
-    is_connected = false;
-    recording_active = false;
-    storage_is_on = false;
+    LOG_INF("Transport disconnected (reason 0x%02x)", err);
 
-    LOG_INF("Transport disconnected");
-
-    if (current_connection != NULL) {
+    // Only clear state if the disconnected connection is our current one
+    if (conn == current_connection) {
         bt_conn_unref(current_connection);
         current_connection = NULL;
+        current_mtu = 0;
+        is_connected = false;
+        recording_active = false;
+        storage_is_on = false;
+        k_work_cancel_delayable(&heartbeat_work);
+        heartbeat_counter = 0;
+        LOG_INF("Primary connection lost");
+    } else {
+        LOG_INF("Non-primary connection disconnected, ignoring");
+        if (conn) {
+            bt_conn_unref(conn);
+        }
     }
-    current_mtu = 0;
+
+    // Restart advertising so device can be rediscovered
+    int adv_err = bt_le_adv_start(BT_LE_ADV_CONN, bt_ad, ARRAY_SIZE(bt_ad), bt_sd, ARRAY_SIZE(bt_sd));
+    if (adv_err && adv_err != -EALREADY) {
+        LOG_ERR("Failed to restart advertising after disconnect (err %d)", adv_err);
+    }
 }
 
 static bool _le_param_req(struct bt_conn *conn, struct bt_le_conn_param *param)
@@ -824,6 +904,13 @@ int transport_start()
 {
     k_mutex_init(&write_sdcard_mutex);
 
+    // Start dedicated heartbeat work queue — isolated from system work queue
+    // so ADC reads, flash writes, etc. can never block heartbeat
+    k_work_queue_start(&heartbeat_work_q, heartbeat_stack,
+                       K_THREAD_STACK_SIZEOF(heartbeat_stack),
+                       K_PRIO_COOP(7), NULL);  // cooperative priority, higher than preemptive threads
+    k_thread_name_set(&heartbeat_work_q.thread, "heartbeat_wq");
+
     // Configure callbacks
     bt_conn_cb_register(&_callback_references);
 
@@ -954,7 +1041,11 @@ static ssize_t text_write_handler(struct bt_conn *conn,
     return len;
 }
 
+#ifdef CONFIG_OMI_ENABLE_ACCELEROMETER
 void accel_off()
 {
     gpio_pin_set_dt(&accel_gpio_pin, 0);
 }
+#else
+void accel_off() {}
+#endif

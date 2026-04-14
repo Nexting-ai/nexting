@@ -53,6 +53,11 @@ void play_haptic_milli(uint32_t duration);
 
 void speaker_off();
 
+/**
+ * @brief Stop any ongoing speaker playback immediately
+ */
+void speaker_stop();
+
 void register_speaker_service();
 
 #endif

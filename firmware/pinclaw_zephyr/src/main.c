@@ -14,6 +14,9 @@
 #include "usb.h"
 #include "utils.h"
 #include "wdog_facade.h"
+#ifdef CONFIG_BOOTLOADER_MCUBOOT
+#include <zephyr/dfu/mcuboot.h>
+#endif
 #define BOOT_BLINK_DURATION_MS 600
 #define BOOT_PAUSE_DURATION_MS 200
 #define VBUS_DETECT (1U << 20)
@@ -69,6 +72,7 @@ bool is_connected = false;
 bool is_charging = false;
 extern bool is_off;
 extern bool usb_charge;
+extern volatile bool recording_active;
 static void boot_led_sequence(void)
 {
     // Red blink
@@ -116,13 +120,20 @@ void set_led_state()
         set_led_blue(false);
         return;
     }
+    // Recording — RED, regardless of connection
+    if (recording_active) {
+        set_led_red(true);
+        set_led_blue(false);
+        return;
+    }
+
     if (is_connected) {
         set_led_blue(true);
         set_led_red(false);
         return;
     }
 
-    // Recording but lost connection - RED
+    // Not connected — RED
     if (!is_connected) {
         set_led_red(true);
         set_led_blue(false);
@@ -145,16 +156,9 @@ int main(void)
     LOG_INF("Model: %s", CONFIG_BT_DIS_MODEL);
     LOG_INF("Firmware revision: %s", CONFIG_BT_DIS_FW_REV_STR);
     LOG_INF("Hardware revision: %s", CONFIG_BT_DIS_HW_REV_STR);
-    // Force QSPI flash into deep sleep mode
-    const struct device *flash_dev = DEVICE_DT_GET(DT_NODELABEL(p25q16h));
-    if (device_is_ready(flash_dev)) {
-        err = pm_device_action_run(flash_dev, PM_DEVICE_ACTION_SUSPEND);
-        if (err) {
-            LOG_ERR("Failed to suspend QSPI flash: %d", err);
-        }
-    } else {
-        LOG_ERR("QSPI flash device not ready");
-    }
+    // QSPI flash is used by MCUboot for secondary slot (OTA updates).
+    // MCUmgr SMP writes new firmware images there.
+    // Do NOT suspend QSPI flash — it must remain accessible for OTA.
     LOG_PRINTK("\n");
     LOG_INF("Initializing LEDs...\n");
 
@@ -189,6 +193,17 @@ int main(void)
     LOG_INF("Battery initialized");
 #endif
 
+    // Enable speaker FIRST (before button, so logs are visible)
+    printk("\n=== SPEAKER INIT ===\n");
+#ifdef CONFIG_OMI_ENABLE_SPEAKER
+    err = speaker_init();
+    if (err) {
+        printk("[speaker] FAILED err=%d\n", err);
+    } else {
+        printk("[speaker] OK\n");
+    }
+#endif
+
     // Enable button
 #ifdef CONFIG_OMI_ENABLE_BUTTON
     err = button_init();
@@ -197,7 +212,8 @@ int main(void)
         return err;
     }
     LOG_INF("Button initialized");
-    // activate_button_work(); // handled in main loop
+    activate_button_work();
+    LOG_INF("Button work queue activated (D4=power, D5=input)");
 #endif
 
     // Enable accelerometer
@@ -208,16 +224,6 @@ int main(void)
         return err;
     }
     LOG_INF("Accelerometer initialized");
-#endif
-
-    // Enable speaker
-#ifdef CONFIG_OMI_ENABLE_SPEAKER
-    err = speaker_init();
-    if (err) {
-        LOG_ERR("Speaker failed to start");
-        return err;
-    }
-    LOG_INF("Speaker initialized");
 #endif
 
     // Enable sdcard
@@ -244,18 +250,9 @@ int main(void)
     }
 #endif
 
-    // Enable haptic
-#ifdef CONFIG_OMI_ENABLE_HAPTIC
-    LOG_PRINTK("\n");
-    LOG_INF("Initializing haptic...\n");
-
-    err = init_haptic_pin();
-    if (err) {
-        LOG_ERR("Failed to initialize haptic pin (err %d)", err);
-        return err;
-    }
-    LOG_INF("Haptic pin initialized");
-#endif
+    // Haptic feedback is now via speaker (no motor).
+    // init_haptic_pin() is a no-op but kept for BLE service compatibility.
+    init_haptic_pin();
 
     // Enable usb
 #ifdef CONFIG_OMI_ENABLE_USB
@@ -315,9 +312,8 @@ int main(void)
         return err;
     }
 
-#ifdef CONFIG_OMI_ENABLE_HAPTIC
+    // Boot haptic buzz via speaker (500ms low-freq rumble)
     play_haptic_milli(500);
-#endif
     set_led_blue(false);
 
     // Indicate microphone initialization
@@ -353,102 +349,29 @@ int main(void)
     k_msleep(1000);
     set_led_blue(false);
 
+    // MCUboot: confirm this firmware image is working.
+    // If we reach here, all critical subsystems (BLE, codec, mic) initialized OK.
+    // Without confirmation, MCUboot will revert to the previous image on next reboot.
+#ifdef CONFIG_BOOTLOADER_MCUBOOT
+    if (!boot_is_img_confirmed()) {
+        int confirm_err = boot_write_img_confirmed();
+        if (confirm_err) {
+            LOG_ERR("Failed to confirm firmware image: %d", confirm_err);
+        } else {
+            LOG_INF("Firmware image confirmed as working");
+        }
+    }
+#endif
+
     // Main loop
     LOG_PRINTK("\n");
     LOG_INF("Entering main loop...\n");
 
-    // Pinclaw button polling in main loop (D5, active LOW, pullup)
-    const struct device *gpio0_dev = DEVICE_DT_GET(DT_NODELABEL(gpio0));
-    gpio_pin_configure(gpio0_dev, 4, GPIO_INPUT | GPIO_PULL_UP);  // D4 = P0.04
-    
-    extern volatile bool recording_active;
-    extern uint16_t opus_seq_no;
-    extern struct bt_gatt_service audio_service;
-    
-    bool btn_was_pressed = false;
-    bool btn_recording_started = false;  // true after 0.5s hold
-    int64_t btn_press_time = 0;
-    
+    // Main loop: watchdog + LED state only.
+    // Button: D4 (P0.04) = output 3.3V power, D5 (P0.05) = input read.
+    // PTT logic in button.c via work queue (activate_button_work above).
     while (1) {
         watchdog_feed();
-        
-        // Read D4 directly (active LOW with pullup)
-        int raw = gpio_pin_get(gpio0_dev, 4);
-        bool btn_pressed = (raw == 0);
-        
-        // Button just pressed — record time, don't start recording yet
-        if (btn_pressed && !btn_was_pressed) {
-            btn_was_pressed = true;
-            btn_recording_started = false;
-            btn_press_time = k_uptime_get();
-        }
-        
-        // Button held past 0.5s — NOW start recording
-        if (btn_pressed && btn_was_pressed && !btn_recording_started) {
-            int64_t held = k_uptime_get() - btn_press_time;
-            if (held >= 500) {
-                btn_recording_started = true;
-                recording_active = true;
-                opus_seq_no = 0;
-                struct bt_conn *conn = get_current_connection();
-                if (conn) {
-                    uint8_t start_pkt[6] = {0x01, 0x14, 0x00, 0x00, 0x00, 0x00};
-                    bt_gatt_notify(conn, &audio_service.attrs[1], start_pkt, 6);
-                }
-                set_led_red(true);
-                set_led_blue(false);
-                LOG_INF("[BTN] Recording started (held > 0.5s)");
-            }
-        }
-        
-        // Button released
-        if (!btn_pressed && btn_was_pressed) {
-            btn_was_pressed = false;
-            int64_t duration = k_uptime_get() - btn_press_time;
-            
-            if (btn_recording_started) {
-                // Was recording — send END
-                recording_active = false;
-                btn_recording_started = false;
-                struct bt_conn *conn = get_current_connection();
-                if (conn) {
-                    uint8_t end_pkt[5];
-                    end_pkt[0] = 0x03;
-                    end_pkt[1] = (opus_seq_no >> 24) & 0xFF;
-                    end_pkt[2] = (opus_seq_no >> 16) & 0xFF;
-                    end_pkt[3] = (opus_seq_no >> 8) & 0xFF;
-                    end_pkt[4] = opus_seq_no & 0xFF;
-                    bt_gatt_notify(conn, &audio_service.attrs[1], end_pkt, 5);
-                }
-                set_led_red(false);
-                LOG_INF("[BTN] Recording stopped, frames=%d", opus_seq_no);
-            } else {
-                // Short tap (< 0.5s) — PLAY command only
-                struct bt_conn *conn = get_current_connection();
-                printk("[BTN] Short tap detected, conn=%p\n", conn);
-                if (conn) {
-                    uint8_t play_cmd = 0x20;
-                    // Try attrs[3] (characteristic value for ABD)
-                    int err = bt_gatt_notify(conn, &audio_service.attrs[5], &play_cmd, 1);
-                    printk("[BTN] PLAY notify err=%d\n", err);
-                    if (err) {
-                        // Try attrs[4] in case index is off
-                        err = bt_gatt_notify(conn, &audio_service.attrs[5], &play_cmd, 1);
-                        printk("[BTN] PLAY retry attrs[4] err=%d\n", err);
-                    }
-                } else {
-                    printk("[BTN] No BLE connection!\n");
-                }
-                // Triple green flash so user can clearly see
-                for (int i = 0; i < 3; i++) {
-                    set_led_green(true);
-                    k_msleep(100);
-                    set_led_green(false);
-                    k_msleep(100);
-                }
-            }
-        }
-
         set_led_state();
         k_msleep(20);
     }

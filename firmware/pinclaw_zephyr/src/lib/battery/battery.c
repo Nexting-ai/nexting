@@ -138,6 +138,9 @@ int battery_charge_stop()
     return gpio_pin_set(gpio_battery_dev, GPIO_BATTERY_CHARGING_ENABLE, 0);
 }
 
+// Timeout for acquiring battery mutex — prevents indefinite blocking
+#define BATTERY_MUTEX_TIMEOUT_MS 100
+
 int battery_get_millivolt(uint16_t *battery_millivolt)
 {
 
@@ -152,11 +155,19 @@ int battery_get_millivolt(uint16_t *battery_millivolt)
     uint16_t adc_vref = adc_ref_internal(adc_battery_dev);
     int adc_mv = 0;
 
-    k_mutex_lock(&battery_mut, K_FOREVER);
-    ret |= adc_read(adc_battery_dev, &sequence);
+    // Use timeout instead of K_FOREVER — if ADC is stuck, don't block the caller
+    ret = k_mutex_lock(&battery_mut, K_MSEC(BATTERY_MUTEX_TIMEOUT_MS));
+    if (ret == -EAGAIN) {
+        LOG_WRN("Battery mutex timeout — ADC may be stuck");
+        return -EAGAIN;
+    }
+
+    ret = adc_read(adc_battery_dev, &sequence);
 
     if (ret) {
         LOG_WRN("ADC read failed (error %d)", ret);
+        k_mutex_unlock(&battery_mut);
+        return ret;
     }
 
     // Get average sample value.
