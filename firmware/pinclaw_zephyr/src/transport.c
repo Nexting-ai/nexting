@@ -14,6 +14,7 @@
 #include <zephyr/sys/ring_buffer.h>
 
 #include "config.h"
+#include "device_id.h"
 #include "utils.h"
 
 // Pinclaw recording state — controlled by iPhone commands
@@ -275,11 +276,11 @@ int accel_start()
     return 1;
 }
 #endif // CONFIG_OMI_ENABLE_ACCELEROMETER
-// Advertisement data
-static const struct bt_data bt_ad[] = {
+// Advertisement data — name is set dynamically from NVS device_id
+static struct bt_data bt_ad[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
     BT_DATA(BT_DATA_UUID128_ALL, audio_service_uuid.val, sizeof(audio_service_uuid.val)),
-    BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME, sizeof(CONFIG_BT_DEVICE_NAME) - 1),
+    BT_DATA(BT_DATA_NAME_COMPLETE, "Pinclaw", 7),  // placeholder, updated in transport_start()
 };
 
 // Scan response data
@@ -930,6 +931,11 @@ int transport_start()
 #ifdef CONFIG_OMI_ENABLE_SPEAKER
     register_speaker_service();
 #endif
+
+    // Set BLE advertising name from NVS device_id
+    bt_ad[2].data = (const uint8_t *)device_id_get_name();
+    bt_ad[2].data_len = device_id_get_name_len();
+    LOG_INF("BLE advertising name: \"%s\"", device_id_get_name());
 
     // Start advertising
     memset(storage_temp_data, 0, OPUS_PADDED_LENGTH * 4);

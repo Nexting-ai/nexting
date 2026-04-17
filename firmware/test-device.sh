@@ -21,7 +21,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-FW_FILE="$SCRIPT_DIR/pinclaw_zephyr/pinclaw_v2.1.7.uf2"
+FW_FILE="$SCRIPT_DIR/pinclaw_zephyr/pinclaw_v2.1.8.uf2"
 BLE_TEST="$SCRIPT_DIR/pinclaw_test.py"
 BOOTLOADER_VOLUME="/Volumes/XIAO-SENSE"
 SERIAL_BAUD=115200
@@ -144,6 +144,21 @@ info "串口: $SERIAL_PORT"
 
 # Configure serial port
 stty -f "$SERIAL_PORT" $SERIAL_BAUD cs8 -cstopb -parenb raw 2>/dev/null || true
+
+# ── Step 2a: Send device ID via serial ──
+if [ -n "$DEVICE_NUM" ]; then
+  info "发送设备编号: PINCLAW_ID=${DEVICE_NUM}"
+  # Firmware listens for this command during the first 2 seconds after boot
+  printf "PINCLAW_ID=%s\r\n" "$DEVICE_NUM" > "$SERIAL_PORT"
+  sleep 1
+  # Check for confirmation
+  ID_RESPONSE=$(timeout 2 cat "$SERIAL_PORT" 2>/dev/null | grep -m1 "OK DEVICE_ID" || true)
+  if [ -n "$ID_RESPONSE" ]; then
+    pass "设备编号已写入: $ID_RESPONSE"
+  else
+    warn "未收到设备编号确认（固件可能不支持动态 ID，需要 v2.1.8+）"
+  fi
+fi
 
 # Capture boot log
 BOOT_LOG=$(mktemp /tmp/pinclaw_boot_XXXXXX.log)

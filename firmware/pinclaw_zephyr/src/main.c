@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <string.h>
+#include <zephyr/drivers/uart.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/pm/device.h>
@@ -5,6 +8,7 @@
 #include "button.h"
 #include "codec.h"
 #include "config.h"
+#include "device_id.h"
 #include "led.h"
 #include "mic.h"
 #include "sdcard.h"
@@ -265,6 +269,46 @@ int main(void)
         return err;
     }
 #endif
+
+    // Initialize device ID from NVS (must be before transport_start)
+    err = device_id_init();
+    if (err) {
+        LOG_WRN("Device ID init failed (err %d), using default name", err);
+    }
+
+    // Check serial port for device ID command (2 second window)
+    // Format: "PINCLAW_ID=XXX\n" where XXX is 1-999
+    {
+        const struct device *uart = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+        if (device_is_ready(uart)) {
+            LOG_INF("Listening for device ID command (2s)...");
+            uint8_t cmd_buf[32];
+            int cmd_pos = 0;
+            int64_t deadline = k_uptime_get() + 2000;
+
+            while (k_uptime_get() < deadline) {
+                uint8_t c;
+                int ret = uart_poll_in(uart, &c);
+                if (ret == 0) {
+                    if (c == '\n' || c == '\r') {
+                        cmd_buf[cmd_pos] = '\0';
+                        if (cmd_pos > 11 && strncmp((char *)cmd_buf, "PINCLAW_ID=", 11) == 0) {
+                            int num = atoi((char *)cmd_buf + 11);
+                            if (num > 0 && num <= 999) {
+                                device_id_set((uint16_t)num);
+                                printk("OK DEVICE_ID=%d NAME=%s\n", num, device_id_get_name());
+                            }
+                        }
+                        cmd_pos = 0;
+                    } else if (cmd_pos < (int)sizeof(cmd_buf) - 1) {
+                        cmd_buf[cmd_pos++] = c;
+                    }
+                } else {
+                    k_msleep(10);
+                }
+            }
+        }
+    }
 
     // Indicate transport initialization
     LOG_PRINTK("\n");
