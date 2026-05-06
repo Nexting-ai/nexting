@@ -4,6 +4,3 @@
 [submodule "hardware"]
 	path = hardware
 	url = https://github.com/ericshang98/pinclaw-hardware.git
-[submodule "plugin"]
-	path = plugin
-	url = https://github.com/ericshang98/pinclaw-plugin.git
