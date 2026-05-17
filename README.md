@@ -52,24 +52,16 @@ Pinclaw is the first hardware product built for [OpenClaw](https://github.com/Ba
 ### 1. Install
 
 ```bash
-openclaw plugins install pinclaw
+openclaw plugins install pinclaw --dangerously-force-unsafe-install
 ```
 
-### 2. Start the gateway
+### 2. Login
 
 ```bash
-openclaw gateway
+openclaw pinclaw login
 ```
 
-### 3. Link your account
-
-In the OpenClaw chat:
-
-```
-/pinclaw login
-```
-
-This opens a browser to sign in at [pinclaw.ai](https://pinclaw.ai). Once authenticated, the relay is auto-configured — your iPhone reaches your local OpenClaw from anywhere.
+Enter your pinclaw.ai email and password. The relay is configured and the gateway restarts automatically. You'll see `Relay connected!` when it's done.
 
 ### 4. Connect the app
 
