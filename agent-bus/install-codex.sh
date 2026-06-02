@@ -76,25 +76,51 @@ if [ -z "$TOKEN" ]; then
   INTERVAL=$(echo "$START" | _jget interval); INTERVAL=${INTERVAL:-3}
   [ -z "$DEVICE_CODE" ] && { echo "❌ 发起授权失败:$START"; exit 1; }
   echo ""
-  echo "==> 请在浏览器打开下面网址,登录 Pinclaw 并点「同意」:"
-  echo "    $VERIFY_URL"
+  # 尝试自动开浏览器(mac=open / Linux=xdg-open / WSL=wslview);失败也没关系,下面打印网址兜底
+  OPENED=""
+  for opener in open xdg-open wslview; do
+    if command -v "$opener" >/dev/null 2>&1 && "$opener" "$VERIFY_URL" >/dev/null 2>&1; then
+      OPENED=1; break
+    fi
+  done
   echo ""
-  command -v open >/dev/null 2>&1 && open "$VERIFY_URL" 2>/dev/null || true
-  echo -n "→ 等待你在浏览器授权"
+  echo "════════════════════════════════════════════════════════"
+  if [ -n "$OPENED" ]; then
+    echo "  已为你打开浏览器。若没弹出,手动复制下面网址打开:"
+  else
+    echo "  浏览器没自动打开。请手动复制下面网址,到浏览器打开:"
+  fi
+  echo "  👉 $VERIFY_URL"
+  echo "  在里面登录 Pinclaw,点「同意」即可(本窗口会自动继续)。"
+  echo "════════════════════════════════════════════════════════"
+  echo -n "→ 等待你在浏览器授权(最多 5 分钟,Ctrl-C 可中止)"
+  fail=0
   for i in $(seq 1 100); do
     sleep "$INTERVAL"; echo -n "."
     POLL=$(curl -s -m12 --noproxy '*' -X POST "$API/api/v1/agent-bus/device/poll" \
-      -H "Content-Type: application/json" -d "{\"device_code\":\"$DEVICE_CODE\"}")
-    ST=$(echo "$POLL" | _jget status)
-    if [ "$ST" = "approved" ]; then
-      TOKEN=$(echo "$POLL" | _jget token)
-      [ -z "$BUS" ] && BUS=$(echo "$POLL" | _jget bus_url)
-      echo ""; echo "✅ 授权成功"; break
-    elif [ "$ST" = "expired" ]; then
-      echo ""; echo "❌ 授权超时/失效,重跑安装即可。"; exit 1
-    fi
+      -H "Content-Type: application/json" -d "{\"device_code\":\"$DEVICE_CODE\"}" 2>/dev/null) || POLL=""
+    ST=$(echo "$POLL" | _jget status 2>/dev/null)
+    case "$ST" in
+      approved)
+        TOKEN=$(echo "$POLL" | _jget token)
+        [ -z "$BUS" ] && BUS=$(echo "$POLL" | _jget bus_url)
+        echo ""; echo "✅ 授权成功"; break;;
+      expired)
+        echo ""; echo "❌ 授权超时/失效(超过 10 分钟没点同意)。重跑这条命令再来一次即可。"; fail=1; break;;
+      error)
+        echo ""; echo "❌ 服务端配置异常,请联系 Pinclaw。"; fail=1; break;;
+      # pending 或空(网络抖动)→ 继续轮询
+    esac
   done
-  [ -z "$TOKEN" ] && { echo ""; echo "❌ 没等到授权"; exit 1; }
+  [ "$fail" = "1" ] && exit 1
+  if [ -z "$TOKEN" ]; then
+    echo ""
+    echo "❌ 5 分钟内没等到授权。常见原因:"
+    echo "   · 浏览器没打开那个网址 → 手动复制上面 👉 的网址打开"
+    echo "   · 没登录成功 / 没点「同意」"
+    echo "   重跑这条命令即可重新授权。"
+    exit 1
+  fi
 fi
 [ -z "$BUS" ] && BUS="http://api.pinclaw.ai:8790"
 
