@@ -1,8 +1,8 @@
 <h1 align="center">Pinclaw</h1>
 
 <p align="center">
-  <strong>A tiny clip-on AI that listens, thinks, and acts.</strong><br>
-  Not another assistant on your phone — a full agent you wear.
+  <strong>A wearable terminal for your own AI agents.</strong><br>
+  Dispatch tasks to Claude Code, OpenClaw, or Codex — hands-free, no phone, no app.
 </p>
 
 <p align="center">
@@ -25,29 +25,30 @@
   <img src="public/pinclaw-hero.png" alt="Pinclaw" width="720">
 </p>
 
-Clip it on, press the button, speak naturally. Your AI agent schedules meetings, drafts emails, sets reminders, books reservations — all in the background. You move on with your life.
+You already have powerful agents — Claude Code, OpenClaw, Codex. They're stuck at your desk. Clip it on, tap, and say one sentence: the task is **dispatched to your own agent**. It runs in the background and the result comes back when it's done. Dispatch, not chat — press, speak, move on.
 
 ```
-You speak → Pinclaw Clip (BLE) → iPhone App (STT) → Cloud → AI Agent
+You speak → Pinclaw Clip (BLE) → iPhone App (STT) → Cloud → your own agent
+                                                            (Claude Code / OpenClaw / Codex)
                                                                  ↓
-You hear  ← Pinclaw Clip (TTS) ← iPhone App ← ── ── AI Response
+Result pushed back ← iPhone App ← ── ── agent runs it in the background
 ```
 
-**3 seconds to assign a task. 5x faster than pulling out your phone.**
+**3 seconds to dispatch a task** — vs. ~30s pulling out your phone, unlocking, and typing.
 
 ## What Makes Pinclaw Different
 
 | | |
 |---|---|
-| **Acts, not answers** | Schedules, drafts, books — autonomously. Not just Q&A. |
-| **Hears you cleanly** | PDM mic + Opus codec + cloud STT for accurate recognition. |
-| **Holds your context** | Remembers people, conversations, and threads for weeks. |
+| **Dispatch, not chat** | Fire-and-forget: say it once, your agent runs it in the background. Not Q&A. |
+| **Your own agent** | Drives the agents you already run — Claude Code, OpenClaw, Codex. Not a locked-in model. |
+| **Offline delivery** | Phone locked, on the move? The result is pushed back when ready. |
+| **Remote-control Claude Code** | Attach to a Claude Code session running on your Mac and drive it from your pocket. |
 | **Deep iPhone integration** | Calendar, Reminders, Contacts, Health, HomeKit — all by voice. |
-| **Open ecosystem** | Use our managed cloud, or bring your own AI. |
 
 ## Quick Start — OpenClaw Plugin
 
-Pinclaw is the first hardware product built for [OpenClaw](https://github.com/BasedHardware/omi). Install the plugin, link your account, and your clip talks to your own AI agent.
+Pinclaw is the first hardware product built for [OpenClaw](https://github.com/openclaw/openclaw). Install the plugin, link your account, and your clip dispatches tasks to your own AI agent.
 
 ### 1. Install
 
@@ -75,15 +76,18 @@ Open the [Pinclaw iOS app](https://apps.apple.com/app/pinclaw/id6760344343), sig
 
 > See the full plugin documentation in [`plugin/README.md`](plugin/README.md) for configuration, API endpoints, server tools, and architecture details.
 
-## Three Ways to Use It
+## Bring Your Own Agent
+
+Pinclaw is a terminal, not a model. Connect the agent you already run:
 
 | Mode | What It Is | Cost |
 |------|-----------|------|
-| **Pinclaw AI** | Managed AI agent in the cloud. Latest models (Claude, GPT-4o, Gemini), zero setup. | $29/mo or $279/yr |
-| **MyOpenClaw** | Run your own [OpenClaw](https://github.com/BasedHardware/omi) instance. We handle the relay. | Free |
-| **MyHermes** | Local AI via Hermes, Ollama, or any OpenAI-compatible backend. No cloud required. | Free |
+| **Claude Code** | Attach to a [Claude Code](https://claude.com/product/claude-code) session on your Mac and drive it from the Clip. | Free |
+| **MyOpenClaw** | Run your own [OpenClaw](https://github.com/openclaw/openclaw) instance. We handle the relay. | Free |
+| **MyHermes** | Any OpenAI-compatible backend — Codex CLI, Ollama, or self-hosted. No cloud required. | Free |
+| **Pinclaw Pro** | Managed agent in the cloud. Latest models (Claude, GPT-4o, Gemini), zero setup. | $29/mo or $279/yr |
 
-Buy the hardware once. Choose your AI.
+Buy the hardware once. Dispatch to whichever agent is yours.
 
 ### Hermes / Local AI Setup
 
@@ -166,7 +170,7 @@ pinclaw/
 
 ## Contributing
 
-Pinclaw is fully open source. Fork, build, and open a PR.
+Pinclaw's core is open source (MIT) — hardware, firmware, cloud relay, and the OpenClaw plugin. Fork, build, and open a PR.
 
 Join our [Discord](https://discord.gg/628R3FbV) to discuss ideas.
 
@@ -177,6 +181,6 @@ MIT
 ---
 
 <p align="center">
-  <strong>Talk. Act. Move on.</strong><br>
-  <a href="https://pinclaw.ai/reserve">Get yours →</a>
+  <strong>Tap. Speak. Dispatch.</strong><br>
+  <a href="https://pinclaw.ai/reserve">Get the Clip →</a>
 </p>
