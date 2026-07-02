@@ -50,7 +50,7 @@ You speak → Nexting PIN (BLE) → iPhone App (STT) → Cloud → your own agen
 | **Your own agent** | Drives the agents you already run — Claude Code, Codex, OpenClaw. Not a locked-in model. |
 | **Private by default** | BYOA modes (Claude Code, Codex, MyOpenClaw) are end-to-end encrypted — Nexting relays ciphertext, not your session. |
 | **Delivers while you're offline** | Phone locked, on the move? The agent still finishes the job and pushes the result back. |
-| **Remote-control your agent** | Attach to a Claude Code or Codex session on your Mac and drive it from your pocket — live. |
+| **Remote-control your agent** | Attach to a Claude Code or Codex session on your Mac or Windows PC and drive it from your pocket — live. |
 | **Deep iPhone integration** | Calendar, Reminders, Contacts, Health, HomeKit — all by voice. |
 
 Nexting isn't another voice assistant — it's the pocket control surface for your agent team.
@@ -69,8 +69,8 @@ Nexting is a terminal, not a model. Connect the agent you already run:
 
 | Mode | What It Is | Cost |
 |------|-----------|------|
-| **Claude Code** | Attach to a [Claude Code](https://claude.com/product/claude-code) session on your Mac and drive it from your PIN — live. | Free |
-| **Codex** | Attach to an OpenAI Codex CLI session on your Mac and drive it from your PIN — live. | Free |
+| **Claude Code** | Attach to a [Claude Code](https://claude.com/product/claude-code) session on your Mac or Windows PC and drive it from your PIN — live. | Free |
+| **Codex** | Attach to an OpenAI Codex CLI session on your Mac or Windows PC and drive it from your PIN — live. | Free |
 | **MyOpenClaw** | Run your own [OpenClaw](https://github.com/openclaw/openclaw) instance. We handle the relay. | Free |
 | **MyHermes** | Any OpenAI-compatible local AI — Hermes Agent, Ollama, vLLM, LM Studio. | Free |
 | **Nexting Pro** | Managed agent in the cloud. Latest Claude, GPT, and Gemini models, zero setup. | $29/mo or $279/yr |
@@ -79,23 +79,39 @@ Buy the hardware once. Dispatch to whichever agent is yours. Each mode connects 
 
 ### Claude Code & Codex
 
-A fully independent surface: your real CLI agent on your Mac, mirrored to your phone and driveable **live** — watch it work, reply for it, answer its prompts, or start a new session by voice.
+A fully independent surface: your real CLI agent on your Mac or Windows PC, mirrored to your phone and driveable **live** — watch it work, reply for it, answer its prompts, or start a new session by voice.
 
-1. **On your Mac**, install the bridge:
+One command on the computer where your agent runs. It opens your browser to sign in to Nexting — that login binds the machine to your account — and installs everything, including a background daemon that keeps your phone connected:
 
-   ```bash
-   npm install -g nexting-cc-bridge
-   ```
+**Claude Code** — macOS:
 
-2. **Run it** and leave it running:
+```bash
+curl -fsSL https://nexting.ai/install-cc | bash
+```
 
-   ```bash
-   nexting-cc-bridge start
-   ```
+Windows (PowerShell):
 
-3. **In the Nexting app → Add Connection → Claude Code (or Codex)**, follow the one-time pairing prompt. Your sessions then appear on your phone — tap one to drive it live.
+```powershell
+irm https://nexting.ai/install-cc.ps1 | iex
+```
 
-Full walkthrough (pairing, remote control, starting sessions by voice): [pinclaw.ai/doc](https://pinclaw.ai/doc).
+Then just run `claude` as usual (on Windows, fully quit and reopen your terminal first) — your sessions appear in the Nexting app, live.
+
+**Codex** — macOS:
+
+```bash
+curl -fsSL https://nexting.ai/install-codex | bash
+```
+
+Windows (PowerShell):
+
+```powershell
+irm https://nexting.ai/install-codex.ps1 | iex
+```
+
+Then just run `codex` as usual.
+
+Both are fully reversible (`nexting-cc-bridge uninstall` / `codex-uninstall`). Full walkthrough (pairing, remote control, starting sessions by voice): [pinclaw.ai/doc](https://pinclaw.ai/doc).
 
 ### OpenClaw
 
