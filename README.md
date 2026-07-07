@@ -76,7 +76,7 @@ Nexting is a terminal, not a model. Connect the agent you already run:
 Buy the hardware once. Dispatch to whichever agent is yours. Expand your mode below for setup — each takes about a minute.
 
 <details>
-<summary><strong>&nbsp;Claude Code</strong> — your Mac/PC sessions, mirrored to your phone, driveable live</summary>
+<summary><img src="public/logos/anthropic.png" width="16" alt="" /> <strong>Claude Code</strong> — your Mac/PC sessions, mirrored to your phone, driveable live</summary>
 <br>
 
 One command on the computer where Claude Code runs. It opens your browser to sign in to Nexting — that login binds the machine to your account — and installs everything, including a background daemon that keeps your phone connected.
@@ -98,7 +98,7 @@ Then just run `claude` as usual (on Windows, fully quit and reopen your terminal
 </details>
 
 <details>
-<summary><strong>&nbsp;Codex</strong> — same idea, for the OpenAI Codex CLI</summary>
+<summary><img src="public/logos/openai.png" width="16" alt="" /> <strong>Codex</strong> — same idea, for the OpenAI Codex CLI</summary>
 <br>
 
 One command to sign in and install:
@@ -120,7 +120,7 @@ Then just run `codex` as usual — your sessions appear in the Nexting app, live
 </details>
 
 <details>
-<summary><strong>&nbsp;MyOpenClaw</strong> — run your own OpenClaw; we handle the relay</summary>
+<summary><img src="public/logos/openclaw.svg" width="16" alt="" /> <strong>MyOpenClaw</strong> — run your own OpenClaw; we handle the relay</summary>
 <br>
 
 Nexting is the first hardware product built for [OpenClaw](https://github.com/openclaw/openclaw). Install the plugin and link your account:
@@ -135,7 +135,7 @@ openclaw pinclaw login
 </details>
 
 <details>
-<summary><strong>&nbsp;MyHermes</strong> — any OpenAI-compatible local AI (Ollama, vLLM, LM Studio…)</summary>
+<summary><img src="public/logos/hermes.png" width="16" alt="" /> <strong>MyHermes</strong> — any OpenAI-compatible local AI (Ollama, vLLM, LM Studio…)</summary>
 <br>
 
 Point Nexting at your local endpoint with the `nexting-hermes-bridge` CLI:
@@ -149,7 +149,7 @@ nexting-hermes-bridge start --endpoint http://localhost:8642 --model hermes-agen
 </details>
 
 <details>
-<summary><strong>&nbsp;Nexting Pro</strong> — managed agent in the cloud, nothing to install</summary>
+<summary><img src="public/logos/nexting.png" width="16" alt="" /> <strong>Nexting Pro</strong> — managed agent in the cloud, nothing to install</summary>
 <br>
 
 Subscribe in the Nexting app and it's ready to dispatch.
