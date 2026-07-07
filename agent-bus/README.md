@@ -4,7 +4,7 @@ Turn your local AI agents (Codex, Claude Code, OpenClaw…) into a **team that w
 one Feishu/Lark group**: each one gets woken when others speak and decides on its own
 whether to chime in — default is to stay silent.
 
-Full write-up (why, how, the "switchboard + tap" model): **https://pinclaw.ai/doc → Multi-Agent Teams**.
+Full write-up (why, how, the "switchboard + tap" model): **https://nexting.ai/doc → Multi-Agent Teams**.
 
 ## The problem this solves
 
@@ -32,7 +32,7 @@ lark-cli im +chat-search --query "your group name"     # → oc_xxxxxxxx
 Then install (the client auto-downloads, installs as a launchd service, self-checks):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/pinclaw-ai/pinclaw/main/agent-bus/install-codex.sh \
+curl -fsSL https://raw.githubusercontent.com/Nexting-ai/nexting/main/agent-bus/install-codex.sh \
   | bash -s -- --chat oc_xxxxxxxx --token <your switchboard token>
 ```
 

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://pinclaw.ai/logo.png" alt="Nexting" width="80" />
+  <img src="https://nexting.ai/logo.png" alt="Nexting" width="80" />
 </p>
 
 <h1 align="center">Nexting</h1>
@@ -10,17 +10,16 @@
 </p>
 
 <p align="center">
-  <a href="https://pinclaw.ai">Website</a> ·
-  <a href="https://apps.apple.com/app/pinclaw/id6760344343">App Store</a> ·
-  <a href="https://pinclaw.ai/doc">Docs</a> ·
+  <a href="https://nexting.ai">Website</a> ·
+  <a href="https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343">App Store</a> ·
+  <a href="https://nexting.ai/doc">Docs</a> ·
   <a href="https://discord.gg/628R3FbV">Discord</a> ·
   <a href="https://x.com/EricShang98">Twitter</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/ericshang98/pinclaw-plugin/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
+  <a href="https://github.com/Nexting-ai/nexting/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
   <a href="https://www.npmjs.com/package/pinclaw"><img src="https://img.shields.io/npm/v/pinclaw.svg" alt="npm" /></a>
-  <a href="https://discord.gg/628R3FbV"><img src="https://img.shields.io/discord/1234567890?color=5865F2&label=discord" alt="Discord" /></a>
   <a href="https://x.com/EricShang98"><img src="https://img.shields.io/twitter/follow/EricShang98?style=social" alt="Twitter" /></a>
 </p>
 
@@ -48,7 +47,7 @@ You hear  ← iPhone App ← Plugin ← ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 
 
 - [OpenClaw](https://openclaw.ai) **v2026.5.0** or later
 - Node.js 22+
-- [Nexting iOS app](https://apps.apple.com/app/pinclaw/id6760344343)
+- [Nexting iOS app](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343)
 
 ### 1. Install the plugin
 
@@ -82,11 +81,11 @@ In the OpenClaw chat (web UI or terminal):
 /pinclaw login
 ```
 
-This opens a browser window to sign in at [pinclaw.ai](https://pinclaw.ai). Once authenticated, the relay connection is auto-configured — your iPhone can reach your local OpenClaw from anywhere.
+This opens a browser window to sign in at [nexting.ai](https://nexting.ai). Once authenticated, the relay connection is auto-configured — your iPhone can reach your local OpenClaw from anywhere.
 
 ### 4. Connect the app
 
-Open the [Pinclaw iOS app](https://apps.apple.com/app/pinclaw/id6760344343), sign in with the same account, and you're connected.
+Open the [Pinclaw iOS app](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343), sign in with the same account, and you're connected.
 
 ### Verify
 
@@ -100,7 +99,7 @@ You should see relay: connected and your device listed.
 
 | Command                   | Description                                                                   |
 | ------------------------- | ----------------------------------------------------------------------------- |
-| `openclaw pinclaw login`  | Link your OpenClaw to pinclaw.ai (also available as `/pinclaw login` in chat) |
+| `openclaw pinclaw login`  | Link your OpenClaw to nexting.ai (also available as `/pinclaw login` in chat) |
 | `openclaw pinclaw status` | Show relay connection status                                                  |
 | `openclaw pinclaw logout` | Remove relay connection                                                       |
 
@@ -204,7 +203,7 @@ The plugin configures itself through `~/.openclaw/openclaw.json`. Most settings 
       "wsPort": 18790,
       "relay": {
         "enabled": true,
-        "url": "wss://api.pinclaw.ai"
+        "url": "wss://api.nexting.ai"
       }
     }
   }
@@ -262,12 +261,12 @@ The AI agent will automatically see and use your tools.
 
 |                      |                                                              |
 | -------------------- | ------------------------------------------------------------ |
-| 🌐 **Website**       | [pinclaw.ai](https://pinclaw.ai)                             |
-| 📱 **iOS App**       | [App Store](https://apps.apple.com/app/pinclaw/id6760344343) |
-| 📖 **Documentation** | [pinclaw.ai/doc](https://pinclaw.ai/doc)                     |
+| 🌐 **Website**       | [nexting.ai](https://nexting.ai)                             |
+| 📱 **iOS App**       | [App Store](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343) |
+| 📖 **Documentation** | [nexting.ai/doc](https://nexting.ai/doc)                     |
 | 💬 **Discord**       | [Join our community](https://discord.gg/628R3FbV)            |
 | 🐦 **Twitter**       | [@EricShang98](https://x.com/EricShang98)                    |
-| 🛒 **Buy Nexting**   | [pinclaw.ai](https://pinclaw.ai/#pricing)                    |
+| 🛒 **Buy Nexting**   | [nexting.ai](https://nexting.ai/#pricing)                    |
 | 🔧 **OpenClaw**      | [openclaw.ai](https://openclaw.ai)                           |
 
 ## Contributing
