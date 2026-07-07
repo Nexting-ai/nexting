@@ -12,9 +12,7 @@
 <p align="center">
   <a href="https://nexting.ai">Website</a> ·
   <a href="https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343">App Store</a> ·
-  <a href="https://nexting.ai/doc">Docs</a> ·
-  <a href="https://discord.gg/628R3FbV">Discord</a> ·
-  <a href="https://x.com/EricShang98">Twitter</a>
+  <a href="https://nexting.ai/doc">Docs</a>
 </p>
 
 <p align="center">
@@ -48,7 +46,7 @@ You speak → Nexting PIN (BLE) → iPhone App (STT) → Cloud → your own agen
 |---|---|
 | **Dispatch, not chat** | Fire-and-forget: say it once, your agent runs it in the background. Not Q&A. |
 | **Your own agent** | Drives the agents you already run — Claude Code, Codex, OpenClaw. Not a locked-in model. |
-| **Private by default** | BYOA modes (Claude Code, Codex, MyOpenClaw) are end-to-end encrypted — Nexting relays ciphertext, not your session. |
+| **Private by design** | Claude Code & Codex support optional end-to-end encryption — turn it on and Nexting relays ciphertext, not your session. |
 | **Delivers while you're offline** | Phone locked, on the move? The agent still finishes the job and pushes the result back. |
 | **Remote-control your agent** | Attach to a Claude Code or Codex session on your Mac or Windows PC and drive it from your pocket — live. |
 | **Deep iPhone integration** | Calendar, Reminders, Contacts, Health, HomeKit — all by voice. |
@@ -172,7 +170,7 @@ All data stays on your iPhone. You control every permission.
 
 ## Privacy
 
-- BYOA modes (Claude Code, Codex, MyOpenClaw) are **end-to-end encrypted by default** — Nexting relays ciphertext, not readable session content
+- Claude Code & Codex support **end-to-end encryption** (opt-in) — with it enabled, Nexting relays ciphertext, not readable session content
 - Raw audio is discarded immediately after transcription — never stored
 - Voice streams over encrypted WebSocket (WSS)
 - Self-hosted modes keep all data on your own infrastructure
@@ -201,13 +199,11 @@ nexting/
 | Website | [nexting.ai](https://nexting.ai) |
 | iOS App | [App Store](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343) |
 | Docs | [nexting.ai/doc](https://nexting.ai/doc) |
-| Discord | [Join community](https://discord.gg/628R3FbV) |
-| Twitter | [@EricShang98](https://x.com/EricShang98) |
 | Get a PIN | [nexting.ai/reserve](https://nexting.ai/reserve) |
 
 ## Contributing
 
-Issues and pull requests welcome. Join our [Discord](https://discord.gg/628R3FbV) to discuss ideas.
+Issues and pull requests welcome.
 
 ## License
 

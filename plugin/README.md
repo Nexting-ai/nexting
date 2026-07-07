@@ -12,15 +12,12 @@
 <p align="center">
   <a href="https://nexting.ai">Website</a> ·
   <a href="https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343">App Store</a> ·
-  <a href="https://nexting.ai/doc">Docs</a> ·
-  <a href="https://discord.gg/628R3FbV">Discord</a> ·
-  <a href="https://x.com/EricShang98">Twitter</a>
+  <a href="https://nexting.ai/doc">Docs</a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Nexting-ai/nexting/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
   <a href="https://www.npmjs.com/package/pinclaw"><img src="https://img.shields.io/npm/v/pinclaw.svg" alt="npm" /></a>
-  <a href="https://x.com/EricShang98"><img src="https://img.shields.io/twitter/follow/EricShang98?style=social" alt="Twitter" /></a>
 </p>
 
 ---
@@ -33,7 +30,7 @@ Nexting is a complete personal AI agent system — not just a gadget, not just a
 
 **📱 iPhone App** — Real-time speech recognition, intelligent routing, and device skill integration. Your phone becomes the bridge between you and your agent.
 
-**☁️ Cloud** — Your own OpenClaw instance with your own database, your own agent, your own scheduling. Not shared. Yours.
+**☁️ Cloud** — A relay that connects your iPhone to the OpenClaw running on your own machine. Your agent, your data, your infrastructure — we only pass messages through.
 
 ```
 You speak → Nexting PIN (BLE) → iPhone App → OpenClaw Plugin → Gateway → AI
@@ -109,16 +106,16 @@ You should see relay: connected and your device listed.
 
 | Layer            | What                | Role                                                             |
 | ---------------- | ------------------- | ---------------------------------------------------------------- |
-| **Nexting PIN** | XIAO nRF52840 Sense | Always-on voice capture, BLE streaming to iPhone                 |
+| **Nexting PIN** | XIAO nRF52840 Sense | Push-to-talk voice capture (records only while the button is held), BLE streaming to iPhone |
 | **iPhone App**   | Swift, native       | Speech recognition (Apple + Deepgram), device skills, AI routing |
 | **This Plugin**  | `pinclaw`           | Channel adapter — bridges iPhone ↔ OpenClaw Gateway              |
 | **OpenClaw**     | Gateway + Agent     | Your personal AI runtime, database, scheduling                   |
 
 ### Two Ways to Use
 
-**Cloud Mode** — We run everything. Buy the PIN, download the app, and your personal OpenClaw instance is ready. No setup.
+**Nexting AI Mode** — A managed agent in the cloud (Nexting Pro subscription). No OpenClaw and no plugin needed — buy the PIN, download the app, subscribe.
 
-**My OpenClaw Mode** — You run OpenClaw on your own machine. The plugin connects via relay through our cloud, so your iPhone can reach your home server from anywhere.
+**My OpenClaw Mode** — You run OpenClaw on your own machine; this plugin connects it via relay through our cloud, so your iPhone can reach your home server from anywhere. We never run OpenClaw for you — your agent stays on your hardware.
 
 ### Device Skills
 
@@ -126,8 +123,8 @@ Your iPhone isn't just a dumb pipe. It registers native capabilities as skills t
 
 - **Calendar** — Read and create events
 - **Reminders** — Manage tasks and to-do lists
-- **Screenshot** — Capture what's on screen
-- **And more** — Any iOS capability can become an agent tool
+- **Contacts** — Look up people
+- **Health, HomeKit, Location, Timer** — and more native iOS capabilities
 
 The AI sees these as tools and calls them when relevant. Say "schedule a meeting tomorrow at 3pm" and the agent calls your iPhone's calendar directly.
 
@@ -264,8 +261,6 @@ The AI agent will automatically see and use your tools.
 | 🌐 **Website**       | [nexting.ai](https://nexting.ai)                             |
 | 📱 **iOS App**       | [App Store](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343) |
 | 📖 **Documentation** | [nexting.ai/doc](https://nexting.ai/doc)                     |
-| 💬 **Discord**       | [Join our community](https://discord.gg/628R3FbV)            |
-| 🐦 **Twitter**       | [@EricShang98](https://x.com/EricShang98)                    |
 | 🛒 **Buy Nexting**   | [nexting.ai](https://nexting.ai/#pricing)                    |
 | 🔧 **OpenClaw**      | [openclaw.ai](https://openclaw.ai)                           |
 
@@ -277,8 +272,6 @@ We welcome contributions! Nexting's core is open source (MIT).
 2. Create your feature branch (`git checkout -b feature/amazing`)
 3. Commit your changes
 4. Push and open a Pull Request
-
-Join our [Discord](https://discord.gg/628R3FbV) to discuss ideas and get help.
 
 ## License
 
