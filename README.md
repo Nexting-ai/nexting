@@ -75,41 +75,45 @@ Nexting is a terminal, not a model. Connect the agent you already run:
 
 Buy the hardware once. Dispatch to whichever agent is yours. Each mode connects independently — here's how to start each one.
 
-### Claude Code & Codex
+### Claude Code
 
-A fully independent surface: your real CLI agent on your Mac or Windows PC, mirrored to your phone and driveable **live** — watch it work, reply for it, answer its prompts, or start a new session by voice.
+Your real Claude Code sessions on your Mac or Windows PC, mirrored to your phone and driveable **live** — watch it work, reply for it, answer its prompts, or start a new session by voice.
 
-One command on the computer where your agent runs. It opens your browser to sign in to Nexting — that login binds the machine to your account — and installs everything, including a background daemon that keeps your phone connected:
+One command on the computer where Claude Code runs. It opens your browser to sign in to Nexting — that login binds the machine to your account — and installs everything, including a background daemon that keeps your phone connected.
 
-**Claude Code** — macOS:
+#### macOS
 
 ```bash
 curl -fsSL https://nexting.ai/install-cc | bash
 ```
 
-Windows (PowerShell):
+#### Windows (PowerShell)
 
 ```powershell
 irm https://nexting.ai/install-cc.ps1 | iex
 ```
 
-Then just run `claude` as usual (on Windows, fully quit and reopen your terminal first) — your sessions appear in the Nexting app, live.
+Then just run `claude` as usual (on Windows, fully quit and reopen your terminal first) — your sessions appear in the Nexting app, live. Fully reversible: `nexting-cc-bridge uninstall`.
 
-**Codex** — macOS:
+### Codex
+
+The same, for the OpenAI Codex CLI: your Codex sessions on your Mac or Windows PC, live on your phone. One command to sign in and install:
+
+#### macOS
 
 ```bash
 curl -fsSL https://nexting.ai/install-codex | bash
 ```
 
-Windows (PowerShell):
+#### Windows (PowerShell)
 
 ```powershell
 irm https://nexting.ai/install-codex.ps1 | iex
 ```
 
-Then just run `codex` as usual.
+Then just run `codex` as usual. Fully reversible: `nexting-cc-bridge codex-uninstall`.
 
-Both are fully reversible (`nexting-cc-bridge uninstall` / `codex-uninstall`). Full walkthrough (pairing, remote control, starting sessions by voice): [nexting.ai/doc](https://nexting.ai/doc).
+Full walkthrough for both (pairing, remote control, starting sessions by voice): [nexting.ai/doc](https://nexting.ai/doc).
 
 ### OpenClaw
 
