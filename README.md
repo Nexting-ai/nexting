@@ -10,9 +10,9 @@
 </p>
 
 <p align="center">
-  <a href="https://pinclaw.ai">Website</a> ·
-  <a href="https://apps.apple.com/app/pinclaw/id6760344343">App Store</a> ·
-  <a href="https://pinclaw.ai/doc">Docs</a> ·
+  <a href="https://nexting.ai">Website</a> ·
+  <a href="https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343">App Store</a> ·
+  <a href="https://nexting.ai/doc">Docs</a> ·
   <a href="https://discord.gg/628R3FbV">Discord</a> ·
   <a href="https://x.com/EricShang98">Twitter</a>
 </p>
@@ -57,8 +57,8 @@ Nexting isn't another voice assistant — it's the pocket control surface for yo
 
 ## Get Started
 
-1. **Get a PIN** ($129, shipping now) — or join the [Ring private beta](https://pinclaw.ai/reserve).
-2. **Install the [Nexting iOS app](https://apps.apple.com/app/pinclaw/id6760344343)** and sign in.
+1. **Get a PIN** ($129, shipping now) — or join the [Ring private beta](https://nexting.ai/reserve).
+2. **Install the [Nexting iOS app](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343)** and sign in.
 3. **Pair your PIN** over Bluetooth.
 4. **Connect your agent** — Claude Code, Codex, OpenClaw, a local model, or managed Nexting Pro (see below).
 5. **Press, speak, dispatch.**
@@ -111,7 +111,7 @@ irm https://nexting.ai/install-codex.ps1 | iex
 
 Then just run `codex` as usual.
 
-Both are fully reversible (`nexting-cc-bridge uninstall` / `codex-uninstall`). Full walkthrough (pairing, remote control, starting sessions by voice): [pinclaw.ai/doc](https://pinclaw.ai/doc).
+Both are fully reversible (`nexting-cc-bridge uninstall` / `codex-uninstall`). Full walkthrough (pairing, remote control, starting sessions by voice): [nexting.ai/doc](https://nexting.ai/doc).
 
 ### OpenClaw
 
@@ -188,6 +188,7 @@ nexting/
 │   ├── enclosure/             #   3D printing files (STL + OpenSCAD)
 │   └── docs/                  #   Schematic PDF
 ├── plugin/                    # OpenClaw channel plugin (npm package)
+├── agent-bus/                 # Multi-agent team bus (wake local agents from one Lark group)
 └── public/                    # Product assets
 ```
 
@@ -197,12 +198,12 @@ nexting/
 
 | | |
 |---|---|
-| Website | [pinclaw.ai](https://pinclaw.ai) |
-| iOS App | [App Store](https://apps.apple.com/app/pinclaw/id6760344343) |
-| Docs | [pinclaw.ai/doc](https://pinclaw.ai/doc) |
+| Website | [nexting.ai](https://nexting.ai) |
+| iOS App | [App Store](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343) |
+| Docs | [nexting.ai/doc](https://nexting.ai/doc) |
 | Discord | [Join community](https://discord.gg/628R3FbV) |
 | Twitter | [@EricShang98](https://x.com/EricShang98) |
-| Get a PIN | [pinclaw.ai/reserve](https://pinclaw.ai/reserve) |
+| Get a PIN | [nexting.ai/reserve](https://nexting.ai/reserve) |
 
 ## Contributing
 
@@ -216,5 +217,5 @@ MIT
 
 <p align="center">
   <strong>Tap. Speak. Dispatch.</strong><br>
-  <a href="https://pinclaw.ai/reserve">Get the PIN →</a>
+  <a href="https://nexting.ai/reserve">Get the PIN →</a>
 </p>
