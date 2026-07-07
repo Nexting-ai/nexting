@@ -73,24 +73,55 @@ Nexting is a terminal, not a model. Connect the agent you already run:
 | **MyHermes** | Any OpenAI-compatible local AI — Hermes Agent, Ollama, vLLM, LM Studio. | Free |
 | **Nexting Pro** | Managed agent in the cloud. Latest Claude, GPT, and Gemini models, zero setup. | $29/mo or $279/yr |
 
-Buy the hardware once. Dispatch to whichever agent is yours. Each mode connects independently — here's how to start each one.
+Buy the hardware once. Dispatch to whichever agent is yours. Expand your mode below for setup — each takes about a minute.
 
-### Claude Code & Codex
+<details>
+<summary><strong>&nbsp;Claude Code</strong> — your Mac/PC sessions, mirrored to your phone, driveable live</summary>
+<br>
 
-Your real CLI sessions on your Mac or Windows PC, mirrored to your phone and driveable **live** — watch them work, reply, answer prompts, or start a new session by voice.
+One command on the computer where Claude Code runs. It opens your browser to sign in to Nexting — that login binds the machine to your account — and installs everything, including a background daemon that keeps your phone connected.
 
-Setup is one command on the computer where your agent runs. It opens your browser to sign in to Nexting — that login binds the machine to your account — and installs everything, including a background daemon that keeps your phone connected:
+**macOS**
 
-| | macOS | Windows (PowerShell) |
-|---|---|---|
-| **Claude Code** | `curl -fsSL https://nexting.ai/install-cc \| bash` | `irm https://nexting.ai/install-cc.ps1 \| iex` |
-| **Codex** | `curl -fsSL https://nexting.ai/install-codex \| bash` | `irm https://nexting.ai/install-codex.ps1 \| iex` |
+```bash
+curl -fsSL https://nexting.ai/install-cc | bash
+```
 
-Then just run `claude` or `codex` as usual — your sessions appear in the Nexting app, live. (On Windows, fully quit and reopen your terminal first.)
+**Windows (PowerShell)**
 
-Uninstall anytime: `nexting-cc-bridge uninstall` (Claude Code) · `nexting-cc-bridge codex-uninstall` (Codex). Full walkthrough — pairing, remote control, starting sessions by voice: [nexting.ai/doc](https://nexting.ai/doc).
+```powershell
+irm https://nexting.ai/install-cc.ps1 | iex
+```
 
-### OpenClaw
+Then just run `claude` as usual (on Windows, fully quit and reopen your terminal first) — your sessions appear in the Nexting app, live. Uninstall anytime: `nexting-cc-bridge uninstall`.
+
+</details>
+
+<details>
+<summary><strong>&nbsp;Codex</strong> — same idea, for the OpenAI Codex CLI</summary>
+<br>
+
+One command to sign in and install:
+
+**macOS**
+
+```bash
+curl -fsSL https://nexting.ai/install-codex | bash
+```
+
+**Windows (PowerShell)**
+
+```powershell
+irm https://nexting.ai/install-codex.ps1 | iex
+```
+
+Then just run `codex` as usual — your sessions appear in the Nexting app, live. Uninstall anytime: `nexting-cc-bridge codex-uninstall`.
+
+</details>
+
+<details>
+<summary><strong>&nbsp;MyOpenClaw</strong> — run your own OpenClaw; we handle the relay</summary>
+<br>
 
 Nexting is the first hardware product built for [OpenClaw](https://github.com/openclaw/openclaw). Install the plugin and link your account:
 
@@ -101,9 +132,13 @@ openclaw pinclaw login
 
 > The npm package and CLI commands use the internal codename `pinclaw` — that's by design, not a leftover. Full plugin docs: [`plugin/README.md`](plugin/README.md).
 
-### Local model (MyHermes)
+</details>
 
-Point Nexting at any OpenAI-compatible local AI with the `nexting-hermes-bridge` CLI:
+<details>
+<summary><strong>&nbsp;MyHermes</strong> — any OpenAI-compatible local AI (Ollama, vLLM, LM Studio…)</summary>
+<br>
+
+Point Nexting at your local endpoint with the `nexting-hermes-bridge` CLI:
 
 ```bash
 npm install -g nexting-hermes-bridge
@@ -111,9 +146,17 @@ nexting-hermes-bridge login
 nexting-hermes-bridge start --endpoint http://localhost:8642 --model hermes-agent
 ```
 
-### Nexting Pro
+</details>
 
-Managed agent in the cloud — nothing to install. Subscribe in the Nexting app and it's ready to dispatch.
+<details>
+<summary><strong>&nbsp;Nexting Pro</strong> — managed agent in the cloud, nothing to install</summary>
+<br>
+
+Subscribe in the Nexting app and it's ready to dispatch.
+
+</details>
+
+Full walkthrough for every mode — pairing, remote control, starting sessions by voice: [nexting.ai/doc](https://nexting.ai/doc).
 
 ## Hardware
 
