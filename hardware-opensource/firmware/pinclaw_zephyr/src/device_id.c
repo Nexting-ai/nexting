@@ -1,7 +1,9 @@
 #include "device_id.h"
 
+#include <nrfx.h>
 #include <stdio.h>
 #include <string.h>
+#include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/drivers/flash.h>
 #include <zephyr/fs/nvs.h>
 #include <zephyr/kernel.h>
@@ -17,6 +19,7 @@ static struct nvs_fs nvs;
 static char ble_name[BLE_NAME_MAX_LEN];
 static uint8_t ble_name_len;
 static uint16_t device_number;
+static char hardware_id[17]; // 16 hex chars + null
 
 static void build_name(uint16_t num)
 {
@@ -52,6 +55,11 @@ int device_id_init(void)
     }
     LOG_INF("NVS mounted");
 
+    // Read chip-unique FICR DEVICEID (factory-programmed, immutable)
+    snprintf(hardware_id, sizeof(hardware_id), "%08X%08X",
+             NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
+    LOG_INF("Hardware ID: %s", hardware_id);
+
     // Read stored device number
     uint16_t stored = 0;
     rc = nvs_read(&nvs, NVS_DEVICE_ID_KEY, &stored, sizeof(stored));
@@ -81,6 +89,11 @@ uint16_t device_id_get_number(void)
     return device_number;
 }
 
+const char *device_id_get_hardware_id(void)
+{
+    return hardware_id;
+}
+
 int device_id_set(uint16_t number)
 {
     int rc = nvs_write(&nvs, NVS_DEVICE_ID_KEY, &number, sizeof(number));
@@ -90,6 +103,8 @@ int device_id_set(uint16_t number)
     }
 
     build_name(number);
+    // Update BLE name immediately so scanners see the new name
+    bt_set_name(ble_name);
     LOG_INF("Device ID set: %d → \"%s\"", number, ble_name);
     return 0;
 }

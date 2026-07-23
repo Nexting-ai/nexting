@@ -9,6 +9,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/poweroff.h>
+#include <hal/nrf_gpio.h>
 
 #include "led.h"
 #include "mic.h"
@@ -97,8 +98,9 @@ static inline void notify_unpress()
     }
 }
 
-// Pinclaw PTT: hold > 0.5s starts recording, release stops.
-// Short tap < 0.5s sends PLAY command.
+// Pinclaw PTT: press immediately starts mic capture + green LED.
+// Hold >= 0.5s: confirmed recording (START sent to iOS, audio flows).
+// Release < 0.5s: discard buffered audio, send PLAY command instead.
 void check_button_level(struct k_work *work_item)
 {
     // Poll D4: active LOW (pressed = 0 when switch connects to GND)
@@ -113,36 +115,41 @@ void check_button_level(struct k_work *work_item)
     }
 
     static bool was_btn_pressed = false;
-    static bool btn_recording_started = false;
+    static bool btn_confirmed = false;  // true after 500ms hold
     static int64_t press_start_time = 0;
 
     extern volatile bool recording_active;
+    extern volatile bool recording_confirmed;
     extern uint16_t opus_seq_no;
     extern struct bt_gatt_service audio_service;
 
-    // Button just pressed — record time, don't start recording yet
+    // Button just pressed — immediately start mic capture + green LED
     if (pressed && !was_btn_pressed) {
         was_btn_pressed = true;
-        btn_recording_started = false;
+        btn_confirmed = false;
         press_start_time = k_uptime_get();
         // Stop any ongoing speaker playback
         speaker_stop();
+        // Start capturing immediately (mic + opus encode into ring buffer)
+        recording_active = true;
+        recording_confirmed = false;  // gate: pusher won't send yet
+        opus_seq_no = 0;
+        set_led_red(true);  // green LED on — immediate user feedback
+        LOG_INF("[BTN] Press — mic started, awaiting 500ms confirm");
     }
 
-    // Button held past 0.5s — start recording
-    if (pressed && was_btn_pressed && !btn_recording_started) {
+    // Button held past 0.5s — confirm recording, send START to iOS
+    if (pressed && was_btn_pressed && !btn_confirmed) {
         int64_t held = k_uptime_get() - press_start_time;
         if (held >= 500) {
-            btn_recording_started = true;
-            recording_active = true;
-            opus_seq_no = 0;
+            btn_confirmed = true;
+            recording_confirmed = true;  // ungate pusher — buffered frames flow
             struct bt_conn *conn = get_current_connection();
             if (conn) {
                 uint8_t start_pkt[6] = {0x01, 0x14, 0x00, 0x00, 0x00, 0x00};
                 bt_gatt_notify(conn, &audio_service.attrs[1], start_pkt, 6);
             }
-            LOG_INF("[BTN] Recording started (held > 0.5s)");
-            set_led_red(true);
+            LOG_INF("[BTN] Recording confirmed (held >= 500ms)");
         }
     }
 
@@ -151,18 +158,24 @@ void check_button_level(struct k_work *work_item)
         was_btn_pressed = false;
         int64_t duration = k_uptime_get() - press_start_time;
 
-        if (btn_recording_started) {
-            // Was recording — stop and enqueue END into ring buffer
-            // END goes through the same queue as audio, so pusher sends
-            // it after all remaining audio frames — no BLE TX competition
+        if (btn_confirmed) {
+            // Confirmed recording — normal stop, enqueue END
             recording_active = false;
-            btn_recording_started = false;
+            btn_confirmed = false;
             enqueue_end_packet(opus_seq_no);
+            // DON'T set recording_confirmed = false here!
+            // Pusher needs it true to send remaining frames + END packet.
+            // Pusher will clear it after the ring buffer drains.
             set_led_red(false);
             LOG_INF("[BTN] Recording stopped, frames=%d", opus_seq_no);
         } else {
-            // Short tap (< 0.5s) — PLAY command
-            LOG_INF("[BTN] Short tap (%lld ms) — PLAY", duration);
+            // Short tap (< 0.5s) — discard buffered audio, send PLAY
+            recording_active = false;
+            recording_confirmed = false;
+            btn_confirmed = false;
+            flush_audio_queue();  // discard any buffered frames
+            set_led_red(false);
+            LOG_INF("[BTN] Short tap (%lld ms) — discarded, PLAY", duration);
             struct bt_conn *conn = get_current_connection();
             if (conn) {
                 uint8_t play_cmd = 0x20;
@@ -265,6 +278,15 @@ void turnoff_all()
     }
 
     NRF_USBD->INTENCLR = 0xFFFFFFFF;
+
+    // Configure D4 (P0.04) as SENSE LOW wake-up source
+    // so pressing the button powers the device back on from System OFF.
+    // Use nrf_gpio_cfg_sense_input to fully reconfigure the pin (input + pull-up + SENSE)
+    // because gpio_pin_interrupt_configure(GPIO_INT_DISABLE) above clears SENSE bits.
+    nrf_gpio_cfg_sense_input(NRF_GPIO_PIN_MAP(0, 4),
+                             NRF_GPIO_PIN_PULLUP,
+                             NRF_GPIO_PIN_SENSE_LOW);
+
     NRF_POWER->SYSTEMOFF = 1;
 }
 

@@ -19,6 +19,7 @@
 
 // Pinclaw recording state — controlled by iPhone commands
 volatile bool recording_active = false;
+volatile bool recording_confirmed = false; // gate: pusher won't send until confirmed (500ms hold)
 uint16_t opus_seq_no = 0;
 // #include "nfc.h"
 #include "button.h"
@@ -59,6 +60,12 @@ static ssize_t text_write_handler(struct bt_conn *conn,
                                   const void *buf, uint16_t len,
                                   uint16_t offset, uint8_t flags);
 
+static ssize_t hardware_id_read_characteristic(struct bt_conn *conn,
+                                               const struct bt_gatt_attr *attr,
+                                               void *buf,
+                                               uint16_t len,
+                                               uint16_t offset);
+
 static void audio_ccc_config_changed_handler(const struct bt_gatt_attr *attr, uint16_t value);
 static ssize_t audio_data_read_characteristic(struct bt_conn *conn,
                                               const struct bt_gatt_attr *attr,
@@ -97,6 +104,10 @@ static struct bt_uuid_128 audio_characteristic_format_uuid =
 static struct bt_uuid_128 audio_characteristic_speaker_uuid =
     BT_UUID_INIT_128(BT_UUID_128_ENCODE(0x12345678, 0x1234, 0x1234, 0x1234, 0x123456789ABF));
 
+// Hardware ID characteristic — read-only, exposes FICR DEVICEID as 16-char hex
+static struct bt_uuid_128 hardware_id_characteristic_uuid =
+    BT_UUID_INIT_128(BT_UUID_128_ENCODE(0x12345678, 0x1234, 0x1234, 0x1234, 0x123456789AC1));
+
 static struct bt_gatt_attr audio_service_attr[] = {
     BT_GATT_PRIMARY_SERVICE(&audio_service_uuid),
     BT_GATT_CHARACTERISTIC(&audio_characteristic_data_uuid.uuid,
@@ -122,6 +133,13 @@ static struct bt_gatt_attr audio_service_attr[] = {
                            NULL),
     BT_GATT_CCC(audio_ccc_config_changed_handler, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE), //
 #endif
+    // Hardware ID characteristic (read-only)
+    BT_GATT_CHARACTERISTIC(&hardware_id_characteristic_uuid.uuid,
+                           BT_GATT_CHRC_READ,
+                           BT_GATT_PERM_READ,
+                           hardware_id_read_characteristic,
+                           NULL,
+                           NULL),
 
 };
 
@@ -280,7 +298,7 @@ int accel_start()
 static struct bt_data bt_ad[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
     BT_DATA(BT_DATA_UUID128_ALL, audio_service_uuid.val, sizeof(audio_service_uuid.val)),
-    BT_DATA(BT_DATA_NAME_COMPLETE, "Pinclaw", 7),  // placeholder, updated in transport_start()
+    {.type = BT_DATA_NAME_COMPLETE, .data = NULL, .data_len = 0},  // set at runtime
 };
 
 // Scan response data
@@ -329,6 +347,17 @@ static ssize_t audio_codec_read_characteristic(struct bt_conn *conn,
     uint8_t value[1] = {CODEC_ID};
     LOG_DBG("audio_codec_read_characteristic %d", CODEC_ID);
     return bt_gatt_attr_read(conn, attr, buf, len, offset, value, sizeof(value));
+}
+
+static ssize_t hardware_id_read_characteristic(struct bt_conn *conn,
+                                               const struct bt_gatt_attr *attr,
+                                               void *buf,
+                                               uint16_t len,
+                                               uint16_t offset)
+{
+    const char *hw_id = device_id_get_hardware_id();
+    LOG_DBG("hardware_id_read: %s", hw_id);
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, hw_id, 16);
 }
 
 static ssize_t audio_data_write_handler(struct bt_conn *conn,
@@ -525,6 +554,7 @@ static void _transport_disconnected(struct bt_conn *conn, uint8_t err)
         current_mtu = 0;
         is_connected = false;
         recording_active = false;
+        recording_confirmed = false;
         storage_is_on = false;
         k_work_cancel_delayable(&heartbeat_work);
         heartbeat_counter = 0;
@@ -650,6 +680,9 @@ static struct k_thread pusher_thread;
 static uint16_t packet_next_index = 0;
 static uint8_t pusher_temp_data[CODEC_OUTPUT_MAX_BYTES + NET_BUFFER_HEADER_SIZE];
 
+static uint32_t gatt_send_ok = 0;
+static uint32_t gatt_send_fail = 0;
+
 static bool push_to_gatt(struct bt_conn *conn)
 {
     // Read data from ring buffer
@@ -671,27 +704,24 @@ static bool push_to_gatt(struct bt_conn *conn)
             int err =
                 bt_gatt_notify(conn, &audio_service.attrs[1], buffer, packet_size);
 
-            // Log failure
             if (err) {
-                LOG_DBG("bt_gatt_notify failed (err %d)", err);
-                LOG_DBG("MTU: %d, packet_size: %d", current_mtu, packet_size + NET_BUFFER_HEADER_SIZE);
+                LOG_WRN("bt_gatt_notify failed (err %d), pkt_size=%d mtu=%d", err, packet_size, current_mtu);
                 k_sleep(K_MSEC(1));
                 retry_count++;
                 continue;
             }
 
-            // Try to send more data if possible
-            if (err == -EAGAIN || err == -ENOMEM) {
-                retry_count++;
-                continue;
+            // Success
+            gatt_send_ok++;
+            if (gatt_send_ok % 100 == 1) {
+                LOG_INF("[TX] sent %d pkts (fail=%d)", gatt_send_ok, gatt_send_fail);
             }
-
-            // Break if success
             break;
         }
 
         if (retry_count >= max_retries) {
-            LOG_ERR("Failed to send packet after %d retries", max_retries);
+            gatt_send_fail++;
+            LOG_ERR("Failed to send packet after %d retries (total_fail=%d)", max_retries, gatt_send_fail);
             return false;
         }
     }
@@ -848,10 +878,17 @@ void pusher(void)
             } else {
             }
         }
-        if (valid) {
+        // Drain ring buffer only during pre-confirmation phase
+        // (mic captures immediately on press, but BLE waits for 500ms confirm)
+        if (recording_active && !recording_confirmed) {
+            while (read_from_tx_queue()) { /* discard */ }
+        }
+        if (valid && recording_confirmed) {
             bool sent = push_to_gatt(conn);
-            if (!sent) {
-                // k_sleep(K_MSEC(50));
+            if (!sent && !recording_active) {
+                // Ring buffer empty + recording stopped → all frames + END sent
+                recording_confirmed = false;
+                LOG_INF("[TX] Recording drain complete, confirmed=false");
             }
         }
         if (conn) {
@@ -948,9 +985,13 @@ int transport_start()
 #endif
 
     // Set BLE advertising name from NVS device_id
-    bt_ad[2].data = (const uint8_t *)device_id_get_name();
-    bt_ad[2].data_len = device_id_get_name_len();
-    LOG_INF("BLE advertising name: \"%s\"", device_id_get_name());
+    const char *name = device_id_get_name();
+    uint8_t name_len = device_id_get_name_len();
+    bt_ad[2].data = (const uint8_t *)name;
+    bt_ad[2].data_len = name_len;
+    bt_set_name(name);
+    LOG_INF("BLE advertising name: \"%s\" (len=%d)", name, name_len);
+    LOG_INF("bt_ad[2] data_len=%d data=[%.*s]", bt_ad[2].data_len, bt_ad[2].data_len, bt_ad[2].data);
 
     // Start advertising
     memset(storage_temp_data, 0, OPUS_PADDED_LENGTH * 4);
@@ -993,6 +1034,11 @@ int transport_start()
 struct bt_conn *get_current_connection()
 {
     return current_connection;
+}
+
+void flush_audio_queue(void)
+{
+    ring_buf_reset(&ring_buf);
 }
 
 int broadcast_audio_packets(uint8_t *buffer, size_t size)
@@ -1063,6 +1109,7 @@ static ssize_t text_write_handler(struct bt_conn *conn,
     case 0x01: { // Start recording
         LOG_INF("[CMD] Start recording");
         recording_active = true;
+        recording_confirmed = true; // app-initiated: no 500ms gate
         opus_seq_no = 0;
         // Send START packet: [0x01][codec=0x14][0x00][0x00][0x00][0x00]
         uint8_t start_pkt[6] = {0x01, 0x14, 0x00, 0x00, 0x00, 0x00};
@@ -1072,6 +1119,7 @@ static ssize_t text_write_handler(struct bt_conn *conn,
     case 0x00: { // Stop recording
         LOG_INF("[CMD] Stop recording");
         recording_active = false;
+        recording_confirmed = false;
         // Send END packet: [0x03][totalFrames:4B BE]
         uint8_t end_pkt[5];
         end_pkt[0] = 0x03;
@@ -1083,7 +1131,8 @@ static ssize_t text_write_handler(struct bt_conn *conn,
         break;
     }
     case 0x40: // Shutdown
-        LOG_INF("[CMD] Shutdown");
+        LOG_INF("[CMD] Shutdown — powering off");
+        turnoff_all();
         break;
     }
     return len;

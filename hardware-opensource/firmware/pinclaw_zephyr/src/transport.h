@@ -23,6 +23,7 @@ typedef struct sensors {
 int transport_start();
 int broadcast_audio_packets(uint8_t *buffer, size_t size);
 int enqueue_end_packet(uint16_t total_frames);
+void flush_audio_queue(void);
 struct bt_conn *get_current_connection();
 int bt_on();
 int bt_off();

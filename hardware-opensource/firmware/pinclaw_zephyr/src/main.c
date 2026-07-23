@@ -278,39 +278,7 @@ int main(void)
         LOG_WRN("Device ID init failed (err %d), using default name", err);
     }
 
-    // Check serial port for device ID command (2 second window)
-    // Format: "PINCLAW_ID=XXX\n" where XXX is 1-999
-    {
-        const struct device *uart = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
-        if (device_is_ready(uart)) {
-            LOG_INF("Listening for device ID command (2s)...");
-            uint8_t cmd_buf[32];
-            int cmd_pos = 0;
-            int64_t deadline = k_uptime_get() + 2000;
-
-            while (k_uptime_get() < deadline) {
-                uint8_t c;
-                int ret = uart_poll_in(uart, &c);
-                if (ret == 0) {
-                    if (c == '\n' || c == '\r') {
-                        cmd_buf[cmd_pos] = '\0';
-                        if (cmd_pos > 11 && strncmp((char *)cmd_buf, "PINCLAW_ID=", 11) == 0) {
-                            int num = atoi((char *)cmd_buf + 11);
-                            if (num > 0 && num <= 999) {
-                                device_id_set((uint16_t)num);
-                                printk("OK DEVICE_ID=%d NAME=%s\n", num, device_id_get_name());
-                            }
-                        }
-                        cmd_pos = 0;
-                    } else if (cmd_pos < (int)sizeof(cmd_buf) - 1) {
-                        cmd_buf[cmd_pos++] = c;
-                    }
-                } else {
-                    k_msleep(10);
-                }
-            }
-        }
-    }
+    // Device ID serial listener moved to main loop (serial_id_poll)
 
     // Indicate transport initialization
     LOG_PRINTK("\n");
@@ -413,12 +381,40 @@ int main(void)
     LOG_PRINTK("\n");
     LOG_INF("Entering main loop...\n");
 
-    // Main loop: watchdog + LED state only.
+    // Serial ID listener: accepts "PINCLAW_ID=XXX\r\n" at any time
+    const struct device *uart_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+    static uint8_t serial_cmd_buf[32];
+    static int serial_cmd_pos = 0;
+
+    // Main loop: watchdog + LED state + serial ID listener.
     // Button: D4 (P0.04) = output 3.3V power, D5 (P0.05) = input read.
     // PTT logic in button.c via work queue (activate_button_work above).
     while (1) {
         watchdog_feed();
         set_led_state();
+
+        // Non-blocking serial poll for device ID command
+        if (device_is_ready(uart_dev)) {
+            uint8_t c;
+            while (uart_poll_in(uart_dev, &c) == 0) {
+                if (c == '\n' || c == '\r') {
+                    serial_cmd_buf[serial_cmd_pos] = '\0';
+                    if (serial_cmd_pos > 11 &&
+                        strncmp((char *)serial_cmd_buf, "PINCLAW_ID=", 11) == 0) {
+                        int num = atoi((char *)serial_cmd_buf + 11);
+                        if (num > 0 && num <= 999) {
+                            device_id_set((uint16_t)num);
+                            printk("OK DEVICE_ID=%d NAME=%s\n",
+                                   num, device_id_get_name());
+                        }
+                    }
+                    serial_cmd_pos = 0;
+                } else if (serial_cmd_pos < (int)sizeof(serial_cmd_buf) - 1) {
+                    serial_cmd_buf[serial_cmd_pos++] = c;
+                }
+            }
+        }
+
         k_msleep(20);
     }
 

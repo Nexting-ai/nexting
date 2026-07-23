@@ -32,4 +32,11 @@ int device_id_set(uint16_t number);
  */
 uint16_t device_id_get_number(void);
 
+/**
+ * Get the 16-char hex hardware ID derived from FICR DEVICEID.
+ * Example: "A1B2C3D4E5F60718"
+ * Returns pointer to static buffer, always valid after device_id_init().
+ */
+const char *device_id_get_hardware_id(void);
+
 #endif

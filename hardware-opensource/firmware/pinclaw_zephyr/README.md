@@ -1,16 +1,16 @@
-# Nexting Firmware
+# Pinclaw Firmware
 
-Zephyr RTOS firmware for the Nexting wearable AI device, built on nRF Connect SDK 2.7.0.
+Zephyr RTOS firmware for the Pinclaw wearable AI clip, built on nRF Connect SDK 2.7.0.
 
 ## Hardware
 
-| Component | Model | Notes |
-|-----------|-------|-------|
-| MCU | Seeed XIAO nRF52840 Sense | 21x17.5mm. ARM Cortex-M4 @ 64MHz. Built-in BLE 5.0, PDM mic, RGB LED, LiPo charger. |
-| Button | Tactile switch on D4 (P0.04) | Active LOW with internal pull-up. 100nF debounce cap recommended. |
-| Speaker | I2S + MAX98357A (Adafruit 5769 Audio BFF) | SCK=A3, LRCK=A2, SDOUT=A1, SD/Enable=D6 |
-| Battery | 3.7V LiPo 200mAh | Onboard BQ25101 charge management via USB-C |
-| Microphone | Onboard PDM | Built into XIAO Sense module |
+| Component  | Model                                     | Notes                                                                               |
+| ---------- | ----------------------------------------- | ----------------------------------------------------------------------------------- |
+| MCU        | Seeed XIAO nRF52840 Sense                 | 21x17.5mm. ARM Cortex-M4 @ 64MHz. Built-in BLE 5.0, PDM mic, RGB LED, LiPo charger. |
+| Button     | Tactile switch on D4 (P0.04)              | Active LOW with internal pull-up. 100nF debounce cap recommended.                   |
+| Speaker    | I2S + MAX98357A (Adafruit 5769 Audio BFF) | SCK=A3, LRCK=A2, SDOUT=A1, SD/Enable=D6                                             |
+| Battery    | 3.7V LiPo 200mAh                          | Onboard BQ25101 charge management via USB-C                                         |
+| Microphone | Onboard PDM                               | Built into XIAO Sense module                                                        |
 
 ## Flashing
 
@@ -121,74 +121,74 @@ Output: `build/zephyr/zephyr.uf2`
 
 ### Build troubleshooting
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `picolibc.cmake` / `try_compile` failure | CMake 4.x incompatible | Downgrade to CMake 3.x |
-| `west: unknown command "build"` | Not in NCS workspace | `export ZEPHYR_BASE=~/ncs/zephyr` |
-| `Could NOT find Dtc` | Missing dtc | `brew install dtc` (warning is safe) |
-| `GNUARMEMB_TOOLCHAIN_PATH` error | Wrong toolchain path | Verify `arm-none-eabi-gcc` exists at that path |
+| Error                                    | Cause                  | Fix                                            |
+| ---------------------------------------- | ---------------------- | ---------------------------------------------- |
+| `picolibc.cmake` / `try_compile` failure | CMake 4.x incompatible | Downgrade to CMake 3.x                         |
+| `west: unknown command "build"`          | Not in NCS workspace   | `export ZEPHYR_BASE=~/ncs/zephyr`              |
+| `Could NOT find Dtc`                     | Missing dtc            | `brew install dtc` (warning is safe)           |
+| `GNUARMEMB_TOOLCHAIN_PATH` error         | Wrong toolchain path   | Verify `arm-none-eabi-gcc` exists at that path |
 
 ## Features
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| BLE connection | Done | Auto-advertise, up to 3 simultaneous connections |
-| Hardware button record | Done | Hold D4 > 0.5s to record, release to stop |
-| Hardware button play | Done | Tap D4 < 0.5s to replay last AI response |
-| iPhone hold-to-talk | Done | App sends 0x01/0x00 to control recording |
-| Opus encoding | Done | 16kHz mono, CELT mode, 32kbps VBR |
-| Battery monitoring | Done | BAS service + heartbeat voltage reporting |
-| Heartbeat keepalive | Done | 10s interval, dedicated thread |
-| Device ID (NVS) | Done | Persistent storage, BLE name "Pinclaw XXX" |
-| I2S Speaker | Done | MAX98357A via I2S, boot chime on startup |
-| SD Card | Not enabled | |
-| Accelerometer | Not enabled | |
+| Feature                | Status      | Notes                                            |
+| ---------------------- | ----------- | ------------------------------------------------ |
+| BLE connection         | Done        | Auto-advertise, up to 3 simultaneous connections |
+| Hardware button record | Done        | Hold D4 > 0.5s to record, release to stop        |
+| Hardware button play   | Done        | Tap D4 < 0.5s to replay last AI response         |
+| iPhone hold-to-talk    | Done        | App sends 0x01/0x00 to control recording         |
+| Opus encoding          | Done        | 16kHz mono, CELT mode, 32kbps VBR                |
+| Battery monitoring     | Done        | BAS service + heartbeat voltage reporting        |
+| Heartbeat keepalive    | Done        | 10s interval, dedicated thread                   |
+| Device ID (NVS)        | Done        | Persistent storage, BLE name "Pinclaw XXX"       |
+| I2S Speaker            | Done        | MAX98357A via I2S, boot chime on startup         |
+| SD Card                | Not enabled |                                                  |
+| Accelerometer          | Not enabled |                                                  |
 
 ## LED Status
 
-| Color | Pattern | Meaning |
-|-------|---------|---------|
-| Red → Green → Blue | Sequential blink | Booting up |
-| Red | Slow blink (1s on/off) | Waiting for BLE connection |
-| Blue | Solid | BLE connected, idle |
-| Green | Solid | Recording (button held) |
-| Green | Blinking | USB charging |
+| Color              | Pattern                | Meaning                    |
+| ------------------ | ---------------------- | -------------------------- |
+| Red → Green → Blue | Sequential blink       | Booting up                 |
+| Red                | Slow blink (1s on/off) | Waiting for BLE connection |
+| Blue               | Solid                  | BLE connected, idle        |
+| Green              | Solid                  | Recording (button held)    |
+| Green              | Blinking               | USB charging               |
 
 ## Button Behavior
 
-| Action | Effect |
-|--------|--------|
+| Action       | Effect                                          |
+| ------------ | ----------------------------------------------- |
 | Hold >= 0.5s | Green LED on, start recording. Release to stop. |
-| Tap < 0.5s | Send PLAY command (0x20) to app |
+| Tap < 0.5s   | Send PLAY command (0x20) to app                 |
 
 ## BLE Protocol
 
 ### Services
 
-| Service | UUID | Purpose |
-|---------|------|---------|
-| Audio | `12345678-1234-1234-1234-123456789ABC` | Recording / commands / heartbeat |
-| Button | `23BA7924-0000-1000-7450-346EAC492E92` | Button events |
-| Speaker | `CAB1AB95-2EA5-4F4D-BB56-874B72CFC984` | Speaker / haptic feedback |
-| Battery | `180F` (standard BAS) | Battery percentage |
-| Device Info | `180A` (standard DIS) | Firmware / hardware version |
+| Service     | UUID                                   | Purpose                          |
+| ----------- | -------------------------------------- | -------------------------------- |
+| Audio       | `12345678-1234-1234-1234-123456789ABC` | Recording / commands / heartbeat |
+| Button      | `23BA7924-0000-1000-7450-346EAC492E92` | Button events                    |
+| Speaker     | `CAB1AB95-2EA5-4F4D-BB56-874B72CFC984` | Speaker / haptic feedback        |
+| Battery     | `180F` (standard BAS)                  | Battery percentage               |
+| Device Info | `180A` (standard DIS)                  | Firmware / hardware version      |
 
 ### Audio Characteristics
 
-| UUID suffix | Property | Description |
-|-------------|----------|-------------|
-| `...9ABE` | notify | Audio data packets (START/DATA/END) |
-| `...9ABD` | read/write/notify | Commands (record/stop/shutdown) |
-| `...9ABF` | notify | Heartbeat packets |
+| UUID suffix | Property          | Description                         |
+| ----------- | ----------------- | ----------------------------------- |
+| `...9ABE`   | notify            | Audio data packets (START/DATA/END) |
+| `...9ABD`   | read/write/notify | Commands (record/stop/shutdown)     |
+| `...9ABF`   | notify            | Heartbeat packets                   |
 
 ### Commands (write to ...9ABD)
 
-| Byte | Description |
-|------|-------------|
-| `0x01` | Start recording |
-| `0x00` | Stop recording |
+| Byte   | Description         |
+| ------ | ------------------- |
+| `0x01` | Start recording     |
+| `0x00` | Stop recording      |
 | `0x20` | Play (simulate tap) |
-| `0x40` | Shutdown |
+| `0x40` | Shutdown            |
 
 ### Audio packet format (...9ABE notify)
 
