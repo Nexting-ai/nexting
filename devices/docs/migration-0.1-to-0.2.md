@@ -7,7 +7,7 @@ new Host SDK surfaces; it does not grant new approval authority to a device.
 
 ## Device firmware
 
-1. Change the Device Info `spec` string to `0.2.0-experimental.0`.
+1. Change the Device Info `spec` string to `0.2.0-experimental.1`.
 2. Keep every required 0.1 field and its existing bound.
 3. Add only capabilities the physical device actually implements:
    `device_id`, manufacturer descriptors, button and rotary counts, display,
@@ -25,7 +25,7 @@ record and revoke it explicitly.
 
 ## Apple hosts
 
-- Update `NextingDeviceKit` to `0.2.0-experimental.0`.
+- Update `NextingDeviceKit` to `0.2.0-experimental.1`.
 - Render `NextingDeviceInfo` as an ordered key/value table. Omit absent
   capabilities rather than filling the screen with empty placeholders.
 - Read live battery from the standard Battery Service only when declared.

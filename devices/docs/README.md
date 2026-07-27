@@ -2,6 +2,10 @@
 
 Choose the task you are trying to complete.
 
+Start with the root [Quickstart](../QUICKSTART.md). It takes one supported
+board from wiring to a public Host `PASS` result. If a checkpoint fails, use
+[Troubleshooting](troubleshooting.md) before reading the architecture guides.
+
 ## Understand the product and foundation
 
 - [Project overview](../README.md): product promise, public/private boundary, reference boards, and repository status.
@@ -14,6 +18,8 @@ Choose the task you are trying to complete.
 
 ## Run a working example
 
+- [Public Quickstart](../QUICKSTART.md): wire, build, flash, and prove the golden board.
+- [Troubleshooting](troubleshooting.md): repair setup, toolchain, flash, BLE, and Device Info failures.
 - [First hardware approval](first-approval.md): build, flash, enroll, and answer one request.
 - [macOS BLE simulator](../examples/macos-device-simulator/README.md): exercise a real iPhone without a board.
 

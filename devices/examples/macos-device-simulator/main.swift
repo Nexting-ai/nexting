@@ -9,7 +9,7 @@ private let deviceInfoUUID = CBUUID(string: "6EADC0DE-0004-4A21-9C5E-1B7F3D9E42A
 private let maximumMessageBytes = 4096
 private let answerRetryInterval = 1.0
 private let deviceInfoData = Data(
-    "{\"protocol\":\"nexting-device\",\"spec\":\"0.2.0-experimental.0\",\"wire\":[1],\"profiles\":[\"approval/1\"],\"model\":\"macos-device-simulator\",\"fw\":\"0.2.0\",\"max_message_bytes\":4096,\"max_summary_bytes\":240,\"display_name\":\"Mac Device Simulator\",\"button_count\":2,\"approval_button_count\":2,\"custom_button_count\":0}"
+    "{\"protocol\":\"nexting-device\",\"spec\":\"0.2.0-experimental.1\",\"wire\":[1],\"profiles\":[\"approval/1\"],\"model\":\"macos-device-simulator\",\"fw\":\"0.2.0\",\"max_message_bytes\":4096,\"max_summary_bytes\":240,\"display_name\":\"Mac Device Simulator\",\"button_count\":2,\"approval_button_count\":2,\"custom_button_count\":0}"
         .utf8
 )
 

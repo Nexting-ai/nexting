@@ -178,3 +178,96 @@ test("Agent and maintainer guides use the same sources and claims", async () => 
     assert.match(component, /interfaces\.md|implementation-tracks\.md/);
   }
 });
+
+test("public Quickstart is self-serve and honest about the public App gate", async () => {
+  const [overview, index, quickstart, troubleshooting, firstApproval] =
+    await Promise.all([
+      read("README.md"),
+      read("docs/README.md"),
+      read("QUICKSTART.md"),
+      read("docs/troubleshooting.md"),
+      read("docs/first-approval.md"),
+    ]);
+
+  for (const source of [overview, index]) {
+    assert.match(source, /QUICKSTART\.md/);
+    assert.match(source, /troubleshooting\.md/);
+  }
+  for (const marker of [
+    "devices-v0.2.0-experimental.1",
+    "XIAO nRF52840",
+    "D0",
+    "D1",
+    "bootstrap-zephyr.sh",
+    "nexting-device-host-smoke",
+    "PASS answer=",
+    "App Store 2.4",
+  ]) {
+    assert.ok(quickstart.includes(marker), "Quickstart missing marker: " + marker);
+  }
+  assert.doesNotMatch(quickstart, /private Nexting App|Debug build/);
+  assert.doesNotMatch(firstApproval, /current private Nexting App|Debug build/);
+  assert.match(troubleshooting, /west: unknown command "build"/);
+  assert.match(troubleshooting, /Bluetooth/);
+  assert.match(troubleshooting, /Device Info/);
+});
+
+test("Swift package exposes the documented public Host smoke executable", async () => {
+  const [manifest, source, readme] = await Promise.all([
+    read("sdk/swift/Package.swift"),
+    read("sdk/swift/Sources/NextingDeviceHostSmoke/main.swift"),
+    read("sdk/swift/README.md"),
+  ]);
+
+  for (const marker of ["nexting-device-host-smoke", "NextingDeviceHostSmoke"]) {
+    assert.ok(manifest.includes(marker), `Swift manifest missing ${marker}`);
+  }
+  for (const marker of [
+    "onDiscovered",
+    "connectedDeviceInfo",
+    "Device Info",
+    "PASS answer=",
+    "Bluetooth",
+  ]) {
+    assert.ok(source.includes(marker), `Host smoke source missing ${marker}`);
+  }
+  assert.match(readme, /nexting-device-host-smoke/);
+});
+
+test("public firmware workflow publishes pinned self-describing tag assets", async () => {
+  const workflow = await read(
+    "scripts/public-workflows/nexting-devices-firmware.yml",
+  );
+  for (const marker of [
+    "devices-v*",
+    "artifact-manifest.json",
+    "SHA256SUMS",
+    '"zephyr": "4.3.0"',
+    '"zephyrSdk": "0.17.4"',
+    '"west": "1.5.0"',
+    '"flash": "%s"',
+    '"evidence": "Build verified"',
+    '"boardVerified": false',
+    "gh release create",
+  ]) {
+    assert.ok(workflow.includes(marker), `firmware release workflow missing ${marker}`);
+  }
+});
+
+test("Kotlin has a checksum-pinned one-command launcher", async () => {
+  const [launcher, readme, workflow] = await Promise.all([
+    read("sdk/kotlin/gradlew"),
+    read("sdk/kotlin/README.md"),
+    read("scripts/public-workflows/nexting-devices-ci.yml"),
+  ]);
+  for (const marker of [
+    'gradle_version="9.0.0"',
+    "8fad3d78296ca518113f3d29016617c7f9367dc005f932bd9d93bf45ba46072b",
+    "services.gradle.org/distributions",
+    "checksum mismatch",
+  ]) {
+    assert.ok(launcher.includes(marker), `Kotlin launcher missing ${marker}`);
+  }
+  assert.match(readme, /\.\/gradlew test/);
+  assert.match(workflow, /\.\/gradlew test/);
+});

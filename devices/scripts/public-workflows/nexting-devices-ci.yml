@@ -45,7 +45,7 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - run: gradle test
+      - run: ./gradlew test
         working-directory: devices/sdk/kotlin
 
   c99:
