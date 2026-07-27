@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Nexting-ai/devices/schemas/message.schema.json",
+  "title": "Nexting Device Protocol Experimental 0.2 message",
+  "oneOf": [
+    { "$ref": "#/$defs/present" },
+    { "$ref": "#/$defs/answer" },
+    { "$ref": "#/$defs/resolved" },
+    { "$ref": "#/$defs/error" },
+    { "$ref": "#/$defs/status" }
+  ],
+  "$defs": {
+    "deviceInfo": {
+      "type": "object",
+      "required": [
+        "protocol",
+        "spec",
+        "wire",
+        "profiles",
+        "model",
+        "fw",
+        "max_message_bytes",
+        "max_summary_bytes"
+      ],
+      "properties": {
+        "protocol": { "const": "nexting-device" },
+        "spec": { "$ref": "#/$defs/descriptor" },
+        "wire": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "contains": { "const": 1 },
+          "items": { "type": "integer", "minimum": 1, "maximum": 65535 }
+        },
+        "profiles": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "contains": { "const": "approval/1" },
+          "items": { "$ref": "#/$defs/profileName" }
+        },
+        "model": { "$ref": "#/$defs/descriptor" },
+        "fw": { "$ref": "#/$defs/descriptor" },
+        "max_message_bytes": {
+          "type": "integer",
+          "minimum": 512,
+          "maximum": 4294967295
+        },
+        "max_summary_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 240
+        },
+        "statusSlots": { "type": "integer", "minimum": 0, "maximum": 8 },
+        "device_id": {
+          "type": "string",
+          "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[1-5][0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$"
+        },
+        "manufacturer": { "$ref": "#/$defs/descriptor" },
+        "display_name": { "$ref": "#/$defs/descriptor" },
+        "serial_number": { "$ref": "#/$defs/descriptor" },
+        "button_count": { "type": "integer", "minimum": 0, "maximum": 1024 },
+        "approval_button_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1024
+        },
+        "custom_button_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1024
+        },
+        "rotary_count": { "type": "integer", "minimum": 0, "maximum": 64 },
+        "rotary_press_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 64
+        },
+        "battery_service": { "type": "boolean" },
+        "display": {
+          "type": "object",
+          "required": ["type", "width", "height"],
+          "properties": {
+            "type": { "$ref": "#/$defs/profileName" },
+            "width": { "type": "integer", "minimum": 1, "maximum": 4096 },
+            "height": { "type": "integer", "minimum": 1, "maximum": 4096 }
+          }
+        },
+        "haptics": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/profileName" }
+        },
+        "vendor": { "$ref": "#/$defs/vendorInfo" }
+      },
+      "x-maxUtf8Bytes": 4096
+    },
+    "descriptor": {
+      "type": "string",
+      "minLength": 1,
+      "x-maxUtf8Bytes": 64,
+      "$comment": "Printable text with no control characters; the normative limit counts UTF-8 bytes."
+    },
+    "profileName": {
+      "type": "string",
+      "minLength": 1,
+      "x-maxUtf8Bytes": 32
+    },
+    "vendorInfo": {
+      "type": "object",
+      "required": ["namespace", "facts"],
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}\\.)+[a-z0-9][a-z0-9-]{0,62}$",
+          "x-maxUtf8Bytes": 128
+        },
+        "facts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "type": "object",
+            "required": ["key", "label", "value"],
+            "properties": {
+              "key": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+              },
+              "label": { "$ref": "#/$defs/descriptor" },
+              "value": {
+                "oneOf": [
+                  { "type": "string", "minLength": 1, "x-maxUtf8Bytes": 128 },
+                  { "type": "integer" }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "x-maxUtf8Bytes": 1024
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "base": {
+      "type": "object",
+      "required": ["v", "t", "id"],
+      "properties": {
+        "v": { "const": 1 },
+        "t": { "type": "string" },
+        "id": { "$ref": "#/$defs/id" }
+      }
+    },
+    "present": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": ["sum", "opt", "ttl"],
+          "properties": {
+            "t": { "const": "present" },
+            "sum": {
+              "type": "string",
+              "x-maxUtf8Bytes": 240,
+              "$comment": "The normative limit is 240 UTF-8 bytes. Standard JSON Schema maxLength counts characters, so conformance tooling must enforce x-maxUtf8Bytes."
+            },
+            "opt": { "const": ["allow", "deny"] },
+            "ttl": { "type": "integer", "minimum": 1, "maximum": 300000 }
+          }
+        }
+      ]
+    },
+    "answer": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": ["ch"],
+          "properties": {
+            "t": { "const": "answer" },
+            "ch": { "enum": ["allow", "deny"] }
+          }
+        }
+      ]
+    },
+    "resolved": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": ["r"],
+          "properties": {
+            "t": { "const": "resolved" },
+            "r": { "enum": ["answered", "expired", "cancelled", "replaced"] }
+          }
+        }
+      ]
+    },
+    "error": {
+      "type": "object",
+      "required": ["v", "t", "code"],
+      "properties": {
+        "v": { "const": 1 },
+        "t": { "const": "error" },
+        "id": { "$ref": "#/$defs/id" },
+        "code": {
+          "enum": [
+            "bad_message",
+            "message_too_large",
+            "unsupported_version",
+            "unsupported_profile",
+            "unknown_request",
+            "not_authorized",
+            "busy"
+          ]
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "required": ["v", "t", "agents"],
+      "properties": {
+        "v": { "const": 1 },
+        "t": { "const": "status" },
+        "agents": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "required": ["slot", "state"],
+            "properties": {
+              "slot": { "type": "integer", "minimum": 0, "maximum": 7 },
+              "state": {
+                "enum": [
+                  "idle",
+                  "thinking",
+                  "working",
+                  "complete",
+                  "needs_input",
+                  "error"
+                ]
+              },
+              "label": {
+                "type": "string",
+                "x-maxUtf8Bytes": 64,
+                "$comment": "The normative limit is 1-64 UTF-8 bytes with no control characters. Standard JSON Schema cannot count UTF-8 bytes or reject control characters, so conformance tooling must enforce x-maxUtf8Bytes and the control-character rule. Slot uniqueness within one message is also enforced outside the schema."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

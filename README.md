@@ -237,3 +237,20 @@ MIT
   <strong>Tap. Speak. Dispatch.</strong><br>
   <a href="https://nexting.ai/reserve">Get the PIN →</a>
 </p>
+
+<!-- nexting-devices:start -->
+
+## Build hardware for Nexting
+
+The open hardware protocol, C99 device SDK, Swift and Kotlin host SDKs,
+conformance vectors, and reference firmware live in [`devices/`](devices/).
+
+- Start with the [Devices SDK overview](devices/README.md).
+- Read the [wire protocol](devices/SPEC.md).
+- Follow the [0.2 migration guide](devices/docs/migration-0.1-to-0.2.md).
+
+Experimental 0.2 supports extensible device identity, buttons, rotary controls,
+displays, haptics, battery reporting, and vendor-defined facts while keeping
+approval decisions bounded by the trusted Nexting host.
+
+<!-- nexting-devices:end -->
