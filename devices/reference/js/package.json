@@ -1,0 +1,20 @@
+{
+  "name": "@nexting-ai/device-reference",
+  "version": "0.2.0-experimental.0",
+  "private": true,
+  "description": "Executable JavaScript reference for the Nexting Device Protocol.",
+  "type": "module",
+  "exports": {
+    "./protocol": "./src/protocol.mjs",
+    "./device-info": "./src/device-info.mjs",
+    "./framing": "./src/framing.mjs",
+    "./relay": "./src/relay.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "Apache-2.0"
+}

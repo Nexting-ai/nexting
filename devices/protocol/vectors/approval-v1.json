@@ -1,0 +1,165 @@
+{
+  "spec": "0.1.0-experimental",
+  "wire": 1,
+  "profile": "approval/1",
+  "valid": [
+    {
+      "wire": "{\"v\":1,\"t\":\"present\",\"id\":\"r1\",\"sum\":\"Allow git push?\",\"opt\":[\"allow\",\"deny\"],\"ttl\":30000}\n",
+      "decoded": {
+        "type": "present",
+        "requestId": "r1",
+        "summary": "Allow git push?",
+        "options": ["allow", "deny"],
+        "ttlMs": 30000
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"allow\"}\n",
+      "decoded": {
+        "type": "answer",
+        "requestId": "r1",
+        "choice": "allow"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"resolved\",\"id\":\"r1\",\"r\":\"replaced\"}\n",
+      "decoded": {
+        "type": "resolved",
+        "requestId": "r1",
+        "reason": "replaced"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"error\",\"id\":\"r1\",\"code\":\"unknown_request\"}\n",
+      "decoded": {
+        "type": "error",
+        "requestId": "r1",
+        "code": "unknown_request"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"present\",\"id\":\"boundary-240\",\"sum\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"opt\":[\"allow\",\"deny\"],\"ttl\":30000}\n",
+      "decoded": {
+        "type": "present",
+        "requestId": "boundary-240",
+        "summary": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "options": [
+          "allow",
+          "deny"
+        ],
+        "ttlMs": 30000
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"answer\",\"id\":\"r-deny\",\"ch\":\"deny\"}\n",
+      "decoded": {
+        "type": "answer",
+        "requestId": "r-deny",
+        "choice": "deny"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"resolved\",\"id\":\"r-resolve-1\",\"r\":\"answered\"}\n",
+      "decoded": {
+        "type": "resolved",
+        "requestId": "r-resolve-1",
+        "reason": "answered"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"resolved\",\"id\":\"r-resolve-2\",\"r\":\"expired\"}\n",
+      "decoded": {
+        "type": "resolved",
+        "requestId": "r-resolve-2",
+        "reason": "expired"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"resolved\",\"id\":\"r-resolve-3\",\"r\":\"cancelled\"}\n",
+      "decoded": {
+        "type": "resolved",
+        "requestId": "r-resolve-3",
+        "reason": "cancelled"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"error\",\"code\":\"bad_message\"}\n",
+      "decoded": {
+        "type": "error",
+        "requestId": null,
+        "code": "bad_message"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"error\",\"id\":\"r-error-1\",\"code\":\"message_too_large\"}\n",
+      "decoded": {
+        "type": "error",
+        "requestId": "r-error-1",
+        "code": "message_too_large"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"error\",\"id\":\"r-error-2\",\"code\":\"unsupported_version\"}\n",
+      "decoded": {
+        "type": "error",
+        "requestId": "r-error-2",
+        "code": "unsupported_version"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"error\",\"id\":\"r-error-3\",\"code\":\"unsupported_profile\"}\n",
+      "decoded": {
+        "type": "error",
+        "requestId": "r-error-3",
+        "code": "unsupported_profile"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"error\",\"id\":\"r-error-4\",\"code\":\"not_authorized\"}\n",
+      "decoded": {
+        "type": "error",
+        "requestId": "r-error-4",
+        "code": "not_authorized"
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"error\",\"id\":\"r-error-5\",\"code\":\"busy\"}\n",
+      "decoded": {
+        "type": "error",
+        "requestId": "r-error-5",
+        "code": "busy"
+      }
+    }
+  ],
+  "invalid": [
+    "{\"v\":1,\"t\":\"present\",\"id\":\"boundary-241\",\"sum\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"opt\":[\"allow\",\"deny\"],\"ttl\":30000}\n",
+    "{\"v\":1,\"t\":\"answer\",\"id\":\"oversize\",\"ch\":\"allow\",\"future\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}\n",
+    "not json\n",
+    "{\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"allow\"}\n",
+    "{\"v\":2,\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"allow\"}\n",
+    "{\"v\":1,\"t\":\"answer\",\"id\":\"\",\"ch\":\"allow\"}\n",
+    "{\"v\":1,\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"maybe\"}\n",
+    "{\"v\":1,\"t\":\"present\",\"id\":\"r1\",\"sum\":\"x\",\"opt\":[\"allow\",\"deny\"],\"ttl\":0}\n",
+    "{\"v\":1,\"t\":\"resolved\",\"id\":\"r1\",\"r\":\"unknown\"}\n",
+    "{\"v\":1,\"t\":\"error\",\"id\":\"r1\",\"code\":\"unknown\"}\n",
+    "{\"v\":1,\"v\":1,\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"allow\"}\n",
+    "{\"v\":1,\"t\":\"answer\",\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"allow\"}\n",
+    "{\"v\":1,\"t\":\"answer\",\"id\":\"r1\",\"id\":\"r2\",\"ch\":\"allow\"}\n",
+    "{\"v\":1,\"t\":\"present\",\"id\":\"r1\",\"sum\":\"first\",\"sum\":\"second\",\"opt\":[\"allow\",\"deny\"],\"ttl\":30000}\n",
+    "{\"v\":1,\"t\":\"present\",\"id\":\"r1\",\"sum\":\"approve\",\"opt\":[\"allow\",\"deny\"],\"opt\":[\"allow\",\"deny\"],\"ttl\":30000}\n",
+    "{\"v\":1,\"t\":\"present\",\"id\":\"r1\",\"sum\":\"approve\",\"opt\":[\"allow\",\"deny\"],\"ttl\":30000,\"ttl\":30000}\n",
+    "{\"v\":1,\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"allow\",\"ch\":\"deny\"}\n",
+    "{\"v\":1,\"t\":\"resolved\",\"id\":\"r1\",\"r\":\"answered\",\"r\":\"expired\"}\n",
+    "{\"v\":1,\"t\":\"error\",\"id\":\"r1\",\"code\":\"busy\",\"code\":\"bad_message\"}\n",
+    "{\"v\":1,\"\\u0076\":1,\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"allow\"}\n",
+    "{\"v\":1,\"t\":\"present\",\"id\":\"r1\",\"sum\":\"approve\\u0000deny\",\"opt\":[\"allow\",\"deny\"],\"ttl\":30000}\n",
+    "{\"v\":1,\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"allow\",\"future\":\"unsafe\\u0000value\"}\n",
+    "{\"v\":1.0,\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"allow\"}\n",
+    "{\"v\":1,\"t\":\"present\",\"id\":\"r1\",\"sum\":\"approve\",\"opt\":[\"allow\",\"deny\"],\"ttl\":3e4}\n",
+    "{\"v\":1,\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"allow\",\"future\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":true}}}}}}}}}}\n",
+    "{\"v\":1,\"t\":\"answer\",\"id\":\"r1\",\"ch\":\"allow\",\"future\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{}}}}}}}}}}\n",
+    "{\"v\":1,\"t\":\"present\",\"id\":\"r1\",\"sum\":\"\\ud800\",\"opt\":[\"allow\",\"deny\"],\"ttl\":30000}\n",
+    "{\"v\":1,\"t\":\"present\",\"id\":\"r1\",\"sum\":\"\\udc00\",\"opt\":[\"allow\",\"deny\"],\"ttl\":30000}\n",
+    "{\"v\":1,\"t\":\"present\",\"id\":\"r1\",\"sum\":\"批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批批\",\"opt\":[\"allow\",\"deny\"],\"ttl\":30000}\n"
+  ]
+}

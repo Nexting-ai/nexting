@@ -1,0 +1,98 @@
+{
+  "spec": "0.1.0-experimental",
+  "wire": 1,
+  "profile": "status/1",
+  "valid": [
+    {
+      "wire": "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"thinking\",\"label\":\"fix login bug\"}]}\n",
+      "decoded": {
+        "type": "status",
+        "agents": [{ "slot": 0, "state": "thinking", "label": "fix login bug" }]
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"status\",\"agents\":[]}\n",
+      "decoded": {
+        "type": "status",
+        "agents": []
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"idle\"},{\"slot\":1,\"state\":\"working\"},{\"slot\":2,\"state\":\"complete\"},{\"slot\":3,\"state\":\"needs_input\"},{\"slot\":4,\"state\":\"error\"},{\"slot\":5,\"state\":\"thinking\"}]}\n",
+      "decoded": {
+        "type": "status",
+        "agents": [
+          { "slot": 0, "state": "idle" },
+          { "slot": 1, "state": "working" },
+          { "slot": 2, "state": "complete" },
+          { "slot": 3, "state": "needs_input" },
+          { "slot": 4, "state": "error" },
+          { "slot": 5, "state": "thinking" }
+        ]
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"idle\"},{\"slot\":1,\"state\":\"idle\"},{\"slot\":2,\"state\":\"idle\"},{\"slot\":3,\"state\":\"idle\"},{\"slot\":4,\"state\":\"idle\"},{\"slot\":5,\"state\":\"idle\"},{\"slot\":6,\"state\":\"idle\"},{\"slot\":7,\"state\":\"idle\"}]}\n",
+      "decoded": {
+        "type": "status",
+        "agents": [
+          { "slot": 0, "state": "idle" },
+          { "slot": 1, "state": "idle" },
+          { "slot": 2, "state": "idle" },
+          { "slot": 3, "state": "idle" },
+          { "slot": 4, "state": "idle" },
+          { "slot": 5, "state": "idle" },
+          { "slot": 6, "state": "idle" },
+          { "slot": 7, "state": "idle" }
+        ]
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"complete\",\"label\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}]}\n",
+      "decoded": {
+        "type": "status",
+        "agents": [
+          {
+            "slot": 0,
+            "state": "complete",
+            "label": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          }
+        ]
+      }
+    },
+    {
+      "wire": "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":1,\"state\":\"working\",\"label\":\"éééééééééééééééééééééééééééééééé\"}]}\n",
+      "decoded": {
+        "type": "status",
+        "agents": [
+          {
+            "slot": 1,
+            "state": "working",
+            "label": "éééééééééééééééééééééééééééééééé"
+          }
+        ]
+      }
+    }
+  ],
+  "invalid": [
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"paused\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"Thinking\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"idle\"},{\"slot\":0,\"state\":\"working\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":8,\"state\":\"idle\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":-1,\"state\":\"idle\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":1.5,\"state\":\"idle\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"idle\"},{\"slot\":1,\"state\":\"idle\"},{\"slot\":2,\"state\":\"idle\"},{\"slot\":3,\"state\":\"idle\"},{\"slot\":4,\"state\":\"idle\"},{\"slot\":5,\"state\":\"idle\"},{\"slot\":6,\"state\":\"idle\"},{\"slot\":7,\"state\":\"idle\"},{\"slot\":0,\"state\":\"error\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"complete\",\"label\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"complete\",\"label\":\"ééééééééééééééééééééééééééééééééé\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"idle\",\"label\":\"bad\\u0007bell\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"idle\",\"label\":\"bad\\u007fdelete\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"idle\",\"label\":\"\"}]}\n",
+    "{\"v\":1,\"t\":\"status\"}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":{}}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"state\":\"idle\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[] ,\"agents\":[{\"slot\":0,\"state\":\"idle\"}]}\n",
+    "{\"v\":1,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"idle\",\"label\":\"has\\u0000nul\"}]}\n",
+    "{\"v\":2,\"t\":\"status\",\"agents\":[{\"slot\":0,\"state\":\"idle\"}]}\n"
+  ]
+}

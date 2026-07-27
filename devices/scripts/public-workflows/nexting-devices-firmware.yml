@@ -1,0 +1,87 @@
+name: Nexting Devices Firmware
+
+on:
+  pull_request:
+    paths:
+      - "devices/firmware/**"
+      - "devices/sdk/c/**"
+      - "devices/west.yml"
+      - ".github/workflows/nexting-devices-firmware.yml"
+  push:
+    paths:
+      - "devices/firmware/**"
+      - "devices/sdk/c/**"
+      - "devices/west.yml"
+      - ".github/workflows/nexting-devices-firmware.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  nordic:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - board: nrf52840dk/nrf52840
+            artifact: nrf52840dk
+          - board: xiao_ble/nrf52840/sense
+            artifact: xiao-nrf52840-sense
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: devices
+          toolchains: arm-zephyr-eabi
+          sdk-version: 0.17.4
+          west-version: 1.5.0
+      - run: west build -p always -b ${{ matrix.board }} devices/firmware/zephyr
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nexting-device-${{ matrix.artifact }}-${{ github.sha }}
+          path: |
+            build/zephyr/zephyr.elf
+            build/zephyr/zephyr.bin
+            build/zephyr/zephyr.hex
+            build/zephyr/zephyr.uf2
+          if-no-files-found: error
+
+  espressif:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - board: xiao_esp32c3/esp32c3
+            artifact: xiao-esp32c3
+          - board: xiao_esp32s3/esp32s3/procpu
+            artifact: xiao-esp32s3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: devices
+          toolchains: riscv64-zephyr-elf:xtensa-espressif_esp32s3_zephyr-elf
+          sdk-version: 0.17.4
+          west-version: 1.5.0
+      - run: west blobs fetch hal_espressif
+      - run: west build -p always -b ${{ matrix.board }} devices/firmware/zephyr
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nexting-device-${{ matrix.artifact }}-${{ github.sha }}
+          path: |
+            build/zephyr/zephyr.elf
+            build/zephyr/zephyr.bin
+            build/zephyr/zephyr.hex
+          if-no-files-found: error

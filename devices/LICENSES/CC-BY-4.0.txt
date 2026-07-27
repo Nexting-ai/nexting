@@ -1,0 +1,10 @@
+Nexting Devices specifications and documentation are licensed under the
+Creative Commons Attribution 4.0 International license (CC BY 4.0).
+
+SPDX-License-Identifier: CC-BY-4.0
+Canonical legal code: https://creativecommons.org/licenses/by/4.0/legalcode
+
+You are free to share and adapt the material for any purpose, including
+commercially, provided you give appropriate credit, link to the license, and
+indicate whether changes were made. This notice is a summary; the canonical
+legal code at the URL above controls.

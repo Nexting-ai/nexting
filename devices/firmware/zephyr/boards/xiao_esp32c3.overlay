@@ -1,0 +1,29 @@
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+	aliases {
+		nexting-allow = &nexting_allow;
+		nexting-deny = &nexting_deny;
+		nexting-led = &nexting_led;
+	};
+
+	nexting_buttons {
+		compatible = "gpio-keys";
+		nexting_allow: allow_button {
+			gpios = <&xiao_d 0 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			label = "Nexting Allow (D0)";
+		};
+		nexting_deny: deny_button {
+			gpios = <&xiao_d 1 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			label = "Nexting Deny (D1)";
+		};
+	};
+
+	nexting_leds {
+		compatible = "gpio-leds";
+		nexting_led: pending_led {
+			gpios = <&xiao_d 2 GPIO_ACTIVE_HIGH>;
+			label = "Nexting Pending (D2)";
+		};
+	};
+};
