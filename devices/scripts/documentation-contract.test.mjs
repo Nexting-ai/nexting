@@ -254,6 +254,29 @@ test("public firmware workflow publishes pinned self-describing tag assets", asy
   }
 });
 
+test("public workflows use current Node 24 action majors", async () => {
+  const [ci, firmware] = await Promise.all([
+    read("scripts/public-workflows/nexting-devices-ci.yml"),
+    read("scripts/public-workflows/nexting-devices-firmware.yml"),
+  ]);
+  const workflows = `${ci}\n${firmware}`;
+  for (const marker of [
+    "actions/checkout@v7",
+    "actions/setup-node@v7",
+    "actions/setup-python@v7",
+    "actions/setup-java@v5",
+    "gradle/actions/setup-gradle@v6",
+    "actions/upload-artifact@v7",
+    "actions/download-artifact@v8",
+  ]) {
+    assert.ok(workflows.includes(marker), `public workflows missing ${marker}`);
+  }
+  assert.doesNotMatch(
+    workflows,
+    /actions\/(?:checkout|setup-node|setup-python|setup-java)@v4/,
+  );
+});
+
 test("Kotlin has a checksum-pinned one-command launcher", async () => {
   const [launcher, readme, workflow] = await Promise.all([
     read("sdk/kotlin/gradlew"),
