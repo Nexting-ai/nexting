@@ -11,6 +11,7 @@ import {
   stat,
   writeFile,
 } from "node:fs/promises";
+import { realpathSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
@@ -303,7 +304,10 @@ export async function exportNextingDevices(options) {
   }
 }
 
-if (resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
+if (
+  process.argv[1]
+  && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))
+) {
   try {
     await exportNextingDevices(parseArguments(process.argv.slice(2)));
     console.log("Nexting Devices public export passed");

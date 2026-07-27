@@ -2,6 +2,31 @@
 
 This file records changes to public protocol behavior, shared vectors, SDK surfaces, developer-reference firmware, and board evidence. It does not record private Nexting App, Agent adapter, cloud, or production-firmware work.
 
+## 0.2.0-experimental.1 — 2026-07-28
+
+This developer-experience release keeps wire major 1 and the `approval/1` and
+`status/1` profiles unchanged.
+
+### Added
+
+- A public XIAO nRF52840 Quickstart with exact wiring, flashing, expected
+  output, and an explicit public-App availability gate.
+- A rerunnable Zephyr 4.3.0 / west 1.5.0 / SDK 0.17.4 bootstrap with board
+  aliases, dry-run output, isolated Python dependencies, and actionable errors.
+- A macOS `nexting-device-host-smoke` executable that validates Device Info,
+  uses encrypted BLE, presents one synthetic approval, and emits a
+  machine-readable real-button `PASS`.
+- Setup, toolchain, flashing, Bluetooth, Device Info, and public-App
+  troubleshooting.
+
+### Changed
+
+- Public docs no longer require unpublished product software.
+- Claude Code and Codex docs separate published protocol surfaces from roadmap
+  profiles and from public App availability.
+- Website SDK pages have stable shareable routes and include Kotlin/Android as
+  a first-class Host reference.
+
 ## 0.2.0-experimental.0 — 2026-07-27
 
 Experimental 0.2 prepares the SDK for publication in the existing

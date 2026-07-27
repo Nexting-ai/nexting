@@ -33,7 +33,7 @@ Approval traffic requires an encrypted, bonded BLE link. Device Info may be read
 The Device Info value is one compact UTF-8 JSON object:
 
 ```json
-{"protocol":"nexting-device","spec":"0.2.0-experimental.0","wire":[1],"profiles":["approval/1","status/1"],"model":"multi-pad","fw":"0.2.0","max_message_bytes":4096,"max_summary_bytes":240,"statusSlots":3,"device_id":"5cc0a66e-a204-4c33-a3ef-b2b352a35489","manufacturer":"ILX","display_name":"Desk Controller","serial_number":"MP-0007","button_count":12,"approval_button_count":2,"custom_button_count":10,"rotary_count":2,"rotary_press_count":2,"battery_service":true}
+{"protocol":"nexting-device","spec":"0.2.0-experimental.1","wire":[1],"profiles":["approval/1","status/1"],"model":"multi-pad","fw":"0.2.0","max_message_bytes":4096,"max_summary_bytes":240,"statusSlots":3,"device_id":"5cc0a66e-a204-4c33-a3ef-b2b352a35489","manufacturer":"ILX","display_name":"Desk Controller","serial_number":"MP-0007","button_count":12,"approval_button_count":2,"custom_button_count":10,"rotary_count":2,"rotary_press_count":2,"battery_service":true}
 ```
 
 The required fields remain `protocol`, `spec`, `wire`, `profiles`, `model`,

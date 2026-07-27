@@ -1,5 +1,21 @@
 # NextingDeviceKit
 
+## Real-hardware smoke test
+
+On macOS, prove discovery, Device Info, encrypted BLE, framing, and one physical
+Allow/Deny answer without Agent credentials:
+
+```sh
+swift run --package-path sdk/swift nexting-device-host-smoke \
+  --summary "Allow the Nexting hardware smoke test?"
+```
+
+The tool temporarily authorizes only the first matching device for this
+process, prints the complete negotiated identity/capability summary, sends one
+synthetic request, and exits with `PASS answer=allow` or `PASS answer=deny`.
+It persists no peripheral authorization. See the root `QUICKSTART.md` before
+running it.
+
 `NextingDeviceKit` is the Apple host SDK for Nexting Device Protocol Experimental 0.2. It provides strict message encoding and decoding, newline framing, extensible Device Info negotiation, standard Battery Service helpers, explicit peripheral authorization, approval coordination, and a CoreBluetooth central.
 
 The package does not contain the Nexting App, Agent adapters, cloud APIs, UI, accounts, or production device identity. A host application supplies its own prompt context, enrollment UI, risk policy, and final Agent answer path.
