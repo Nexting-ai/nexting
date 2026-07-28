@@ -13,6 +13,12 @@ Nexting Devices Experimental 0.2 exposes one small control surface between a tru
 
 Experimental 0.2 does not expose a Nexting cloud API. There is no public TCP, UDP, HTTP, MQTT, or WebSocket endpoint, no device-to-Agent credential, and no account or session API in this repository. A device communicates with a user's authorized Host/App over BLE — and because the Host may reach the agent anywhere, every compatible device is remote-capable through its Host.
 
+Agent adapters remain outside this public package. A Host developer who uses
+the official Codex rich-client surface can follow the
+[Codex App Server mapping guide](codex-app-server.md) to project only an exact,
+one-time approval into `approval/1`; the App Server connection and request
+identity stay inside that Host.
+
 ## BLE transport
 
 The device is the BLE peripheral/GATT server. The Host/App is the central/GATT client.

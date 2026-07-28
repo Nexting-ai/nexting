@@ -2,6 +2,14 @@
 
 This file records changes to public protocol behavior, shared vectors, SDK surfaces, developer-reference firmware, and board evidence. It does not record private Nexting App, Agent adapter, cloud, or production-firmware work.
 
+## Unreleased
+
+### Changed
+
+- The Codex Host guide now distinguishes the official high-level SDK from App
+  Server and freezes the fail-closed one-time approval projection into
+  `approval/1`.
+
 ## 0.2.0-experimental.1 — 2026-07-28
 
 This developer-experience release keeps wire major 1 and the `approval/1` and

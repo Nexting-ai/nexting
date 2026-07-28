@@ -13,6 +13,7 @@ board from wiring to a public Host `PASS` result. If a checkpoint fails, use
 - [Use cases](use-cases.md): what makers build today and on the roadmap, mapped to real profiles and limits.
 - [Foundation development blueprint](foundation-development.md): lifecycle, modules, dependency direction, exact files, change map, and the capability roadmap.
 - [Public interface catalog](interfaces.md): BLE, wire messages, Swift Host API, and portable C API.
+- [Codex App Server Host guide](codex-app-server.md): choose the official rich-client surface and project only one-time approvals into `approval/1`.
 - [Protocol specification](../SPEC.md): normative wire, BLE, state, limits, and versioning.
 - [Security model](../SECURITY.md): trust boundary, minimum controls, threats, and non-claims.
 
@@ -26,6 +27,7 @@ board from wiring to a public Host `PASS` result. If a checkpoint fails, use
 ## Implement or extend
 
 - [Implementation tracks](implementation-tracks.md): reference board, Host/App, MCU/RTOS, and new-language routes.
+- [Codex App Server Host guide](codex-app-server.md): exact request mapping, fail-closed policy, and authoritative settlement.
 - [Local development workflow](development.md): prerequisites, commands, TDD order, and CI.
 - [Swift Host SDK](../sdk/swift/README.md): codec, authorization, relay, coordinator, and CoreBluetooth central.
 - [Kotlin Host SDK](../sdk/kotlin/README.md): bounded Device Info and protocol APIs for Android hosts.
