@@ -28,6 +28,7 @@ The device does not run the Agent session and does not receive Agent credentials
 | Get ideas for what to build | [Browse the use cases](docs/use-cases.md) |
 | Build and flash a supported board | [Run the first approval](docs/first-approval.md), then use the [reference-board track](docs/implementation-tracks.md#track-1-run-a-reference-board) |
 | Add a physical control surface to a Host/App | [Browse every public interface](docs/interfaces.md), then use the [Host integration track](docs/implementation-tracks.md#track-2-integrate-a-host-or-app) |
+| Connect your own Host to Codex approvals | [Map the official Codex App Server safely](docs/codex-app-server.md) |
 | Port a new MCU, RTOS, or chip family | [Build the public foundation](docs/foundation-development.md), then use the [MCU port track](docs/implementation-tracks.md#track-3-port-a-new-mcu-or-rtos) |
 | Implement another language SDK | Use the [language SDK track](docs/implementation-tracks.md#track-4-maintain-a-new-language-sdk) |
 | Make a compatibility claim | [Understand compatibility evidence](docs/conformance.md) |
@@ -87,6 +88,7 @@ All four share one Zephyr application and the portable C99 core. All four are Bu
 - [Browse the use cases](docs/use-cases.md)
 - [Build the public foundation](docs/foundation-development.md)
 - [Browse every public interface](docs/interfaces.md)
+- [Map an official Codex App Server approval into a Host](docs/codex-app-server.md)
 - [Choose an implementation track](docs/implementation-tracks.md)
 - [Understand compatibility evidence](docs/conformance.md)
 - [Read the normative protocol](SPEC.md)

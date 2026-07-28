@@ -64,6 +64,43 @@ test("interface catalog exposes only the supported public surfaces", async () =>
   assert.match(interfaces, /no public TCP, UDP, HTTP, MQTT, or WebSocket endpoint/);
 });
 
+test("Codex Host guide maps the official App Server subset without publishing private adapters", async () => {
+  const [guide, overview, index, interfaces, manifest] = await Promise.all([
+    read("docs/codex-app-server.md"),
+    read("README.md"),
+    read("docs/README.md"),
+    read("docs/interfaces.md"),
+    read("scripts/export-manifest.json"),
+  ]);
+
+  for (const marker of [
+    "https://learn.chatgpt.com/docs/codex-sdk",
+    "https://learn.chatgpt.com/docs/app-server",
+    "item/commandExecution/requestApproval",
+    "item/fileChange/requestApproval",
+    "serverRequest/resolved",
+    '"decision": "accept"',
+    '"decision": "decline"',
+    "networkApprovalContext",
+    "additionalPermissions",
+    "proposedExecpolicyAmendment",
+    "grantRoot",
+    "NextingDeviceRelayCoordinator",
+    "localhost",
+  ]) {
+    assert.ok(guide.includes(marker), `Codex Host guide missing ${marker}`);
+  }
+  assert.match(guide, /Codex SDK.*App Server/s);
+  assert.match(guide, /private.*Bridge|Bridge.*private/i);
+  assert.match(guide, /does not.*publish.*Agent adapter/i);
+  assert.doesNotMatch(guide, /api\.nexting\.ai|NEXTING_.*TOKEN|Bearer /);
+
+  for (const source of [overview, index, interfaces]) {
+    assert.match(source, /codex-app-server\.md/);
+  }
+  assert.match(manifest, /docs\/codex-app-server\.md/);
+});
+
 test("implementation tracks cover every supported developer route", async () => {
   const tracks = await read("docs/implementation-tracks.md");
 
@@ -116,6 +153,7 @@ test("reader entry points link the public documentation system", async () => {
   for (const link of [
     "docs/foundation-development.md",
     "docs/interfaces.md",
+    "docs/codex-app-server.md",
     "docs/implementation-tracks.md",
     "docs/conformance.md",
     "docs/use-cases.md",
@@ -126,6 +164,7 @@ test("reader entry points link the public documentation system", async () => {
   for (const link of [
     "foundation-development.md",
     "interfaces.md",
+    "codex-app-server.md",
     "implementation-tracks.md",
     "conformance.md",
     "use-cases.md",
