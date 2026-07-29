@@ -2,7 +2,9 @@
 
 Open interfaces for building physical control surfaces for AI agents.
 
-Nexting Devices lets a button, wearable, desk panel, macropad, or custom product show one pending AI approval and return a real user's Allow or Deny choice through a trusted Host/App.
+Nexting Devices lets a button, wearable, desk panel, macropad, or custom
+product control and display bounded AI Agent interactions through a trusted
+Host/App.
 
 **New here?** [Build, flash, and prove a two-button XIAO nRF52840 device](QUICKSTART.md).
 The guide owns the exact release, wiring, bootstrap command, expected output,
@@ -34,12 +36,22 @@ The device does not run the Agent session and does not receive Agent credentials
 | Make a compatibility claim | [Understand compatibility evidence](docs/conformance.md) |
 | Upgrade an Experimental 0.1 integration | [Read the 0.2 migration guide](docs/migration-0.1-to-0.2.md) |
 
-## Experimental 0.2
+## Experimental 0.2.0-experimental.2
 
-The first two profiles remain deliberately small: one active `approval/1`
-request with Allow and Deny, plus bounded `status/1` Agent indicators over
-Bluetooth LE. Version 0.2 adds extensible Device Info and Android SDK parity
-without changing wire major 1.
+The release keeps wire major 1 and publishes nine independently negotiated
+profiles. A device declares only the profiles and hardware it implements:
+
+| Profile | What it carries |
+| --- | --- |
+| `approval/1` | One active Allow/Deny request with TTL |
+| `status/1` | Volatile Agent state for up to eight slots |
+| `navigation/1` | Bounded options, cursor movement, and selection |
+| `keys/1` | Host-defined key labels/light state and generic key events |
+| `rotary/1` | Host-defined dial labels plus relative turn/press events |
+| `voice/1` | Push-to-talk start/stop/cancel control; no audio |
+| `text/1` | Bounded plain text for a device display |
+| `usage/1` | Model label and bounded usage counters |
+| `config/1` | Versioned atomic configuration and result |
 
 Public:
 
@@ -60,14 +72,18 @@ Not public:
 
 The wire format may change before 1.0. Developer Reference devices are not production security certifications.
 
-## The capability direction
+## Extensible physical controls
 
-Experimental 0.2 is the first tile, not the ceiling. Device Info can already
-describe identity, buttons, rotary controls, display, haptics, standard battery
-support, and inert vendor facts so iOS and Android can render one extensible
-information table. Interactive command keys, navigation, rotary events, text,
-voice, and configuration remain separate future profiles. See [the capability
-roadmap](docs/foundation-development.md#beyond-experimental-02-the-capability-roadmap).
+Device Info describes identity, buttons, rotary controls, display, haptics,
+standard battery support, inert vendor facts, and the exact versioned profiles
+the device supports. The Host rejects traffic for undeclared profiles.
+
+The profiles carry generic physical intent, not private Agent commands. The
+trusted Host's Agent adapter decides whether key 3 means `fork`, whether a dial
+switches a session or model, and which bounded text is safe to display.
+`voice/1` carries only push-to-talk control: capture, permission, audio, and
+transcription stay on the Host microphone. This lets DIY hardware remain useful
+without receiving Agent credentials, internal session IDs, or account data.
 
 Two identity tiers share the contract: Nexting first-party products (PIN, Ring) carry production identity and the full capability set; third-party and DIY devices use the same protocol under explicit, revocable user authorization in the Host App.
 

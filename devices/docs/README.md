@@ -10,8 +10,8 @@ board from wiring to a public Host `PASS` result. If a checkpoint fails, use
 
 - [Project overview](../README.md): product promise, public/private boundary, reference boards, and repository status.
 - [Migrate from Experimental 0.1 to 0.2](migration-0.1-to-0.2.md): compatibility, metadata, and Host integration changes.
-- [Use cases](use-cases.md): what makers build today and on the roadmap, mapped to real profiles and limits.
-- [Foundation development blueprint](foundation-development.md): lifecycle, modules, dependency direction, exact files, change map, and the capability roadmap.
+- [Use cases](use-cases.md): what makers can build with the nine current profiles and their limits.
+- [Foundation development blueprint](foundation-development.md): lifecycle, modules, dependency direction, exact files, change map, and the current capability set.
 - [Public interface catalog](interfaces.md): BLE, wire messages, Swift Host API, and portable C API.
 - [Codex App Server Host guide](codex-app-server.md): choose the official rich-client surface and project only one-time approvals into `approval/1`.
 - [Protocol specification](../SPEC.md): normative wire, BLE, state, limits, and versioning.

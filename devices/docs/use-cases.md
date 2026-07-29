@@ -4,7 +4,7 @@ What people build on Nexting Devices, and which profiles each product consumes. 
 
 Each scenario lists the profiles it uses today and the evidence level it can realistically claim. Claim wording is governed by [the conformance guide](conformance.md); build routes are in [the implementation tracks](implementation-tracks.md).
 
-## Today: profiles `approval/1` and `status/1`
+## Available profiles
 
 ### 1. Two-button approval pad
 
@@ -37,22 +37,26 @@ A clip-on badge: one RGB LED for the current slot-0 agent state, one button that
 - Profiles: `approval/1` + `status/1` with `statusSlots: 1`.
 - Hardware: smallest XIAO-class board, one LED, one button; battery-friendly because both profiles are idle-quiet — traffic only flows on state changes.
 
-## Roadmap scenarios
+## Full control-surface scenarios
 
-These need profiles that are specified but not yet shipped. They are listed so makers can plan hardware; do not claim them until each profile lands with its own vectors and evidence. See [the capability roadmap](foundation-development.md#beyond-experimental-02-the-capability-roadmap).
+These profiles ship in `0.2.0-experimental.2` with normative SPEC sections,
+shared vectors, and C99, Swift, Kotlin, and JavaScript codecs. Product actions
+still require a trusted Host adapter; a generic key event does not itself
+authorize or invoke an Agent command.
 
 | Scenario | Needs | Product shape |
 | --- | --- | --- |
-| Full command macropad | Command keys profile | 8–13 keys mapped to agent commands (approve, decline, fork, send, fast) with status backlighting |
-| Menu navigator | Navigation input profile | Stick or wheel for radial menus and workflow selection |
-| Rotary controller | Rotary profile | Dial scrubbing through option levels, with the current level pushed down to the device |
-| Reader device | Text content profile | Larger conversation content for screened devices |
-| Talk-to-agent remote | Voice profile | Push-to-talk key with device-microphone audio or Host-side capture |
-| Reconfigurable pad | Configuration profile | Key maps and lighting downloaded from the Host, no reflash |
+| Full command macropad | `keys/1` + `status/1` | 8–13 generic keys mapped by the Host to approve, decline, fork, send, or fast, with status backlighting |
+| Menu navigator | `navigation/1` | Stick or wheel for bounded options; Host validates the selected request |
+| Rotary controller | `rotary/1` | Relative dial events for a Host-owned session or model list, without exposing internal IDs |
+| Reader device | `text/1` | Bounded plain text for a declared screen; no markup, file content, or secrets |
+| Talk-to-agent remote | `voice/1` | Push-to-talk control while the Host microphone performs capture and transcription; no BLE audio |
+| Usage display | `usage/1` | Model label and bounded counters that are informational rather than billing authority |
+| Reconfigurable pad | `config/1` + `keys/1` | Atomic key, lighting, and display preferences downloaded from the Host without reflashing |
 
 ## Rules every scenario inherits
 
 - Deny by default: a device does nothing until the user explicitly authorizes it in the Host App; revocation stops all traffic.
 - Fail closed: malformed, stale, oversized, or unauthorized input never approves anything and never corrupts the display.
 - Volatile state: approvals and status live in RAM and clear on disconnect, reboot, or a new bond.
-- Honest capabilities: declare only what the hardware renders. A device with one LED declares `statusSlots: 1`, not 8; a device with no indicator omits the field and receives no status traffic.
+- Honest capabilities: declare only what the hardware implements. A device with one LED declares `statusSlots: 1`, not 8; a device without a dial omits `rotary/1` and receives no rotary map.

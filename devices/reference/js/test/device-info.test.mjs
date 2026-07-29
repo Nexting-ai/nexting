@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   MAX_DEVICE_INFO_BYTES,
   decodeDeviceInfo,
+  supportsProfile,
 } from "../src/protocol.mjs";
 
 const vectorFile = JSON.parse(
@@ -94,4 +95,25 @@ test("vendor facts remain bounded, inert, and cannot override system fields", ()
     { key: "battery", label: "Battery", value: "100%" },
   ]);
   assert.equal(override.capabilities.batteryService, false);
+});
+
+test("Device Info negotiates interaction profiles explicitly", () => {
+  const info = decodeDeviceInfo(
+    JSON.stringify({
+      ...JSON.parse(vectorFile.valid[0].wire),
+      profiles: [
+        "approval/1",
+        "navigation/1",
+        "keys/1",
+        "rotary/1",
+        "voice/1",
+        "text/1",
+        "usage/1",
+      ],
+    }),
+  );
+  assert.ok(info);
+  assert.equal(supportsProfile(info, "navigation/1"), true);
+  assert.equal(supportsProfile(info, "keys/1"), true);
+  assert.equal(supportsProfile(info, "config/1"), false);
 });

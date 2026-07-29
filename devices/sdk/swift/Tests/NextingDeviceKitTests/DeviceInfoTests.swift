@@ -92,7 +92,7 @@ private func loadDeviceInfoVectors() throws -> DeviceInfoVectors {
 @Test("Device Info 0.2 shared vectors normalize identically")
 func deviceInfoSharedVectors() throws {
     let vectors = try loadDeviceInfoVectors()
-    #expect(vectors.spec == "0.2.0-experimental.1")
+    #expect(vectors.spec == "0.2.0-experimental.2")
     #expect(vectors.wire == 1)
 
     for item in vectors.valid {

@@ -110,29 +110,33 @@ Build success proves compilation only. It does not prove Bluetooth delivery, bon
 | New chip or RTOS | new platform adapter | hardware support and implementation track | core tests + exact target build |
 | Compatibility claim | conformance evidence | project status and changelog | evidence required by the claimed level |
 
-## Beyond Experimental 0.2: the capability roadmap
+## Experimental 0.2: the capability set
 
-Experimental 0.2 ships two capabilities: profile `approval/1` and profile `status/1`. The platform direction is a full physical control surface — every data form a device maker needs, each as its own versioned profile with its own vectors and evidence, never silently reusing the `approval/1` claim.
+Release `0.2.0-experimental.2` ships the original `approval/1` and `status/1`
+profiles plus seven independent interaction profiles. Every data form has its
+own versioned profile, vectors, and evidence rather than silently reusing the
+`approval/1` claim.
 
 The **capability declaration** is the extensibility mechanism: on connect, a
 device can report typed identity, buttons, rotary controls, display, haptics,
 standard battery support, and bounded inert vendor facts. The Host shows only
-fields the device actually declares. Interactive key events, navigation,
-microphone, lighting, and configuration still need their own profiles rather
-than being inferred from static metadata.
+fields the device actually declares. Interactive behavior is also negotiated
+explicitly through `navigation/1`, `keys/1`, `rotary/1`, `voice/1`, `text/1`,
+`usage/1`, and `config/1`; it is never inferred from static metadata.
 
-The roadmap, modeled on the complete feature set of dedicated agent macropads:
+The current set, modeled on dedicated Agent macropads:
 
 | Capability | Direction | Product meaning |
 | --- | --- | --- |
 | `approval/1` (shipped) | both | One Allow/Deny request with TTL |
 | `status/1` (shipped) | Host → device | Per-agent idle/thinking/working/complete/needs-input/error states for LEDs or screens, full replacement, volatile |
-| Command keys | device → Host | Physical key events (approve, decline, fork, mic, send, fast); the Host owns what each key means |
-| Navigation input | device → Host | Stick direction events for radial menus and workflow selection |
-| Rotary input | both | Dial events up; level lists and current level down |
-| Text content | Host → device | Summaries and conversation content for screened devices |
-| Voice | device → Host | Push-to-talk control, with device-microphone audio or Host-microphone capture |
-| Configuration | Host → device | Key maps and lighting, so behavior changes without reflashing |
+| `keys/1` (shipped) | both | Generic physical key events up; labels and light state down; the Host owns what each key means |
+| `navigation/1` (shipped) | both | Bounded option lists down; cursor movement and selection up |
+| `rotary/1` (shipped) | both | Relative dial/press events up; bounded label and state down |
+| `text/1` (shipped) | Host → device | Bounded plain text for declared screen regions |
+| `voice/1` (shipped) | both | Push-to-talk control only; capture and transcription stay on the Host microphone |
+| `usage/1` (shipped) | Host → device | Informational model label and bounded usage counters |
+| `config/1` (shipped) | both | Versioned atomic key, lighting, and display preferences |
 | Battery and device info (shipped) | device → Host | Identity, capabilities, limits, and charge state |
 
 Wi-Fi, HTTP, MQTT, USB HID, persistent permission grants, multi-prompt queues, production device certificates, OTA signing, manufacturing provisioning, and the Nexting Compatible badge still require explicit future contracts.

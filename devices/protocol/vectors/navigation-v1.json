@@ -1,0 +1,37 @@
+{
+  "spec": "0.2.0-experimental.2",
+  "wire": 1,
+  "profile": "navigation/1",
+  "valid": [
+    {
+      "name": "present two options",
+      "wire": "{\"v\":1,\"t\":\"nav_present\",\"id\":\"q7\",\"items\":[\"Fix it\",\"Explain\"],\"cursor\":0,\"ttl\":30000}\n",
+      "decoded": {"type":"navPresent","requestId":"q7","items":["Fix it","Explain"],"cursor":0,"ttlMs":30000}
+    },
+    {
+      "name": "move next",
+      "wire": "{\"v\":1,\"t\":\"nav_move\",\"id\":\"q7\",\"dir\":\"next\",\"seq\":12}\n",
+      "decoded": {"type":"navMove","requestId":"q7","direction":"next","sequence":12}
+    },
+    {
+      "name": "select option",
+      "wire": "{\"v\":1,\"t\":\"nav_select\",\"id\":\"q7\",\"index\":1,\"seq\":13}\n",
+      "decoded": {"type":"navSelect","requestId":"q7","index":1,"sequence":13}
+    },
+    {
+      "name": "resolve selected",
+      "wire": "{\"v\":1,\"t\":\"nav_resolved\",\"id\":\"q7\",\"r\":\"selected\"}\n",
+      "decoded": {"type":"navResolved","requestId":"q7","reason":"selected"}
+    }
+  ],
+  "invalid": [
+    {"name":"too few options","wire":"{\"v\":1,\"t\":\"nav_present\",\"id\":\"q7\",\"items\":[\"Only\"],\"cursor\":0,\"ttl\":30000}\n"},
+    {"name":"duplicate options","wire":"{\"v\":1,\"t\":\"nav_present\",\"id\":\"q7\",\"items\":[\"Same\",\"Same\"],\"cursor\":0,\"ttl\":30000}\n"},
+    {"name":"cursor outside items","wire":"{\"v\":1,\"t\":\"nav_present\",\"id\":\"q7\",\"items\":[\"A\",\"B\"],\"cursor\":2,\"ttl\":30000}\n"},
+    {"name":"bad direction","wire":"{\"v\":1,\"t\":\"nav_move\",\"id\":\"q7\",\"dir\":\"clockwise\",\"seq\":12}\n"},
+    {"name":"negative sequence","wire":"{\"v\":1,\"t\":\"nav_move\",\"id\":\"q7\",\"dir\":\"next\",\"seq\":-1}\n"},
+    {"name":"selection outside profile bound","wire":"{\"v\":1,\"t\":\"nav_select\",\"id\":\"q7\",\"index\":8,\"seq\":13}\n"},
+    {"name":"bad resolution","wire":"{\"v\":1,\"t\":\"nav_resolved\",\"id\":\"q7\",\"r\":\"answered\"}\n"},
+    {"name":"unknown field","wire":"{\"v\":1,\"t\":\"nav_move\",\"id\":\"q7\",\"dir\":\"next\",\"seq\":12,\"action\":\"fork\"}\n"}
+  ]
+}

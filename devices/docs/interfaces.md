@@ -1,11 +1,13 @@
 # Public interfaces
 
-Nexting Devices Experimental 0.2 exposes one small control surface between a trusted Host and an authorized nearby device. This page helps developers discover the interfaces. [`SPEC.md`](../SPEC.md) remains normative.
+Nexting Devices `0.2.0-experimental.2` exposes a bounded physical control
+surface between a trusted Host and an authorized nearby device. This page helps
+developers discover the interfaces. [`SPEC.md`](../SPEC.md) remains normative.
 
 ## What is public
 
 - one Bluetooth LE GATT service;
-- four newline-delimited message types for profile `approval/1` and one downlink message type for profile `status/1`;
+- nine independently negotiated profiles over one newline-delimited Wire;
 - a Swift Host SDK;
 - a Kotlin/JVM Host SDK for Android;
 - a portable fixed-buffer C99 device SDK;
@@ -32,7 +34,10 @@ The device is the BLE peripheral/GATT server. The Host/App is the central/GATT c
 
 One compact UTF-8 JSON object plus `\n` is one logical frame. BLE fragments preserve byte order and never interleave logical frames. The default complete-frame ceiling is 4096 bytes including the newline; every compatible implementation supports at least 512 bytes.
 
-The Device Info characteristic is also where the [capability declaration](foundation-development.md#beyond-experimental-02-the-capability-roadmap) grows: future profiles add capability entries there before any new traffic flows.
+The Device Info characteristic carries the
+[capability declaration](foundation-development.md#experimental-02-the-capability-set).
+The Host sends or accepts a message only when the device declared that
+message's exact profile.
 
 ## Wire messages
 
@@ -43,14 +48,30 @@ The Device Info characteristic is also where the [capability declaration](founda
 | `resolved` | Host → device | End the current request as answered, expired, cancelled, or replaced | A nonmatching ID does not clear another request | vectors; `relay.mjs`; `Relay.swift`; C state |
 | `error` | either direction | Report a bounded protocol failure when useful | An error never carries authority to approve | vectors and all three strict codecs |
 | `status` (profile `status/1`) | Host → device | Replace the full rendered state of up to 8 anonymous agent slots (idle, thinking, working, complete, needs_input, error, plus an optional 64-byte label) | A malformed frame is discarded whole; the previous rendered state stays; never touches approval state | `status-v1.json` vectors; all three strict codecs |
+| `nav_present` / `nav_resolved` (`navigation/1`) | Host → device | Present or close a bounded option list | Invalid lists or cursor values do not alter the current menu | `navigation-v1.json`; all four codecs |
+| `nav_move` / `nav_select` (`navigation/1`) | device → Host | Move a cursor or select an index | Sequence gate rejects replay and reordering; Host validates current request | `navigation-v1.json`; all four codecs |
+| `keymap` / `key_event` (`keys/1`) | both | Render Host-owned key labels/light state and report generic physical key activity | Device never chooses Agent semantics; sequence gate rejects duplicate input | `keys-v1.json`; all four codecs |
+| `rotary_map` / `rotary_event` / `rotary_press` (`rotary/1`) | both | Render a dial label and report relative turns or presses | Bounded relative delta only; no model or session ID crosses the Wire | `rotary-v1.json`; all four codecs |
+| `voice_event` / `voice_state` (`voice/1`) | both | Start, stop, cancel, and acknowledge push-to-talk control | No audio or transcript; capture and transcription remain on the Host microphone | `voice-v1.json`; all four codecs |
+| `text` (`text/1`) | Host → device | Render bounded plain text in a declared display region | No markup or secret payload; malformed content leaves the old display intact | `text-v1.json`; all four codecs |
+| `usage` / `usage_clear` (`usage/1`) | Host → device | Render a model label and bounded counters | Counters are display data, not billing authority | `usage-v1.json`; all four codecs |
+| `config` / `config_result` (`config/1`) | both | Apply a versioned set of bounded preferences and report the result | Atomic: any invalid entry rejects the whole update and preserves current config | `config-v1.json`; all four codecs |
 
-Exact fields, enums, byte limits, canonical JSON rules, nesting limits, and state transitions are in [the specification](../SPEC.md). Executable examples live in the shared vectors: [approval-v1.json](../protocol/vectors/approval-v1.json) and [status-v1.json](../protocol/vectors/status-v1.json). A Host sends `status` only to a device whose Device Info declares `statusSlots` of at least 1; status rendering is volatile and clears on disconnect, reboot, or a new bond.
+Exact fields, enums, byte limits, canonical JSON rules, nesting limits, and
+state transitions are in [the specification](../SPEC.md). Executable examples
+live in `protocol/vectors/`, including
+[approval-v1.json](../protocol/vectors/approval-v1.json),
+[status-v1.json](../protocol/vectors/status-v1.json), and
+[navigation-v1.json](../protocol/vectors/navigation-v1.json). A Host sends
+`status` only to a device whose Device Info declares `statusSlots` of at least
+1; volatile display and interaction state clears on disconnect or reboot.
 
 ## Swift Host SDK
 
 | Public type | Use it for | Implementation |
 | --- | --- | --- |
 | `NextingDeviceMessage` / `NextingDeviceCodec` | Strict wire values and newline-terminated encoding/decoding | `sdk/swift/Sources/NextingDeviceKit/Protocol.swift` |
+| `requiredProfile` / `interactionSequence` | Gate messages by negotiated profile and reject replayed physical events | `Protocol.swift` |
 | `NextingDeviceAgentStatus` / `NextingDeviceAgentState` | One agent-status slot value for profile `status/1` | `Protocol.swift` |
 | `NextingDeviceLineDecoder` | Bounded fragmented input | `Framing.swift` |
 | `NextingDeviceInfo` | Capability negotiation, including the optional `statusSlots` declaration | `DeviceInfo.swift` |
@@ -70,8 +91,9 @@ Production Hosts must supply enrollment and revocation. Peripheral-name matching
 The Kotlin/JVM module mirrors the bounded wire and Device Info models needed by
 Android. `DeviceInfoCodec` decodes typed identity, buttons, rotary controls,
 display, haptics, standard Battery Service support, and inert vendor facts.
-`ProtocolCodec` implements the same canonical newline-delimited
-`approval/1`/`status/1` values and limits. Android owns Bluetooth permission,
+`ProtocolCodec` implements the same canonical newline-delimited nine-profile
+Wire and limits. `DeviceMessage.requiredProfile` gates negotiated features and
+`interactionSequence` exposes sequence sources for replay rejection. Android owns Bluetooth permission,
 GATT lifecycle, encrypted authorization storage, account metadata, and UI.
 
 ## Portable C99 device SDK
@@ -88,6 +110,7 @@ GATT lifecycle, encrypted authorization storage, account metadata, and UI.
 | `nexting_device_state_tick` | Expire a request from a monotonic clock | `nexting_device.c` state section |
 | `nexting_device_state_disconnect` | Clear volatile request and retry state | `nexting_device.c` state section |
 | `nexting_device_status_init` / `nexting_device_status_on_message` / `nexting_device_status_disconnect` | Volatile eight-slot agent-status rendering with full replacement and disconnect clear | `nexting_device.c` status section |
+| interaction payloads in `nexting_device_message_t` | Decode and encode navigation, key, rotary, voice, text, usage, and config messages without allocation | `nexting_device.h` / `nexting_device.c` |
 
 The caller owns every buffer. The core does not initialize Bluetooth, allocate memory, read GPIO, drive an LED, persist an approval, or provide a wall clock. The Zephyr reference firmware does not declare `statusSlots` until per-slot indicator rendering is implemented and board-verified, so Hosts send it no status traffic today.
 
@@ -109,7 +132,7 @@ The JavaScript reference verifies readable wire and relay behavior. Swift verifi
 | Contract | Experimental 0.2 |
 | --- | --- |
 | Wire version | `1` |
-| Profiles | `approval/1` and `status/1` |
+| Profiles | `approval/1`, `status/1`, `navigation/1`, `keys/1`, `rotary/1`, `voice/1`, `text/1`, `usage/1`, `config/1` |
 | Choices | exactly `allow` and `deny` |
 | Request ID | 1–64 allowed ASCII bytes |
 | Summary | at most 240 UTF-8 bytes |
@@ -126,9 +149,9 @@ The JavaScript reference verifies readable wire and relay behavior. Swift verifi
 
 A new transport, profile, field, language SDK, or platform is not public merely because code exists. First update the product behavior and failure behavior, then `SPEC.md`, shared vectors, reference implementation, affected SDKs, tests, version/CHANGELOG, and this catalog.
 
-Typed Device Info counts describe hardware only. Command keys, navigation,
-rotary input, text content, voice, and configuration still require their own
-versioned profiles, vectors, and evidence before devices may claim them. Wi-Fi,
-HTTP, MQTT, USB, multiple prompts, and production identity also require
-explicit future contracts. Nothing may silently reuse the Experimental 0.2
-compatibility claim.
+Typed Device Info counts describe hardware; the nine versioned profile strings
+negotiate behavior. A new profile still requires SPEC text, schema, vectors,
+all public codecs, docs, and evidence before devices may claim it. Wi-Fi, HTTP,
+MQTT, USB, multiple approval prompts, device-microphone audio, and production
+identity remain outside this release. Nothing may silently reuse an
+Experimental 0.2 compatibility claim.

@@ -19,7 +19,7 @@ test("foundation guide maps product behavior to real source files", async () => 
     "Fail closed",
     "What to change",
     "capability declaration",
-    "capability roadmap",
+    "capability set",
     "agent anywhere",
     "needs-input/error states for LEDs or screens, full replacement, volatile",
   ]) {
@@ -46,6 +46,18 @@ test("interface catalog exposes only the supported public surfaces", async () =>
     "publishStatus",
     "nexting_device_status_on_message",
     "status-v1.json",
+    "navigation/1",
+    "keys/1",
+    "rotary/1",
+    "voice/1",
+    "text/1",
+    "usage/1",
+    "config/1",
+    "navigation-v1.json",
+    "key_event",
+    "rotary_event",
+    "voice_event",
+    "config_result",
     "NextingDeviceRelayCoordinator",
     "NextingDeviceCentral",
     "nexting_device_decode",
@@ -62,6 +74,7 @@ test("interface catalog exposes only the supported public surfaces", async () =>
 
   assert.match(interfaces, /does not expose a Nexting cloud API/);
   assert.match(interfaces, /no public TCP, UDP, HTTP, MQTT, or WebSocket endpoint/);
+  assert.doesNotMatch(interfaces, /still require their own\s+versioned profiles/i);
 });
 
 test("Codex Host guide maps the official App Server subset without publishing private adapters", async () => {
@@ -184,12 +197,49 @@ test("use-case guide maps scenarios to real profiles and limits", async () => {
     "approval/1",
     "status/1",
     "statusSlots",
+    "navigation/1",
+    "keys/1",
+    "rotary/1",
+    "voice/1",
+    "text/1",
+    "usage/1",
+    "config/1",
     "conformance.md",
     "implementation-tracks.md",
   ]) {
     assert.ok(useCases.includes(marker), "use cases missing marker: " + marker);
   }
-  assert.match(useCases, /roadmap/i);
+  assert.doesNotMatch(useCases, /profiles that are specified but not yet shipped/i);
+});
+
+test("0.2 experimental.2 documents every frozen interaction profile", async () => {
+  const [overview, changelog, projectStatus, c, swift, kotlin] =
+    await Promise.all([
+      read("README.md"),
+      read("CHANGELOG.md"),
+      read("docs/project-status.md"),
+      read("sdk/c/README.md"),
+      read("sdk/swift/README.md"),
+      read("sdk/kotlin/README.md"),
+    ]);
+
+  for (const source of [overview, changelog, projectStatus, c, swift, kotlin]) {
+    assert.match(source, /0\.2\.0-experimental\.2/);
+  }
+  for (const profile of [
+    "navigation/1",
+    "keys/1",
+    "rotary/1",
+    "voice/1",
+    "text/1",
+    "usage/1",
+    "config/1",
+  ]) {
+    assert.match(overview, new RegExp(profile.replace("/", "\\/")));
+    assert.match(projectStatus, new RegExp(profile.replace("/", "\\/")));
+  }
+  assert.match(overview, /Host microphone/i);
+  assert.match(changelog, /frozen interaction profiles/i);
 });
 
 test("Agent and maintainer guides use the same sources and claims", async () => {
@@ -233,7 +283,7 @@ test("public Quickstart is self-serve and honest about the public App gate", asy
     assert.match(source, /troubleshooting\.md/);
   }
   for (const marker of [
-    "devices-v0.2.0-experimental.1",
+    "devices-v0.2.0-experimental.2",
     "XIAO nRF52840",
     "D0",
     "D1",

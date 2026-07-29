@@ -4,11 +4,33 @@ This file records changes to public protocol behavior, shared vectors, SDK surfa
 
 ## Unreleased
 
+## 0.2.0-experimental.2 — 2026-07-29
+
+This release keeps wire major 1 and adds seven frozen interaction profiles
+without changing `approval/1` or `status/1`.
+
+### Added
+
+- Frozen interaction profiles `navigation/1`, `keys/1`, `rotary/1`, `voice/1`,
+  `text/1`, `usage/1`, and `config/1`.
+- Shared valid and hostile vectors plus JSON Schema definitions for all 15 new
+  messages.
+- Strict JavaScript, fixed-buffer C99, Swift 6, and Kotlin implementations of
+  every new message.
+- Device Info profile negotiation helpers and Host-side profile gating.
+- Sequence numbers for replay/out-of-order rejection on navigation, key,
+  rotary, and push-to-talk input.
+- Versioned, atomic configuration results. Invalid configuration leaves the
+  current device configuration unchanged.
+
 ### Changed
 
 - The Codex Host guide now distinguishes the official high-level SDK from App
   Server and freezes the fail-closed one-time approval projection into
   `approval/1`.
+- `voice/1` carries control only. Audio capture, permission, and transcription
+  stay on the Host microphone; audio and transcripts never cross this BLE
+  profile.
 
 ## 0.2.0-experimental.1 — 2026-07-28
 
