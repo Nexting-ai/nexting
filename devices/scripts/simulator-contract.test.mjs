@@ -31,7 +31,7 @@ test("public simulator keeps the protocol and BLE transport contracts", async ()
   }
   assert.match(simulator, /NextingDeviceCodec\.decode/);
   assert.match(simulator, /NextingDeviceCodec\.encode/);
-  assert.match(simulator, /0\.2\.0-experimental\.1/);
+  assert.match(simulator, /0\.2\.0-experimental\.2/);
   assert.match(simulator, /button_count/);
   assert.match(simulator, /approval_button_count/);
   assert.match(simulator, /systemUptime/);

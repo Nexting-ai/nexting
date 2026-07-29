@@ -1,0 +1,31 @@
+{
+  "spec": "0.2.0-experimental.2",
+  "wire": 1,
+  "profile": "keys/1",
+  "valid": [
+    {
+      "name": "replace key presentation",
+      "wire": "{\"v\":1,\"t\":\"keymap\",\"rev\":4,\"keys\":[{\"slot\":0,\"label\":\"Approve\",\"enabled\":true,\"light\":\"solid\",\"rgb\":[0,200,90]}]}\n",
+      "decoded": {"type":"keymap","revision":4,"keys":[{"slot":0,"label":"Approve","enabled":true,"light":"solid","rgb":[0,200,90]}]}
+    },
+    {
+      "name": "clear key presentation",
+      "wire": "{\"v\":1,\"t\":\"keymap\",\"rev\":5,\"keys\":[]}\n",
+      "decoded": {"type":"keymap","revision":5,"keys":[]}
+    },
+    {
+      "name": "physical key press",
+      "wire": "{\"v\":1,\"t\":\"key_event\",\"slot\":0,\"event\":\"press\",\"seq\":41}\n",
+      "decoded": {"type":"keyEvent","slot":0,"event":"press","sequence":41}
+    }
+  ],
+  "invalid": [
+    {"name":"duplicate slots","wire":"{\"v\":1,\"t\":\"keymap\",\"rev\":4,\"keys\":[{\"slot\":0,\"label\":\"A\",\"enabled\":true,\"light\":\"off\"},{\"slot\":0,\"label\":\"B\",\"enabled\":true,\"light\":\"off\"}]}\n"},
+    {"name":"bad light","wire":"{\"v\":1,\"t\":\"keymap\",\"rev\":4,\"keys\":[{\"slot\":0,\"label\":\"A\",\"enabled\":true,\"light\":\"rainbow\"}]}\n"},
+    {"name":"bad rgb length","wire":"{\"v\":1,\"t\":\"keymap\",\"rev\":4,\"keys\":[{\"slot\":0,\"label\":\"A\",\"enabled\":true,\"light\":\"solid\",\"rgb\":[0,1]}]}\n"},
+    {"name":"rgb outside byte","wire":"{\"v\":1,\"t\":\"keymap\",\"rev\":4,\"keys\":[{\"slot\":0,\"label\":\"A\",\"enabled\":true,\"light\":\"solid\",\"rgb\":[0,1,256]}]}\n"},
+    {"name":"slot outside range","wire":"{\"v\":1,\"t\":\"key_event\",\"slot\":64,\"event\":\"press\",\"seq\":41}\n"},
+    {"name":"bad gesture","wire":"{\"v\":1,\"t\":\"key_event\",\"slot\":0,\"event\":\"triple\",\"seq\":41}\n"},
+    {"name":"non canonical revision","wire":"{\"v\":1,\"t\":\"keymap\",\"rev\":4.0,\"keys\":[]}\n"}
+  ]
+}

@@ -65,6 +65,38 @@ public struct NextingDeviceInfo: Equatable, Sendable {
             && statusSlots >= 1
     }
 
+    public func supportsProfile(_ profile: String) -> Bool {
+        supportsApprovalV1 && profiles.contains(profile)
+    }
+
+    public var supportsNavigationV1: Bool {
+        supportsProfile(NextingDeviceCodec.navigationProfile)
+    }
+
+    public var supportsKeysV1: Bool {
+        supportsProfile(NextingDeviceCodec.keysProfile)
+    }
+
+    public var supportsRotaryV1: Bool {
+        supportsProfile(NextingDeviceCodec.rotaryProfile)
+    }
+
+    public var supportsVoiceV1: Bool {
+        supportsProfile(NextingDeviceCodec.voiceProfile)
+    }
+
+    public var supportsTextV1: Bool {
+        supportsProfile(NextingDeviceCodec.textProfile)
+    }
+
+    public var supportsUsageV1: Bool {
+        supportsProfile(NextingDeviceCodec.usageProfile)
+    }
+
+    public var supportsConfigV1: Bool {
+        supportsProfile(NextingDeviceCodec.configProfile)
+    }
+
     public static func decode(_ data: Data) -> NextingDeviceInfo? {
         guard data.count <= maxEncodedBytes,
               String(data: data, encoding: .utf8) != nil,

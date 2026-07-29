@@ -20,7 +20,7 @@ to 3.3 V.
 ## 2. Get the exact release
 
 ```sh
-git clone --branch devices-v0.2.0-experimental.1 --depth 1 \
+git clone --branch devices-v0.2.0-experimental.2 --depth 1 \
   https://github.com/Nexting-ai/nexting.git
 cd nexting/devices
 ```

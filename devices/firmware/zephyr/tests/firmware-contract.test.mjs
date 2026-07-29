@@ -31,7 +31,7 @@ test("GATT service publishes the complete encrypted transport", async () => {
   assert.match(main, /BT_GATT_PERM_READ_ENCRYPT[\s\S]*BT_GATT_PERM_WRITE_ENCRYPT/);
   assert.match(main, /max_message_bytes/);
   assert.match(main, /max_summary_bytes/);
-  assert.match(main, /0\.2\.0-experimental\.1/);
+  assert.match(main, /0\.2\.0-experimental\.2/);
   assert.match(main, /button_count/);
   assert.match(main, /approval_button_count/);
   assert.match(main, /bt_conn_set_security\([\s\S]*BT_SECURITY_L2/);

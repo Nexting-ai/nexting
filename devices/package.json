@@ -1,6 +1,6 @@
 {
   "name": "@nexting-ai/devices",
-  "version": "0.2.0-experimental.1",
+  "version": "0.2.0-experimental.2",
   "private": true,
   "description": "Open interfaces for building physical control surfaces for AI agents.",
   "type": "module",

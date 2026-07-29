@@ -12,6 +12,16 @@ const namespacePattern = /^[a-z0-9](?:[a-z0-9-]{0,62}\.)+[a-z0-9][a-z0-9-]{0,62}
 const factKeyPattern = /^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$/;
 const inertTextPattern = /(?:<\/?[a-z]|https?:\/\/|www\.|[`*_#[\]()])/i;
 
+export function supportsProfile(deviceInfo, profile) {
+  return (
+    deviceInfo !== null &&
+    typeof deviceInfo === "object" &&
+    Array.isArray(deviceInfo.profiles) &&
+    typeof profile === "string" &&
+    deviceInfo.profiles.includes(profile)
+  );
+}
+
 const knownFields = new Set([
   "protocol",
   "spec",

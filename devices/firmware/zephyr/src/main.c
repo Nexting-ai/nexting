@@ -32,7 +32,7 @@
 	BT_UUID_128_ENCODE(0x6eadc0de, 0x0004, 0x4a21, 0x9c5e, 0x1b7f3d9e42a0)
 
 #define DEVICE_INFO_JSON                                                        \
-	"{\"protocol\":\"nexting-device\",\"spec\":\"0.2.0-experimental.1\","      \
+	"{\"protocol\":\"nexting-device\",\"spec\":\"0.2.0-experimental.2\","      \
 	"\"wire\":[1],\"profiles\":[\"approval/1\"],\"model\":\"" CONFIG_BOARD \
 	"\",\"fw\":\"0.2.0\",\"max_message_bytes\":4096,"                      \
 	"\"max_summary_bytes\":240,\"display_name\":\"Nexting Reference\","    \

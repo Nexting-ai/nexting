@@ -1,6 +1,6 @@
 {
   "name": "@nexting-ai/device-reference",
-  "version": "0.2.0-experimental.1",
+  "version": "0.2.0-experimental.2",
   "private": true,
   "description": "Executable JavaScript reference for the Nexting Device Protocol.",
   "type": "module",
