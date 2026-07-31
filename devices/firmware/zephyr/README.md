@@ -6,12 +6,12 @@ Start with [the public foundation](../../docs/foundation-development.md) and [re
 
 ## Reference wiring
 
-| Board | Allow | Deny | Pending output |
-| --- | --- | --- | --- |
-| nRF52840 DK | Button 1 (`sw0`) | Button 2 (`sw1`) | LED 1 (`led0`) |
-| XIAO nRF52840 / Sense | D0 to GND | D1 to GND | onboard red LED |
-| XIAO ESP32-C3 | D0 to GND | D1 to GND | D2 through a resistor to an LED, active high |
-| XIAO ESP32-S3 | D0 to GND | D1 to GND | onboard LED |
+| Board                 | Allow            | Deny             | Pending output                               |
+| --------------------- | ---------------- | ---------------- | -------------------------------------------- |
+| nRF52840 DK           | Button 1 (`sw0`) | Button 2 (`sw1`) | LED 1 (`led0`)                               |
+| XIAO nRF52840 / Sense | D0 to GND        | D1 to GND        | onboard red LED                              |
+| XIAO ESP32-C3         | D0 to GND        | D1 to GND        | D2 through a resistor to an LED, active high |
+| XIAO ESP32-S3         | D0 to GND        | D1 to GND        | onboard LED                                  |
 
 The button inputs use internal pull-ups and are active low.
 

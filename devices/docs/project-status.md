@@ -1,38 +1,34 @@
 # Project status
 
-Snapshot: 2026-07-29. Release `0.2.0-experimental.2` is implemented as the open
-Devices SDK inside the existing `Nexting-ai/nexting` repository under
-`devices/`.
+Snapshot: 2026-07-27. Experimental 0.2 is implemented as the open Devices SDK
+inside the existing `Nexting-ai/nexting` repository under `devices/`.
+
+The ILX MultiPad work is a separate USB CDC developer track. The adapter and
+host-side contract test are prepared; no physical MultiPad flash or App USB
+enrollment claim has been made yet. The purchased board must be opened to
+identify its module/FPC boot path before any write.
 
 ## Current evidence
 
-| Area | Evidence | Status |
-| --- | --- | --- |
-| Wire and vectors | Nine negotiated profiles, bounded Device Info 0.2, JSON Schema, valid and hostile vectors | Passing; wire major remains `1` |
-| JavaScript reference | Protocol, framing, relay, Device Info, documentation, simulator, and export tests | Passing |
-| Swift Host SDK | Nine-profile codec, Device Info/profile negotiation, sequence sources, authorization, relay, coordinator, CoreBluetooth, and SwiftPM tests | Passing |
-| Kotlin Host SDK | Matching nine-profile codec, Device Info negotiation, and sequence sources used directly by Android | Passing |
-| Portable C99 SDK | Fixed-buffer nine-profile protocol, approval/status state, Device Info, ASan/UBSan suites | Passing |
-| iOS App integration | Explicit enrollment/revocation, secure remembered devices, one active lease, battery, continuous information table, metadata sync, independent Claude Code/Codex adapters | iOS Simulator build and integration contracts pass |
-| Android App integration | Public Kotlin SDK, BLE enrollment, encrypted authorization storage, battery, continuous information table, metadata sync, independent Claude Code/Codex adapters | Debug APK, unit tests, and lint pass |
-| Cloud metadata | Account-owned custom name, optional number, and notes by stable instance key; owner-only RLS | Route/service tests pass |
-| Public export | Allowlisted deterministic `devices/` export, root SwiftPM package, README marker block, SHA-256 manifest, hostile-path/content/symlink tests | Passing |
-| nRF52840 DK | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact | Build verified; physical checklist pending |
-| XIAO nRF52840 / Sense | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact | Build verified; physical checklist pending |
-| XIAO ESP32-C3 | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact | Build verified; physical checklist pending |
-| XIAO ESP32-S3 | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact | Build verified; physical checklist pending |
+| Area                    | Evidence                                                                                                                                                                  | Status                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Wire and vectors        | `approval/1`, `status/1`, bounded Device Info 0.2, JSON Schema, valid and hostile vectors                                                                                 | Passing; wire major remains `1`                          |
+| JavaScript reference    | Protocol, framing, relay, Device Info, documentation, simulator, and export tests                                                                                         | Passing                                                  |
+| Swift Host SDK          | Codec, Device Info, authorization, relay, coordinator, CoreBluetooth, and SwiftPM tests                                                                                   | Passing                                                  |
+| Kotlin Host SDK         | Bounded Device Info and protocol codecs used directly by Android                                                                                                          | Passing                                                  |
+| Portable C99 SDK        | Fixed-buffer protocol, state, Device Info, ASan/UBSan suites                                                                                                              | Passing                                                  |
+| iOS App integration     | Explicit enrollment/revocation, secure remembered devices, one active lease, battery, continuous information table, metadata sync, independent Claude Code/Codex adapters | iOS Simulator build and integration contracts pass       |
+| Android App integration | Public Kotlin SDK, BLE enrollment, encrypted authorization storage, battery, continuous information table, metadata sync, independent Claude Code/Codex adapters          | Debug APK, unit tests, and lint pass                     |
+| Cloud metadata          | Account-owned custom name, optional number, and notes by stable instance key; owner-only RLS                                                                              | Route/service tests pass                                 |
+| Public export           | Allowlisted deterministic `devices/` export, root SwiftPM package, README marker block, SHA-256 manifest, hostile-path/content/symlink tests                              | Passing                                                  |
+| nRF52840 DK             | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact                                                                                                                        | Build verified; physical checklist pending               |
+| XIAO nRF52840 / Sense   | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact                                                                                                                        | Build verified; physical checklist pending               |
+| XIAO ESP32-C3           | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact                                                                                                                        | Build verified; physical checklist pending               |
+| XIAO ESP32-S3           | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact                                                                                                                        | Build verified; physical checklist pending               |
+| ILX MultiPad            | STM32F103VET6 USB HID + CDC upstream source; portable C99 adapter and contract test                                                                                       | Adapter test passing; PCB and boot-path evidence pending |
 
 ## What 0.2 adds
 
-- Frozen `navigation/1`, `keys/1`, `rotary/1`, `voice/1`, `text/1`,
-  `usage/1`, and `config/1` interaction contracts alongside `approval/1` and
-  `status/1`.
-- Strict profile negotiation and sequence gates in iOS and Android integration
-  so undeclared, replayed, or out-of-order physical input is discarded.
-- Host-only microphone capture for push-to-talk: `voice/1` carries control
-  events and acknowledgement, never audio or transcripts.
-- Atomic remote configuration. One invalid setting rejects the complete update
-  without changing the active configuration.
 - Optional typed identity and hardware capabilities: buttons, approval/custom
   buttons, rotary controls, rotary presses, display, haptics, standard Battery
   Service support, and inert bounded vendor facts.
@@ -51,7 +47,7 @@ Devices SDK inside the existing `Nexting-ai/nexting` repository under
 
 ## Remaining physical evidence
 
-No Android or iPhone BLE device was attached to the 2026-07-29 verification
+No Android or iPhone BLE device was attached to the 2026-07-27 verification
 environment. Therefore:
 
 - no real-radio, pairing, reconnect, battery, button, or cross-platform
@@ -79,9 +75,8 @@ the public `devices/` subtree.
 - Passing source tests does not prove a radio works.
 - A successful firmware build does not prove pairing, notification delivery,
   race handling, battery reporting, or bond revocation.
-- Device Info capabilities describe hardware; versioned profile declarations
-  separately authorize behavior. Static button or dial counts never imply
-  `keys/1` or `rotary/1`.
+- Device Info capabilities describe hardware; they do not create unversioned
+  command, rotary-event, voice, text, or configuration profiles.
 - User metadata and `device_id` are not authorization credentials.
 - A Developer Reference device is not a production security certification.
 

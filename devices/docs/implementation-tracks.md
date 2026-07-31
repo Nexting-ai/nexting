@@ -12,12 +12,12 @@ Choose this track when you want a working two-button developer reference before 
 
 ### 1. Choose one exact target
 
-| Board | Zephyr target |
-| --- | --- |
-| nRF52840 DK | `nrf52840dk/nrf52840` |
-| XIAO nRF52840 / Sense | `xiao_ble/nrf52840/sense` |
-| XIAO ESP32-C3 | `xiao_esp32c3/esp32c3` |
-| XIAO ESP32-S3 | `xiao_esp32s3/esp32s3/procpu` |
+| Board                 | Zephyr target                 |
+| --------------------- | ----------------------------- |
+| nRF52840 DK           | `nrf52840dk/nrf52840`         |
+| XIAO nRF52840 / Sense | `xiao_ble/nrf52840/sense`     |
+| XIAO ESP32-C3         | `xiao_esp32c3/esp32c3`        |
+| XIAO ESP32-S3         | `xiao_esp32s3/esp32s3/procpu` |
 
 ### 2. Build from a configured Zephyr workspace
 
@@ -108,7 +108,29 @@ Your adapter owns BLE, GPIO, timers, bond lifecycle, and transport buffers. It d
 
 Run the desktop C sanitizer suite, compile the exact target, then complete the real-board checklist. Add the board to [hardware support](hardware-support.md) only at the evidence level it earned.
 
-## Track 4: Maintain a new language SDK
+## Track 4: Integrate the ILX MultiPad over USB CDC
+
+Choose this track when the hardware is the open-source ILX MultiPad. It is a
+USB CDC binding for the same public JSON frames, not a second approval protocol
+and not automatic Nexting App USB enrollment.
+
+1. Read the [MultiPad USB guide](multipad-usb.md) and identify the PCB variant.
+2. Build `firmware/multipad` and run `npm run test:multipad` before touching the
+   board.
+3. Add `nexting_multipad_adapter.c/.h` and `sdk/c/src/nexting_device.c` to the
+   upstream STM32 project. Preserve HID and the legacy `AA BB xx` commands.
+4. Verify the original flash backup and boot path. Module boards can use the
+   serial bootloader; FPC boards require SWD/J-Link.
+5. Record CDC echo, `present → answer → resolved`, expiry, and disconnect
+   evidence before claiming a physical integration.
+
+The Host still owns USB authorization, Agent routing, and final action sinks.
+The device sees only bounded public frames and never receives credentials.
+
+## Track 5: Maintain a new language SDK
+
+This is the language SDK route formerly listed as **Track 4: Maintain a new language SDK**;
+the number moved only to make the MultiPad hardware path visible.
 
 Choose this track for Kotlin, Rust, TypeScript, Python, or another Host/device implementation.
 
