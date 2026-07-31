@@ -31,7 +31,7 @@ test("public simulator keeps the protocol and BLE transport contracts", async ()
   }
   assert.match(simulator, /NextingDeviceCodec\.decode/);
   assert.match(simulator, /NextingDeviceCodec\.encode/);
-  assert.match(simulator, /0\.2\.0-experimental\.2/);
+  assert.match(simulator, /0\.2\.0-experimental\.0/);
   assert.match(simulator, /button_count/);
   assert.match(simulator, /approval_button_count/);
   assert.match(simulator, /systemUptime/);
@@ -39,7 +39,10 @@ test("public simulator keeps the protocol and BLE transport contracts", async ()
   assert.ok(!simulator.includes("JSONSerialization"));
   assert.match(simulator, /notifyEncryptionRequired/);
   assert.match(simulator, /writeEncryptionRequired/);
-  assert.match(simulator, /subscribedCentral\.identifier == request\.central\.identifier/);
+  assert.match(
+    simulator,
+    /subscribedCentral\.identifier == request\.central\.identifier/,
+  );
   assert.match(simulator, /insufficientAuthorization/);
   assert.match(simulator, /maximumUpdateValueLength/);
   assert.match(simulator, /outboundFrameOffset/);

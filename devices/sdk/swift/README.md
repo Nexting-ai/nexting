@@ -1,26 +1,6 @@
 # NextingDeviceKit
 
-## Real-hardware smoke test
-
-On macOS, prove discovery, Device Info, encrypted BLE, framing, and one physical
-Allow/Deny answer without Agent credentials:
-
-```sh
-swift run --package-path sdk/swift nexting-device-host-smoke \
-  --summary "Allow the Nexting hardware smoke test?"
-```
-
-The tool temporarily authorizes only the first matching device for this
-process, prints the complete negotiated identity/capability summary, sends one
-synthetic request, and exits with `PASS answer=allow` or `PASS answer=deny`.
-It persists no peripheral authorization. See the root `QUICKSTART.md` before
-running it.
-
-`NextingDeviceKit` is the Apple Host SDK for Nexting Device Protocol
-`0.2.0-experimental.2`. It provides strict encoding and decoding for all nine
-profiles, newline framing, extensible Device Info negotiation, sequence
-sources for replay rejection, standard Battery Service helpers, explicit
-peripheral authorization, approval coordination, and a CoreBluetooth central.
+`NextingDeviceKit` is the Apple host SDK for Nexting Device Protocol Experimental 0.2. It provides strict message encoding and decoding, newline framing, extensible Device Info negotiation, standard Battery Service helpers, explicit peripheral authorization, approval coordination, and a CoreBluetooth central.
 
 The package does not contain the Nexting App, Agent adapters, cloud APIs, UI, accounts, or production device identity. A host application supplies its own prompt context, enrollment UI, risk policy, and final Agent answer path.
 
@@ -43,26 +23,25 @@ swift build --package-path sdk/swift
 ```
 
 The test target reads the canonical vectors from
-every file in `protocol/vectors/`, including approval, status, navigation,
-keys, rotary, voice, text, usage, config, and Device Info; it does not keep a
-private copy.
+`protocol/vectors/approval-v1.json`, `status-v1.json`, and
+`device-info-v1.json`; it does not keep a private copy.
 
 ## Public surface
 
-| Type | Responsibility |
-| --- | --- |
-| `NextingDeviceMessage` | Typed values for all nine profiles, plus `requiredProfile` and `interactionSequence` |
-| `NextingDeviceCodec` | Strict newline-terminated wire encoding and decoding |
-| `NextingDeviceLineDecoder` | Bounded fragmented-message assembly |
-| `NextingDeviceInfo` | Negotiated wire, identity, capabilities, vendor facts, firmware, and limits |
-| `NextingDeviceBattery` | Standard Battery Service UUIDs and bounded Battery Level parsing |
-| `NextingDeviceAuthorizationStore` | Explicit stable-peripheral allowlist |
-| `NextingDeviceAuthorizationPolicy` | Release deny-by-default and optional Debug simulator rule |
-| `NextingDeviceCentral` | Recoverable CoreBluetooth setup, negotiated limits, and bounded acknowledged writes |
-| `NextingDeviceSendRejection` | Explicit not-ready, oversize-frame, and queue-backpressure results |
-| `NextingDevicePromptRelay` | One-current-prompt state, two-phase answer completion, and race handling |
-| `NextingDeviceRelayCoordinator` | Connects an authorized transport to host prompt context and authoritative action result |
-| `NextingDeviceAnswerClaimGate` | Single-consumption gate shared by phone and hardware input |
+| Type                               | Responsibility                                                                          |
+| ---------------------------------- | --------------------------------------------------------------------------------------- |
+| `NextingDeviceMessage`             | Present, Answer, Resolved, and Error values                                             |
+| `NextingDeviceCodec`               | Strict newline-terminated wire encoding and decoding                                    |
+| `NextingDeviceLineDecoder`         | Bounded fragmented-message assembly                                                     |
+| `NextingDeviceInfo`                | Negotiated wire, identity, capabilities, vendor facts, firmware, and limits             |
+| `NextingDeviceBattery`             | Standard Battery Service UUIDs and bounded Battery Level parsing                        |
+| `NextingDeviceAuthorizationStore`  | Explicit stable-peripheral allowlist                                                    |
+| `NextingDeviceAuthorizationPolicy` | Release deny-by-default and optional Debug simulator rule                               |
+| `NextingDeviceCentral`             | Recoverable CoreBluetooth setup, negotiated limits, and bounded acknowledged writes     |
+| `NextingDeviceSendRejection`       | Explicit not-ready, oversize-frame, and queue-backpressure results                      |
+| `NextingDevicePromptRelay`         | One-current-prompt state, two-phase answer completion, and race handling                |
+| `NextingDeviceRelayCoordinator`    | Connects an authorized transport to host prompt context and authoritative action result |
+| `NextingDeviceAnswerClaimGate`     | Single-consumption gate shared by phone and hardware input                              |
 
 ## Encode a message
 
@@ -79,23 +58,6 @@ let wire = NextingDeviceCodec.encode(
 ```
 
 `wire` is optional because invalid IDs, summaries, or TTL values fail closed.
-
-Generic physical controls use the same codec. The Host owns their product
-meaning:
-
-```swift
-let message = NextingDeviceMessage.keyEvent(
-    slot: 3,
-    event: .press,
-    sequence: 18
-)
-guard deviceInfo.supportsProfile(message.requiredProfile) else { return }
-guard let wire = NextingDeviceCodec.encode(message) else { return }
-```
-
-Use `interactionSequence` to reject replayed or out-of-order navigation, key,
-rotary, and voice control events. `voice/1` carries only start/stop/cancel;
-capture and transcription stay on the Host microphone.
 
 The codec's public Experimental 0.2 ceiling is 4096 bytes for the complete compact JSON message including its terminating newline. `NextingDeviceLineDecoder` may be configured lower, but not higher, and transport callbacks should pass bounded chunks into it.
 

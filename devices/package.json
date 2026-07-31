@@ -1,14 +1,15 @@
 {
   "name": "@nexting-ai/devices",
-  "version": "0.2.0-experimental.2",
+  "version": "0.2.0-experimental.0",
   "private": true,
   "description": "Open interfaces for building physical control surfaces for AI agents.",
   "type": "module",
   "scripts": {
-    "test": "npm run test:reference && npm run test:scripts && npm run test:firmware",
+    "test": "npm run test:reference && npm run test:scripts && npm run test:firmware && npm run test:multipad",
     "test:reference": "node --test reference/js/test/*.test.mjs",
     "test:scripts": "node --test scripts/*.test.mjs",
     "test:firmware": "npm --prefix firmware/zephyr test",
+    "test:multipad": "cmake -S firmware/multipad -B firmware/multipad/.build && cmake --build firmware/multipad/.build --parallel && ctest --test-dir firmware/multipad/.build --output-on-failure",
     "export": "node scripts/export-nexting-devices.mjs",
     "check:boundary": "node scripts/check-public-boundary.mjs",
     "check:naming": "node scripts/check-naming.mjs",

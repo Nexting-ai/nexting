@@ -7,7 +7,7 @@ new Host SDK surfaces; it does not grant new approval authority to a device.
 
 ## Device firmware
 
-1. Change the Device Info `spec` string to `0.2.0-experimental.2`.
+1. Change the Device Info `spec` string to `0.2.0-experimental.0`.
 2. Keep every required 0.1 field and its existing bound.
 3. Add only capabilities the physical device actually implements:
    `device_id`, manufacturer descriptors, button and rotary counts, display,
@@ -25,7 +25,7 @@ record and revoke it explicitly.
 
 ## Apple hosts
 
-- Update `NextingDeviceKit` to `0.2.0-experimental.2`.
+- Update `NextingDeviceKit` to `0.2.0-experimental.0`.
 - Render `NextingDeviceInfo` as an ordered key/value table. Omit absent
   capabilities rather than filling the screen with empty placeholders.
 - Read live battery from the standard Battery Service only when declared.
@@ -57,12 +57,12 @@ support, and vendor facts remain read-only values reported by the device.
 
 ## Compatibility
 
-| Pair | Expected behavior |
-| --- | --- |
-| 0.2 Host + valid 0.1 device | Approval/status continue; new metadata rows are absent |
-| 0.1 Host + 0.2 device | Required fields continue; unknown bounded optional fields are ignored |
-| 0.2 Host + malformed optional vendor block | Core Device Info remains; vendor block is dropped |
-| Unsupported wire/profile | Connection fails closed as before |
+| Pair                                       | Expected behavior                                                     |
+| ------------------------------------------ | --------------------------------------------------------------------- |
+| 0.2 Host + valid 0.1 device                | Approval/status continue; new metadata rows are absent                |
+| 0.1 Host + 0.2 device                      | Required fields continue; unknown bounded optional fields are ignored |
+| 0.2 Host + malformed optional vendor block | Core Device Info remains; vendor block is dropped                     |
+| Unsupported wire/profile                   | Connection fails closed as before                                     |
 
 The 0.2 label describes the SDK and Device Info contract. It does not change
 wire major `1`, self-certify a board, or make production firmware public.

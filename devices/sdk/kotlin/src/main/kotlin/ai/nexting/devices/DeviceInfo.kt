@@ -72,24 +72,6 @@ data class DeviceInfo(
         get() = supportsApprovalV1 &&
             profiles.contains("status/1") &&
             capabilities.statusSlots > 0
-
-    fun supportsProfile(profile: String): Boolean =
-        supportsApprovalV1 && profiles.contains(profile)
-
-    val supportsNavigationV1: Boolean
-        get() = supportsProfile(DeviceMessageCodec.NAVIGATION_PROFILE)
-    val supportsKeysV1: Boolean
-        get() = supportsProfile(DeviceMessageCodec.KEYS_PROFILE)
-    val supportsRotaryV1: Boolean
-        get() = supportsProfile(DeviceMessageCodec.ROTARY_PROFILE)
-    val supportsVoiceV1: Boolean
-        get() = supportsProfile(DeviceMessageCodec.VOICE_PROFILE)
-    val supportsTextV1: Boolean
-        get() = supportsProfile(DeviceMessageCodec.TEXT_PROFILE)
-    val supportsUsageV1: Boolean
-        get() = supportsProfile(DeviceMessageCodec.USAGE_PROFILE)
-    val supportsConfigV1: Boolean
-        get() = supportsProfile(DeviceMessageCodec.CONFIG_PROFILE)
 }
 
 object DeviceBattery {

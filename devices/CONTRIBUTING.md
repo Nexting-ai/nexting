@@ -33,16 +33,16 @@ Unknown, malformed, unauthorized, stale, duplicate, replaced, or expired input m
 
 ## Run evidence appropriate to the change
 
-| Change | Minimum evidence |
-| --- | --- |
-| Protocol or vectors | JavaScript, Swift, Kotlin, and C sanitizer suites |
-| Swift host SDK | Swift tests and build; consuming product integration tests when Host-facing behavior changes |
-| Public documentation system | Documentation contract, links, public-boundary, naming, and diff checks |
-| C device core | CMake build and CTest with ASan/UBSan |
-| BLE simulator | Private integration contract and warnings-as-errors `swiftc` build |
-| Reference firmware | Firmware contract plus every affected pinned board build |
-| Hardware claim | Complete dated real-iPhone checklist for the exact board and firmware commit |
-| Documentation only | Link, public-boundary, naming, and diff checks |
+| Change                      | Minimum evidence                                                                             |
+| --------------------------- | -------------------------------------------------------------------------------------------- |
+| Protocol or vectors         | JavaScript, Swift, Kotlin, and C sanitizer suites                                            |
+| Swift host SDK              | Swift tests and build; consuming product integration tests when Host-facing behavior changes |
+| Public documentation system | Documentation contract, links, public-boundary, naming, and diff checks                      |
+| C device core               | CMake build and CTest with ASan/UBSan                                                        |
+| BLE simulator               | Private integration contract and warnings-as-errors `swiftc` build                           |
+| Reference firmware          | Firmware contract plus every affected pinned board build                                     |
+| Hardware claim              | Complete dated real-iPhone checklist for the exact board and firmware commit                 |
+| Documentation only          | Link, public-boundary, naming, and diff checks                                               |
 
 The exact commands and current known failures live in [`docs/development.md`](docs/development.md). Do not delete, skip, or weaken a failing security assertion to make a branch green.
 

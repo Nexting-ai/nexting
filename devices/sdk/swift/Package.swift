@@ -9,17 +9,9 @@ let package = Package(
     ],
     products: [
         .library(name: "NextingDeviceKit", targets: ["NextingDeviceKit"]),
-        .executable(
-            name: "nexting-device-host-smoke",
-            targets: ["NextingDeviceHostSmoke"]
-        ),
     ],
     targets: [
         .target(name: "NextingDeviceKit"),
-        .executableTarget(
-            name: "NextingDeviceHostSmoke",
-            dependencies: ["NextingDeviceKit"]
-        ),
         .testTarget(name: "NextingDeviceKitTests", dependencies: ["NextingDeviceKit"]),
     ]
 )

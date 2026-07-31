@@ -68,12 +68,12 @@ npm run check:naming
 
 All four reference targets are Build verified in the pinned workflow:
 
-| Board | Target |
-| --- | --- |
-| nRF52840 DK | `nrf52840dk/nrf52840` |
-| XIAO nRF52840 / Sense | `xiao_ble/nrf52840/sense` |
-| XIAO ESP32-C3 | `xiao_esp32c3/esp32c3` |
-| XIAO ESP32-S3 | `xiao_esp32s3/esp32s3/procpu` |
+| Board                 | Target                        |
+| --------------------- | ----------------------------- |
+| nRF52840 DK           | `nrf52840dk/nrf52840`         |
+| XIAO nRF52840 / Sense | `xiao_ble/nrf52840/sense`     |
+| XIAO ESP32-C3         | `xiao_esp32c3/esp32c3`        |
+| XIAO ESP32-S3         | `xiao_esp32s3/esp32s3/procpu` |
 
 From a configured Zephyr workspace:
 

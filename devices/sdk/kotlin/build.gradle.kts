@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "ai.nexting.devices"
-version = "0.2.0-experimental.2"
+version = "0.2.0-experimental.0"
 
 kotlin {
     compilerOptions {

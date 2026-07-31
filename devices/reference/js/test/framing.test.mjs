@@ -32,7 +32,10 @@ test("line decoder handles a multibyte character split across byte chunks", () =
 
 test("line decoder emits every complete line in one chunk", () => {
   const stream = createLineDecoder({ maxMessageBytes: 512 });
-  assert.deepEqual(stream.push(answerWire + answerWire), [answerMessage, answerMessage]);
+  assert.deepEqual(stream.push(answerWire + answerWire), [
+    answerMessage,
+    answerMessage,
+  ]);
 });
 
 test("oversize input emits one error then discards through newline", () => {

@@ -1,10 +1,10 @@
 {
-  "spec": "0.2.0-experimental.2",
+  "spec": "0.2.0-experimental.0",
   "wire": 1,
   "valid": [
     {
       "name": "required core only",
-      "wire": "{\"protocol\":\"nexting-device\",\"spec\":\"0.2.0-experimental.2\",\"wire\":[1],\"profiles\":[\"approval/1\"],\"model\":\"xiao-nrf52840-ref\",\"fw\":\"0.2.0\",\"max_message_bytes\":4096,\"max_summary_bytes\":240}",
+      "wire": "{\"protocol\":\"nexting-device\",\"spec\":\"0.2.0-experimental.0\",\"wire\":[1],\"profiles\":[\"approval/1\"],\"model\":\"xiao-nrf52840-ref\",\"fw\":\"0.2.0\",\"max_message_bytes\":4096,\"max_summary_bytes\":240}",
       "decoded": {
         "model": "xiao-nrf52840-ref",
         "statusSlots": 0,
@@ -16,7 +16,7 @@
     },
     {
       "name": "complete extensible macropad",
-      "wire": "{\"protocol\":\"nexting-device\",\"spec\":\"0.2.0-experimental.2\",\"wire\":[1],\"profiles\":[\"approval/1\",\"status/1\"],\"model\":\"Multi Pad\",\"fw\":\"0.2.0\",\"max_message_bytes\":4096,\"max_summary_bytes\":240,\"statusSlots\":3,\"device_id\":\"5cc0a66e-a204-4c33-a3ef-b2b352a35489\",\"manufacturer\":\"ILX\",\"display_name\":\"Desk Controller\",\"serial_number\":\"MP-0007\",\"button_count\":12,\"approval_button_count\":2,\"custom_button_count\":10,\"rotary_count\":2,\"rotary_press_count\":2,\"battery_service\":true,\"display\":{\"type\":\"oled\",\"width\":128,\"height\":64},\"haptics\":[\"click\",\"success\"],\"vendor\":{\"namespace\":\"com.ilx.multipad\",\"facts\":[{\"key\":\"layers\",\"label\":\"Key layers\",\"value\":\"4\"},{\"key\":\"socket\",\"label\":\"Socket\",\"value\":\"Kailh hot-swap\"}]}}",
+      "wire": "{\"protocol\":\"nexting-device\",\"spec\":\"0.2.0-experimental.0\",\"wire\":[1],\"profiles\":[\"approval/1\",\"status/1\"],\"model\":\"Multi Pad\",\"fw\":\"0.2.0\",\"max_message_bytes\":4096,\"max_summary_bytes\":240,\"statusSlots\":3,\"device_id\":\"5cc0a66e-a204-4c33-a3ef-b2b352a35489\",\"manufacturer\":\"ILX\",\"display_name\":\"Desk Controller\",\"serial_number\":\"MP-0007\",\"button_count\":12,\"approval_button_count\":2,\"custom_button_count\":10,\"rotary_count\":2,\"rotary_press_count\":2,\"battery_service\":true,\"display\":{\"type\":\"oled\",\"width\":128,\"height\":64},\"haptics\":[\"click\",\"success\"],\"vendor\":{\"namespace\":\"com.ilx.multipad\",\"facts\":[{\"key\":\"layers\",\"label\":\"Key layers\",\"value\":\"4\"},{\"key\":\"socket\",\"label\":\"Socket\",\"value\":\"Kailh hot-swap\"}]}}",
       "decoded": {
         "model": "Multi Pad",
         "statusSlots": 3,
@@ -28,7 +28,7 @@
     },
     {
       "name": "unknown bounded optional field is ignored",
-      "wire": "{\"protocol\":\"nexting-device\",\"spec\":\"0.2.0-experimental.2\",\"wire\":[1],\"profiles\":[\"approval/1\"],\"model\":\"DIY Key\",\"fw\":\"7\",\"max_message_bytes\":1024,\"max_summary_bytes\":120,\"future_capability\":{\"level\":2}}",
+      "wire": "{\"protocol\":\"nexting-device\",\"spec\":\"0.2.0-experimental.0\",\"wire\":[1],\"profiles\":[\"approval/1\"],\"model\":\"DIY Key\",\"fw\":\"7\",\"max_message_bytes\":1024,\"max_summary_bytes\":120,\"future_capability\":{\"level\":2}}",
       "decoded": {
         "model": "DIY Key",
         "statusSlots": 0,
@@ -79,8 +79,8 @@
       "vendor": {
         "namespace": "com.ilx.multipad",
         "facts": [
-          {"key": "layers", "label": "Layers", "value": "4"},
-          {"key": "layers", "label": "Other", "value": "5"}
+          { "key": "layers", "label": "Layers", "value": "4" },
+          { "key": "layers", "label": "Other", "value": "5" }
         ]
       }
     },
@@ -88,28 +88,32 @@
       "name": "html value",
       "vendor": {
         "namespace": "com.ilx.multipad",
-        "facts": [{"key": "layers", "label": "Layers", "value": "<b>4</b>"}]
+        "facts": [{ "key": "layers", "label": "Layers", "value": "<b>4</b>" }]
       }
     },
     {
       "name": "url value",
       "vendor": {
         "namespace": "com.ilx.multipad",
-        "facts": [{"key": "site", "label": "Site", "value": "https://example.com"}]
+        "facts": [
+          { "key": "site", "label": "Site", "value": "https://example.com" }
+        ]
       }
     },
     {
       "name": "bad namespace",
       "vendor": {
         "namespace": "multipad",
-        "facts": [{"key": "layers", "label": "Layers", "value": "4"}]
+        "facts": [{ "key": "layers", "label": "Layers", "value": "4" }]
       }
     },
     {
       "name": "object value",
       "vendor": {
         "namespace": "com.ilx.multipad",
-        "facts": [{"key": "layers", "label": "Layers", "value": {"count": 4}}]
+        "facts": [
+          { "key": "layers", "label": "Layers", "value": { "count": 4 } }
+        ]
       }
     }
   ]

@@ -14,7 +14,9 @@ export function createLineDecoder({ maxMessageBytes = 4096 } = {}) {
     maxMessageBytes < 1 ||
     maxMessageBytes > MAX_MESSAGE_BYTES
   ) {
-    throw new RangeError(`maxMessageBytes must be an integer from 1 to ${MAX_MESSAGE_BYTES}`);
+    throw new RangeError(
+      `maxMessageBytes must be an integer from 1 to ${MAX_MESSAGE_BYTES}`,
+    );
   }
 
   let buffer = [];
