@@ -127,6 +127,11 @@ and not automatic Nexting App USB enrollment.
 The Host still owns USB authorization, Agent routing, and final action sinks.
 The device sees only bounded public frames and never receives credentials.
 
+The [first MultiPad case](cases/multipad-first-case.md) is the reproducible
+walkthrough for this track. It pins the upstream commit, separates the original
+HEX from the Nexting build, maps the first two keys to Allow/Deny, and records
+the evidence required before calling the board compatible.
+
 ## Track 5: Maintain a new language SDK
 
 This is the language SDK route formerly listed as **Track 4: Maintain a new language SDK**;

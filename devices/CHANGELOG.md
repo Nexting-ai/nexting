@@ -4,6 +4,10 @@ This file records changes to public protocol behavior, shared vectors, SDK surfa
 
 ## Unreleased
 
+- Add the first ILX MultiPad case guide with pinned upstream source, public
+  adapter integration, key mapping, build separation, and SWD/serial evidence
+  rules.
+
 ### Added
 
 - A source-first ILX MultiPad USB CDC developer binding that reuses the portable

@@ -5,6 +5,9 @@
 通道接收配置和 Nexting JSON。它不直接连接 Claude Code、Codex 或 Nexting
 云；Host/App 仍然负责授权、会话和最终动作。
 
+如果这是你第一次把公开硬件接入 Nexting，请先读[第一个案例：ILX MultiPad](cases/multipad-first-case.md)。
+本页是硬件路径和风险清单；案例页是从上游源码到新 HEX 的完整开发顺序。
+
 ## 先知道你手上的硬件是哪一版
 
 先看[上游仓库](https://github.com/iLx11/multi-pad)与
@@ -18,6 +21,11 @@ Nexting 适配层，不复制上游 GPL 固件。
 | Module PCB     | 有串口模块、SERIAL 开关、RESET/BOOT  | 可按上游步骤进串口 bootloader |
 | FPC PCB        | 移除串口和按键                       | 需要 SWD/J-Link               |
 | App bootloader | 上游源码没有 DFU/IAP/应用 bootloader | 烧错后不能指望 USB 自救       |
+
+上游工程的烧录配置是 `Config/stlink.cfg`：ST-Link 使用 SWD，目标是 STM32F1。
+`leden.ioc` 明确把 `PA13` 配为 `SWDIO`、`PA14` 配为 `SWCLK`，但上游仓库没有
+原理图或焊盘坐标文件，所以不能从仓库臆造物理焊盘顺序。看到焊盘后按丝印或
+万用表确认 `3V3/GND/SWDIO/SWCLK`，不要把 Type-C CDC 当作烧录器。
 
 拆机前不要猜显示屏、电池、序列号或开关位置。请先拔掉 Type-C，拆下四个
 背面螺丝，拿起后盖时不要拉扯屏幕排线，并拍下 MCU、PCB 版本、BOOT/RESET

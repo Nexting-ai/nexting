@@ -23,6 +23,7 @@ The device does not run the Agent session and does not receive Agent credentials
 | Get ideas for what to build                  | [Browse the use cases](docs/use-cases.md)                                                                                                                  |
 | Build and flash a supported board            | [Run the first approval](docs/first-approval.md), then use the [reference-board track](docs/implementation-tracks.md#track-1-run-a-reference-board)        |
 | Prepare an ILX MultiPad USB device           | Read the [MultiPad USB guide](docs/multipad-usb.md); confirm the PCB before any flash write                                                                |
+| Reproduce the first public hardware case     | Follow the [ILX MultiPad case](docs/cases/multipad-first-case.md); build the upstream firmware before adding Nexting                                       |
 | Add a physical control surface to a Host/App | [Browse every public interface](docs/interfaces.md), then use the [Host integration track](docs/implementation-tracks.md#track-2-integrate-a-host-or-app)  |
 | Port a new MCU, RTOS, or chip family         | [Build the public foundation](docs/foundation-development.md), then use the [MCU port track](docs/implementation-tracks.md#track-3-port-a-new-mcu-or-rtos) |
 | Implement another language SDK               | Use the [language SDK track](docs/implementation-tracks.md#track-4-maintain-a-new-language-sdk)                                                            |

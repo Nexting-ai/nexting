@@ -27,6 +27,7 @@ Choose the task you are trying to complete.
 - [JavaScript reference](../reference/js/README.md): readable protocol, framing, and relay behavior.
 - [Zephyr reference firmware](../firmware/zephyr/README.md): shared Nordic and Espressif adapter.
 - [MultiPad USB CDC guide](multipad-usb.md): open-source STM32 adapter, board variant check, and fail-closed flash preparation.
+- [First case: ILX MultiPad](cases/multipad-first-case.md): reproduce the upstream build, add the public adapter, map the first two keys, and verify the flash path.
 - [Port a chip](porting-guide.md): platform contract and adapter rules.
 
 ## Verify and make claims

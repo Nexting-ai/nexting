@@ -150,6 +150,36 @@ test("reader entry points link the public documentation system", async () => {
   assert.doesNotMatch(development, /ESP32 builds.*pending/i);
 });
 
+test("the first MultiPad case pins its source and keeps flash claims honest", async () => {
+  const [caseGuide, multipad] = await Promise.all([
+    read("docs/cases/multipad-first-case.md"),
+    read("docs/multipad-usb.md"),
+  ]);
+
+  for (const marker of [
+    "iLx11/multi-pad",
+    "78c1ee533a7f513e9f390741c4f5eed1e0aa91b3",
+    "PA13 = SWDIO",
+    "PA14 = SWCLK",
+    "nexting_multipad_adapter.c/.h",
+    "AA BB xx",
+    "present → answer → resolved",
+    "Module PCB",
+    "FPC PCB",
+    "原版固件",
+    "Nexting HEX",
+  ]) {
+    assert.ok(
+      caseGuide.includes(marker),
+      "case guide missing marker: " + marker,
+    );
+  }
+
+  assert.match(caseGuide, /不能把原固件误当作 Nexting 固件/);
+  assert.match(caseGuide, /不能.*直接 Type-C 烧录|Type-C.*bootloader/);
+  assert.match(multipad, /cases\/multipad-first-case\.md/);
+});
+
 test("use-case guide maps scenarios to real profiles and limits", async () => {
   const useCases = await read("docs/use-cases.md");
 
