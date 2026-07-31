@@ -8,17 +8,17 @@ has been performed.
 
 ## Current state
 
-| Phase | Step | Status | Evidence |
-| --- | --- | --- | --- |
-| 0 | Upstream source audit | ✅ complete | STM32F103VET6, USB HID + CDC, commit `78c1ee533a7f513e9f390741c4f5eed1e0aa91b3` |
-| 0 | Portable adapter build | ✅ complete | `npm run test:multipad`, CMake + ctest pass |
-| 0 | Host CDC application path | ✅ complete | Connected `MultiPad_Device` CDC endpoint echoed `AA BB CC` byte-for-byte on 2026-07-31 |
-| 0 | PCB variant identification | ⏳ blocked on enclosure opening | Module vs FPC is not visible from the outside |
-| 0 | Original flash backup | ⏳ not started | Must identify the boot path first |
-| 1 | Serial bootloader write | ⏳ not started | Only possible if the module serial path is present |
-| 1 | SWD recovery/write | ⏳ not started | Required fallback for FPC or failed serial path |
-| 2 | Nexting present/answer/resolved | ⏳ not started | Requires adapter firmware on the exact board |
-| 2 | Status rendering | ⏳ not started | Display/indicator wiring must be photographed and mapped |
+| Phase | Step                            | Status                          | Evidence                                                                               |
+| ----- | ------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------- |
+| 0     | Upstream source audit           | ✅ complete                     | STM32F103VET6, USB HID + CDC, commit `78c1ee533a7f513e9f390741c4f5eed1e0aa91b3`        |
+| 0     | Portable adapter build          | ✅ complete                     | `npm run test:multipad`, CMake + ctest pass                                            |
+| 0     | Host CDC application path       | ✅ complete                     | Connected `MultiPad_Device` CDC endpoint echoed `AA BB CC` byte-for-byte on 2026-07-31 |
+| 0     | PCB variant identification      | ⏳ blocked on enclosure opening | Module vs FPC is not visible from the outside                                          |
+| 0     | Original flash backup           | ⏳ not started                  | Must identify the boot path first                                                      |
+| 1     | Serial bootloader write         | ⏳ not started                  | Only possible if the module serial path is present                                     |
+| 1     | SWD recovery/write              | ⏳ not started                  | Required fallback for FPC or failed serial path                                        |
+| 2     | Nexting present/answer/resolved | ⏳ not started                  | Requires adapter firmware on the exact board                                           |
+| 2     | Status rendering                | ⏳ not started                  | Display/indicator wiring must be photographed and mapped                               |
 
 ## Bring-up order after opening
 

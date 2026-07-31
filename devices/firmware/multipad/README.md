@@ -4,6 +4,11 @@ This directory is the public, source-first integration layer for the open-source
 [ILX MultiPad](https://github.com/iLx11/multi-pad). It is intentionally **not**
 a copy of the vendor repository and it is not Nexting production firmware.
 
+The [first-case walkthrough](../../docs/cases/multipad-first-case.md) is the
+canonical path for applying this adapter to the pinned upstream firmware. This
+directory supplies the public protocol binding and tests; the upstream project
+supplies the board build and remains separately licensed.
+
 ## What is verified before opening the enclosure
 
 The upstream application is an STM32F103VET6 composite USB device:
@@ -21,6 +26,11 @@ the **module PCB** (USB serial switch plus BOOT/RESET buttons) or the **FPC
 PCB** (SWD/J-Link is required). Do not assume the external Type-C connector is
 a bootloader. The included `nexting-multipad-device-info.template.json` keeps
 unknown display, serial, and battery fields absent until that check is done.
+
+The upstream repository exposes firmware facts, not a PCB drawing. Its
+`Config/stlink.cfg` selects ST-Link/SWD and its `leden.ioc` maps `PA13` to
+`SWDIO` and `PA14` to `SWCLK`; physical pad order must be read from the actual
+board before attaching a probe.
 
 ## What this adapter does
 
