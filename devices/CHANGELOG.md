@@ -4,6 +4,17 @@ This file records changes to public protocol behavior, shared vectors, SDK surfa
 
 ## Unreleased
 
+### Changed
+
+- Reframed the Quickstart around the device–Host–Agent architecture and split
+  the XIAO two-button exercise into a clearly labeled Developer Reference
+  tutorial.
+- Added a machine-readable SDK and public developer-enrollment availability
+  source for the repository and website.
+- Expanded the security model with implemented BLE protection, Host
+  authorization and freshness checks, minimum disclosure, volatile-state
+  clearing, and the production identity boundary.
+
 ## 0.2.0-experimental.2 — 2026-07-29
 
 This release keeps wire major 1 and adds seven frozen interaction profiles

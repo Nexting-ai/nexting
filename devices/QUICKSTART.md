@@ -1,92 +1,97 @@
-# Build your first Nexting device
+# Start with Nexting
 
-This is the shortest public path from an empty checkout to one real Allow or
-Deny button press. It uses a Seeed XIAO nRF52840 / Sense and requires neither
-Agent credentials nor unpublished product software.
-
-## 1. Gather and wire
-
-You need a XIAO nRF52840 or XIAO nRF52840 Sense, two normally-open momentary
-buttons, jumper wires, and a data-capable USB-C cable.
-
-| Button | Connect |
-| --- | --- |
-| Allow | D0 to GND |
-| Deny | D1 to GND |
-
-The reference firmware enables internal pull-ups. Do not connect either input
-to 3.3 V.
-
-## 2. Get the exact release
-
-```sh
-git clone --branch devices-v0.2.0-experimental.2 --depth 1 \
-  https://github.com/Nexting-ai/nexting.git
-cd nexting/devices
-```
-
-## 3. Build
-
-On macOS or Linux with Python 3.11+:
-
-```sh
-./scripts/bootstrap-zephyr.sh \
-  --board xiao-nrf52840-sense \
-  --install-sdk \
-  --build
-```
-
-The script creates an isolated Python environment beside `devices/`, initializes
-the pinned Zephyr 4.3.0 workspace, installs west 1.5.0, optionally installs
-Zephyr SDK 0.17.4, and builds:
+Nexting turns nearby buttons, rotaries, LEDs, and displays into a physical
+remote for an Agent. The device never talks directly to Claude Code, Codex, or
+another Agent:
 
 ```text
-devices/build/xiao-nrf52840-sense/zephyr/zephyr.uf2
+Nexting device ⇄ encrypted BLE ⇄ trusted Host ⇄ Agent integration
 ```
 
-Rerunning is safe. Use `--dry-run` to inspect every resolved version and path
-without changing the workspace.
+The trusted Host is the Nexting App or another compatible phone/computer Host.
+It owns credentials, authorization, policy, and Agent-specific mapping. The
+device owns physical input and minimum display state.
 
-## 4. Flash
+## What each layer does
 
-1. Connect the XIAO over USB-C.
-2. Double-press Reset. A volume named `XIAO BLE` appears.
-3. Copy `zephyr.uf2` to that volume. It ejects automatically.
-4. The Pending LED remains off until a Host presents an approval.
+| Layer | Responsibility | Does not receive |
+| --- | --- | --- |
+| Nexting device | Report physical intent and render bounded state | Agent credentials, accounts, session routes |
+| Trusted Host | Authorize the device, validate fresh input, and map profiles to Agent actions | Unbounded or unauthenticated device commands |
+| Agent integration | Continue the Claude Code, Codex, or compatible Agent session | A direct connection from accessory firmware |
 
-## 5. Prove the public BLE path
+This separation lets one public device protocol support a button, wearable,
+macropad, desk panel, or custom display without placing private Agent logic in
+firmware.
 
-From `nexting/devices` on macOS:
+## Choose your path
 
-```sh
-swift run --package-path sdk/swift nexting-device-host-smoke \
-  --summary "Allow the Nexting hardware smoke test?"
-```
+| Path | Start | First proof |
+| --- | --- | --- |
+| Use a supported first-party Nexting product | Follow that product's in-App onboarding, connect the Agent, then pair and authorize the product | The same Agent session receives one validated physical action |
+| Build with the Nexting SDK | Download the public SDK and run the public Host or simulator before adapting hardware | A deterministic profile exchange or `PASS answer=...` local protocol proof |
 
-Allow Bluetooth access. The Host prints the discovered device, Device Info, and
-connection state. Press Allow or Deny once. Success is explicit:
+First-party product onboarding does not authorize third-party or DIY hardware.
+If you do not own a supported product, use the SDK path today.
 
-```text
-PASS answer=allow
-```
+**Have a supported board?**
+[Build the reference approval controller now](docs/reference-approval-controller.md)
+and prove a real button without turning the general Quickstart into a board
+assembly guide.
 
-or:
+Public third-party developer-device enrollment is a separate release gate. The
+machine-readable status in [`docs/availability.json`](docs/availability.json)
+currently records iOS and Android enrollment as unavailable. Do not use an
+unpublished App build or weaken BLE authorization. The supported fallback is
+the public Host smoke test.
 
-```text
-PASS answer=deny
-```
+## First remote interaction
 
-This test proves discovery, encrypted subscription, bounded framing, the
-`approval/1` state machine, and a real button without requiring an Agent.
+Every supported interaction follows the same shape:
 
-## 6. Connect an Agent
+1. The Agent produces a request or state change.
+2. The Host verifies that the selected device is authorized and declared the
+   required profile.
+3. The Host sends only bounded state over encrypted BLE.
+4. The user presses, turns, navigates, or holds a physical control.
+5. The Host validates identity, freshness, sequence, and policy before applying
+   the mapped action to the same Agent session.
 
-Public availability is a separate gate. As of 2026-07-27, **App Store 2.4**
-does not include Experimental 0.2 developer-device enrollment. Do not weaken
-BLE security or look for an unpublished build. Use the public Host smoke test
-today. The web SDK page will name the first verified iOS and Android versions
-when the enrollment UI ships publicly.
+With a released first-party product and supported Agent integration, this is a
+remote Agent interaction. With the public SDK and Host smoke test, it is a
+local protocol proof: useful for validating the open contract, but not a claim
+that the public Nexting App already enrolls DIY hardware.
 
-Next: read [troubleshooting](docs/troubleshooting.md), then the
-[Device SDK](sdk/c/README.md), [Swift Host SDK](sdk/swift/README.md), or
-[Kotlin Host SDK](sdk/kotlin/README.md).
+## Why the Host exists
+
+- Agent credentials and authoritative sessions stay on the trusted Host.
+- Firmware implements stable physical intent rather than Claude Code or Codex
+  internals.
+- Agent mappings and risk policy can change without reflashing the accessory.
+- The Host rejects undeclared profiles, stale sequences, expired requests,
+  duplicate answers, and revoked devices.
+- The same device contract works across richer custom hardware.
+
+## Security in one minute
+
+The local control link uses BLE LE Secure Connections, bonding, and encrypted
+GATT access. The device receives minimum profile data, such as an opaque
+request ID, bounded summary, fixed choices, relative lifetime, or volatile
+display state.
+
+The Developer Reference uses BLE “Just Works.” That encrypts the bonded link
+but does not authenticate against an active person-in-the-middle during
+pairing. Production devices need authenticated application identity and signed
+firmware. Read the complete [Security model](SECURITY.md) before making a
+product claim.
+
+## Next steps
+
+- [Build the reference approval controller](docs/reference-approval-controller.md)
+- [Troubleshoot setup, BLE, and Device Info](docs/troubleshooting.md)
+- [Map a Codex App Server request in your own Host](docs/codex-app-server.md)
+- [Integrate the C99 Device SDK](sdk/c/README.md)
+- [Integrate the Swift Host SDK](sdk/swift/README.md)
+- [Integrate the Kotlin Host SDK](sdk/kotlin/README.md)
+- [Read every public interface](docs/interfaces.md)
+- [Read the normative protocol](SPEC.md)

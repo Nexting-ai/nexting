@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
@@ -268,33 +269,112 @@ test("Agent and maintainer guides use the same sources and claims", async () => 
   }
 });
 
-test("public Quickstart is self-serve and honest about the public App gate", async () => {
-  const [overview, index, quickstart, troubleshooting, firstApproval] =
-    await Promise.all([
-      read("README.md"),
-      read("docs/README.md"),
-      read("QUICKSTART.md"),
-      read("docs/troubleshooting.md"),
-      read("docs/first-approval.md"),
-    ]);
+test("public Quickstart explains the product before optional reference hardware", async () => {
+  const referenceControllerUrl = new URL(
+    "docs/reference-approval-controller.md",
+    root,
+  );
+  const availabilityUrl = new URL("docs/availability.json", root);
+  assert.ok(
+    existsSync(referenceControllerUrl),
+    "reference approval controller guide must exist",
+  );
+  assert.ok(existsSync(availabilityUrl), "availability source must exist");
+
+  const [
+    overview,
+    index,
+    quickstart,
+    referenceController,
+    availability,
+    packageJson,
+    security,
+    troubleshooting,
+    firstApproval,
+  ] = await Promise.all([
+    read("README.md"),
+    read("docs/README.md"),
+    read("QUICKSTART.md"),
+    read("docs/reference-approval-controller.md"),
+    read("docs/availability.json").then(JSON.parse),
+    read("package.json").then(JSON.parse),
+    read("SECURITY.md"),
+    read("docs/troubleshooting.md"),
+    read("docs/first-approval.md"),
+  ]);
 
   for (const source of [overview, index]) {
     assert.match(source, /QUICKSTART\.md/);
     assert.match(source, /troubleshooting\.md/);
   }
   for (const marker of [
-    "devices-v0.2.0-experimental.2",
+    "Nexting device",
+    "encrypted BLE",
+    "trusted Host",
+    "Agent integration",
+    "Use a supported first-party Nexting product",
+    "Build with the Nexting SDK",
+    "First remote interaction",
+    "local protocol proof",
+    "third-party developer-device enrollment",
+  ]) {
+    assert.ok(quickstart.includes(marker), "Quickstart missing marker: " + marker);
+  }
+  assert.doesNotMatch(
+    quickstart,
+    /Build your first Nexting device|two-button Nexting device|D0 to GND|D1 to GND/,
+  );
+  assert.doesNotMatch(quickstart, /private Nexting App|Debug build/);
+
+  for (const marker of [
+    "Build the reference approval controller",
+    "Developer Reference",
+    "approval/1",
     "XIAO nRF52840",
     "D0",
     "D1",
     "bootstrap-zephyr.sh",
     "nexting-device-host-smoke",
     "PASS answer=",
-    "App Store 2.4",
   ]) {
-    assert.ok(quickstart.includes(marker), "Quickstart missing marker: " + marker);
+    assert.ok(
+      referenceController.includes(marker),
+      "reference controller missing marker: " + marker,
+    );
   }
-  assert.doesNotMatch(quickstart, /private Nexting App|Debug build/);
+  assert.match(
+    referenceController,
+    /not the only or default shape of a Nexting device/i,
+  );
+  assert.match(overview, /docs\/reference-approval-controller\.md/);
+  assert.match(index, /reference-approval-controller\.md/);
+
+  assert.equal(availability.sdkVersion, packageJson.version);
+  assert.equal(availability.wireMajor, 1);
+  assert.equal(availability.developerEnrollment.ios.available, false);
+  assert.equal(availability.developerEnrollment.android.available, false);
+  assert.equal(availability.fallback, "host-smoke");
+
+  for (const marker of [
+    "BLE LE Secure Connections",
+    "encrypted GATT",
+    "opaque request ID",
+    "single consumption",
+    "duplicate",
+    "replay",
+    "disconnect",
+    "Just Works",
+    "authenticated application identity",
+    "voice/1",
+    "never carries audio bytes or transcripts",
+  ]) {
+    assert.ok(security.includes(marker), "Security missing marker: " + marker);
+  }
+  assert.doesNotMatch(
+    security,
+    /fully secure|device-to-Agent end-to-end encryption|no data leaves your device/i,
+  );
+
   assert.doesNotMatch(firstApproval, /current private Nexting App|Debug build/);
   assert.match(troubleshooting, /west: unknown command "build"/);
   assert.match(troubleshooting, /Bluetooth/);
