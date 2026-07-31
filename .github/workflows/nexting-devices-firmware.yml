@@ -8,8 +8,6 @@ on:
       - "devices/west.yml"
       - ".github/workflows/nexting-devices-firmware.yml"
   push:
-    tags:
-      - "devices-v*"
     paths:
       - "devices/firmware/**"
       - "devices/sdk/c/**"
@@ -32,13 +30,11 @@ jobs:
         include:
           - board: nrf52840dk/nrf52840
             artifact: nrf52840dk
-            flash: west flash with the onboard SWD debugger
           - board: xiao_ble/nrf52840/sense
             artifact: xiao-nrf52840-sense
-            flash: copy zephyr.uf2 to the XIAO BLE mass-storage bootloader
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - uses: zephyrproject-rtos/action-zephyr-setup@v1
@@ -48,30 +44,14 @@ jobs:
           sdk-version: 0.17.4
           west-version: 1.5.0
       - run: west build -p always -b ${{ matrix.board }} devices/firmware/zephyr
-      - name: Package self-describing firmware asset
-        env:
-          BOARD: ${{ matrix.board }}
-          ARTIFACT: ${{ matrix.artifact }}
-          FLASH: ${{ matrix.flash }}
-        run: |
-          set -eu
-          bundle="nexting-device-${ARTIFACT}-${GITHUB_SHA}"
-          mkdir -p "${bundle}"
-          for image in build/zephyr/zephyr.elf build/zephyr/zephyr.bin build/zephyr/zephyr.hex build/zephyr/zephyr.uf2; do
-            if [ -f "${image}" ]; then cp "${image}" "${bundle}/"; fi
-          done
-          test -n "$(find "${bundle}" -type f -print -quit)"
-          (
-            cd "${bundle}"
-            sha256sum zephyr.* > SHA256SUMS
-            printf '{\n  "schemaVersion": 1,\n  "sourceCommit": "%s",\n  "board": "%s",\n  "artifact": "%s",\n  "flash": "%s",\n  "zephyr": "4.3.0",\n  "zephyrSdk": "0.17.4",\n  "west": "1.5.0",\n  "evidence": "Build verified",\n  "boardVerified": false\n}\n' \
-              "${GITHUB_SHA}" "${BOARD}" "${ARTIFACT}" "${FLASH}" > artifact-manifest.json
-          )
-          tar -czf "${bundle}.tar.gz" "${bundle}"
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v4
         with:
           name: nexting-device-${{ matrix.artifact }}-${{ github.sha }}
-          path: nexting-device-${{ matrix.artifact }}-${{ github.sha }}.tar.gz
+          path: |
+            build/zephyr/zephyr.elf
+            build/zephyr/zephyr.bin
+            build/zephyr/zephyr.hex
+            build/zephyr/zephyr.uf2
           if-no-files-found: error
 
   espressif:
@@ -82,13 +62,11 @@ jobs:
         include:
           - board: xiao_esp32c3/esp32c3
             artifact: xiao-esp32c3
-            flash: west flash through the Espressif serial bootloader
           - board: xiao_esp32s3/esp32s3/procpu
             artifact: xiao-esp32s3
-            flash: west flash through the Espressif serial bootloader
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - uses: zephyrproject-rtos/action-zephyr-setup@v1
@@ -99,52 +77,11 @@ jobs:
           west-version: 1.5.0
       - run: west blobs fetch hal_espressif
       - run: west build -p always -b ${{ matrix.board }} devices/firmware/zephyr
-      - name: Package self-describing firmware asset
-        env:
-          BOARD: ${{ matrix.board }}
-          ARTIFACT: ${{ matrix.artifact }}
-          FLASH: ${{ matrix.flash }}
-        run: |
-          set -eu
-          bundle="nexting-device-${ARTIFACT}-${GITHUB_SHA}"
-          mkdir -p "${bundle}"
-          for image in build/zephyr/zephyr.elf build/zephyr/zephyr.bin build/zephyr/zephyr.hex; do
-            if [ -f "${image}" ]; then cp "${image}" "${bundle}/"; fi
-          done
-          test -n "$(find "${bundle}" -type f -print -quit)"
-          (
-            cd "${bundle}"
-            sha256sum zephyr.* > SHA256SUMS
-            printf '{\n  "schemaVersion": 1,\n  "sourceCommit": "%s",\n  "board": "%s",\n  "artifact": "%s",\n  "flash": "%s",\n  "zephyr": "4.3.0",\n  "zephyrSdk": "0.17.4",\n  "west": "1.5.0",\n  "evidence": "Build verified",\n  "boardVerified": false\n}\n' \
-              "${GITHUB_SHA}" "${BOARD}" "${ARTIFACT}" "${FLASH}" > artifact-manifest.json
-          )
-          tar -czf "${bundle}.tar.gz" "${bundle}"
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v4
         with:
           name: nexting-device-${{ matrix.artifact }}-${{ github.sha }}
-          path: nexting-device-${{ matrix.artifact }}-${{ github.sha }}.tar.gz
+          path: |
+            build/zephyr/zephyr.elf
+            build/zephyr/zephyr.bin
+            build/zephyr/zephyr.hex
           if-no-files-found: error
-
-  release:
-    if: startsWith(github.ref, 'refs/tags/devices-v')
-    needs:
-      - nordic
-      - espressif
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v8
-        with:
-          pattern: nexting-device-*-${{ github.sha }}
-          path: release-assets
-          merge-multiple: true
-      - name: Publish immutable Experimental release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "${GITHUB_REF_NAME}" release-assets/*.tar.gz \
-            --repo "${GITHUB_REPOSITORY}" \
-            --prerelease \
-            --title "Nexting Devices SDK ${GITHUB_REF_NAME#devices-v}" \
-            --notes "Public Experimental release. Firmware assets are Build verified with pinned Zephyr 4.3.0, Zephyr SDK 0.17.4, and west 1.5.0. They are not Board verified; inspect each artifact-manifest.json and the repository conformance guide."
