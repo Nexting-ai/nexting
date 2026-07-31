@@ -6,9 +6,12 @@ Nexting Devices lets a button, wearable, desk panel, macropad, or custom
 product control and display bounded AI Agent interactions through a trusted
 Host/App.
 
-**New here?** [Build, flash, and prove a two-button XIAO nRF52840 device](QUICKSTART.md).
-The guide owns the exact release, wiring, bootstrap command, expected output,
-public-App boundary, and [troubleshooting path](docs/troubleshooting.md).
+**New here?**
+[Understand the connection and run your first interaction](QUICKSTART.md).
+Hardware developers can then
+[build the reference approval controller](docs/reference-approval-controller.md).
+Public App availability is machine-readable in
+[`docs/availability.json`](docs/availability.json).
 
 **Nearby device, agent anywhere.** The device talks to the Host App over Bluetooth LE; the Host reaches the user's agent wherever it runs — the computer across the room or across the internet. Every device built on this contract is a remote control surface for its owner's agents, not a desk-bound accessory.
 
@@ -26,7 +29,8 @@ The device does not run the Agent session and does not receive Agent credentials
 
 | You want to… | Start here |
 | --- | --- |
-| Build your first working device | [Follow the public Quickstart](QUICKSTART.md) |
+| Understand and connect Nexting | [Follow the public Quickstart](QUICKSTART.md) |
+| Build the XIAO approval reference | [Build the reference approval controller](docs/reference-approval-controller.md) |
 | Get ideas for what to build | [Browse the use cases](docs/use-cases.md) |
 | Build and flash a supported board | [Run the first approval](docs/first-approval.md), then use the [reference-board track](docs/implementation-tracks.md#track-1-run-a-reference-board) |
 | Add a physical control surface to a Host/App | [Browse every public interface](docs/interfaces.md), then use the [Host integration track](docs/implementation-tracks.md#track-2-integrate-a-host-or-app) |
@@ -98,7 +102,8 @@ All four share one Zephyr application and the portable C99 core. All four are Bu
 
 ## Documentation
 
-- [Build your first device](QUICKSTART.md)
+- [Understand the device–Host–Agent connection](QUICKSTART.md)
+- [Build the reference approval controller](docs/reference-approval-controller.md)
 - [Troubleshoot setup, build, BLE, and Device Info](docs/troubleshooting.md)
 - [Documentation by task](docs/README.md)
 - [Browse the use cases](docs/use-cases.md)

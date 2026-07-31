@@ -2,9 +2,10 @@
 
 Choose the task you are trying to complete.
 
-Start with the root [Quickstart](../QUICKSTART.md). It takes one supported
-board from wiring to a public Host `PASS` result. If a checkpoint fails, use
-[Troubleshooting](troubleshooting.md) before reading the architecture guides.
+Start with the root [Quickstart](../QUICKSTART.md). It explains the
+device–Host–Agent architecture, separates first-party product onboarding from
+SDK development, and leads to a remote interaction or honest local protocol
+proof. If a checkpoint fails, use [Troubleshooting](troubleshooting.md).
 
 ## Understand the product and foundation
 
@@ -19,7 +20,9 @@ board from wiring to a public Host `PASS` result. If a checkpoint fails, use
 
 ## Run a working example
 
-- [Public Quickstart](../QUICKSTART.md): wire, build, flash, and prove the golden board.
+- [Public Quickstart](../QUICKSTART.md): understand, connect, and choose the supported first result.
+- [Reference approval controller](reference-approval-controller.md): wire, build, flash, and prove the XIAO Developer Reference.
+- [Public availability](availability.json): machine-readable SDK version and third-party App enrollment gate.
 - [Troubleshooting](troubleshooting.md): repair setup, toolchain, flash, BLE, and Device Info failures.
 - [First hardware approval](first-approval.md): build, flash, enroll, and answer one request.
 - [macOS BLE simulator](../examples/macos-device-simulator/README.md): exercise a real iPhone without a board.

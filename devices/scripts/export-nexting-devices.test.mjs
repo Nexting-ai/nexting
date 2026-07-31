@@ -41,6 +41,25 @@ test("exports a deterministic devices subtree without touching unrelated public 
     assert.match(await readFile(join(publicCheckout, "devices", "SHA256SUMS"), "utf8"), /SPEC\.md/);
     assert.match(
       await readFile(
+        join(publicCheckout, "devices", "docs", "availability.json"),
+        "utf8",
+      ),
+      /"fallback": "host-smoke"/,
+    );
+    assert.match(
+      await readFile(
+        join(
+          publicCheckout,
+          "devices",
+          "docs",
+          "reference-approval-controller.md",
+        ),
+        "utf8",
+      ),
+      /Developer Reference/,
+    );
+    assert.match(
+      await readFile(
         join(publicCheckout, ".github", "workflows", "nexting-devices-ci.yml"),
         "utf8",
       ),
@@ -70,7 +89,7 @@ test("CLI executes when invoked through a symlinked checkout path", async () => 
     assert.match(stdout, /public export passed/);
     assert.match(
       await readFile(join(publicCheckout, "devices", "QUICKSTART.md"), "utf8"),
-      /Build your first Nexting device/,
+      /Nexting device ⇄ encrypted BLE ⇄ trusted Host ⇄ Agent integration/,
     );
   } finally {
     await rm(root, { recursive: true, force: true });
