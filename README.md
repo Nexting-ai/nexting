@@ -5,8 +5,8 @@
 <h1 align="center">Nexting</h1>
 
 <p align="center">
-  <strong>A wearable agent dispatcher for your own AI agents.</strong><br>
-  Talk to your Claude Code, Codex, or OpenClaw anywhere, anytime — wear it, speak, dispatch. No phone, no app.
+  <strong>Remote control for your own AI agents.</strong><br>
+  Connect to Claude Code and Codex on your Mac or Windows PC. View sessions, send tasks, and drive them remotely from your phone, PIN, or Ring.
 </p>
 
 <p align="center">
@@ -25,9 +25,9 @@
   <img src="public/remote-control-agent-dark.png" alt="Nexting Remote Control Agent — Mac, phone, and Ring control" width="100%">
 </p>
 
-You already have powerful agents — Claude Code, Codex, OpenClaw. They're locked to your desk. **Nexting is the channel between you and them**: a terminal you wear, so you can reach your own agent without pulling out your phone or opening an app. Tap it, say one sentence, and the task is **dispatched to your own agent**. It runs in the background and the result comes back when it's done.
+You already have powerful agents — Claude Code, Codex, OpenClaw — running on your computer. **Nexting connects you to them remotely**: view live sessions, send tasks, and drive Claude Code or Codex from your phone, PIN, or Ring, wherever you are. When you only need to send an idea, speak once and let your own agent work in the background.
 
-**Dispatch, not chat — press, speak, move on.**
+**Remote control, not just dispatch — view, send, drive.**
 
 Nexting comes in two form factors, one capability. The **PIN** ($129, shipping now) pins to your collar — the one you can get today. The **Ring** — our flagship, in private beta — makes "raise your hand and dispatch an agent" as invisible as a ring on your finger. Same capabilities, two shapes. Your whole agent team, always on you.
 
@@ -44,11 +44,11 @@ You speak → Nexting PIN (BLE) → iPhone App (STT) → Cloud → your own agen
 
 | | |
 |---|---|
+| **Remote control** | Attach to a Claude Code or Codex session on your Mac or Windows PC, view it live, send tasks, and drive it remotely from your phone or wearable. |
 | **Dispatch, not chat** | Fire-and-forget: say it once, your agent runs it in the background. Not Q&A. |
 | **Your own agent** | Drives the agents you already run — Claude Code, Codex, OpenClaw. Not a locked-in model. |
 | **Private by design** | Claude Code & Codex support optional end-to-end encryption — turn it on and Nexting relays ciphertext, not your session. |
 | **Delivers while you're offline** | Phone locked, on the move? The agent still finishes the job and pushes the result back. |
-| **Remote-control your agent** | Attach to a Claude Code or Codex session on your Mac or Windows PC and drive it from your pocket — live. |
 | **Deep iPhone integration** | Calendar, Reminders, Contacts, Health, HomeKit — all by voice. |
 
 Nexting isn't another voice assistant — it's the pocket control surface for your agent team.
