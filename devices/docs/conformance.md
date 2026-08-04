@@ -4,12 +4,12 @@ Compatibility is a product claim backed by a specific kind of evidence. Passing 
 
 ## Evidence ladder
 
-| Level                   | What it proves                                                                                         | What it does not prove                                                           |
-| ----------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| **Protocol conformant** | An implementation matches shared valid/invalid vectors, framing limits, enums, and state semantics     | A compiler target, radio, physical controls, or product security                 |
-| **Core tested**         | The portable implementation passes codec, stream, and approval-state tests under its supported runtime | BLE integration or a named board                                                 |
-| **Build verified**      | A pinned toolchain produced firmware for one exact target and retained an artifact                     | Pairing, delivery, buttons, LEDs, race handling, or revocation                   |
-| **Board verified**      | A named physical board and firmware commit completed the dated real-iPhone checklist                   | Certification of a different board, firmware, App, or production security design |
+| Level | What it proves | What it does not prove |
+| --- | --- | --- |
+| **Protocol conformant** | An implementation matches shared valid/invalid vectors, framing limits, enums, and state semantics | A compiler target, radio, physical controls, or product security |
+| **Core tested** | The portable implementation passes codec, stream, and approval-state tests under its supported runtime | BLE integration or a named board |
+| **Build verified** | A pinned toolchain produced firmware for one exact target and retained an artifact | Pairing, delivery, buttons, LEDs, race handling, or revocation |
+| **Board verified** | A named physical board and firmware commit completed the dated real-iPhone checklist | Certification of a different board, firmware, App, or production security design |
 
 Build verified is not Board verified. Board verified is not Nexting Compatible.
 
@@ -19,7 +19,6 @@ Run every shared vector and framing/state test for the implementation. The offic
 
 ```sh
 npm run test:reference
-swift test --package-path sdk/swift
 cmake -S sdk/c -B /tmp/nexting-device-c -DNEXTING_DEVICE_SANITIZE=ON
 cmake --build /tmp/nexting-device-c
 ctest --test-dir /tmp/nexting-device-c --output-on-failure
@@ -67,11 +66,11 @@ The checklist covers encrypted traffic, enrollment, authorization, Allow/Deny, p
 
 ## Allowed wording
 
-| Evidence       | Allowed public wording                                                                                               |
-| -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Protocol only  | “Implements Nexting Device Protocol Experimental 0.2” with the tested version                                        |
-| Core tested    | “Core tested against the Experimental 0.2 vectors”                                                                   |
-| Build verified | “Build verified for XIAO ESP32-C3 target `xiao_esp32c3/esp32c3` on Zephyr 4.3.0 / SDK 0.17.4”                        |
+| Evidence | Allowed public wording |
+| --- | --- |
+| Protocol only | “Implements Nexting Device Protocol Experimental 0.2” with the tested version |
+| Core tested | “Core tested against the Experimental 0.2 vectors” |
+| Build verified | “Build verified for XIAO ESP32-C3 target `xiao_esp32c3/esp32c3` on Zephyr 4.3.0 / SDK 0.17.4” |
 | Board verified | “Board verified,” followed by a link to the dated evidence record that names firmware, App, iPhone, and iOS versions |
 
 Do not say “secure,” “certified,” “production ready,” or “Nexting Compatible” from these gates alone.

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sdkVersion": "0.2.0-experimental.2",
+  "wireMajor": 1,
+  "checkedAt": "2026-07-31",
+  "developerEnrollment": {
+    "ios": {
+      "available": false,
+      "verifiedThrough": "App Store 2.4"
+    },
+    "android": {
+      "available": false,
+      "verifiedThrough": "No public version verified"
+    }
+  },
+  "fallback": "firmware-tests"
+}

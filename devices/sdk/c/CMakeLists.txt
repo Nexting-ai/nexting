@@ -53,6 +53,19 @@ if(NOT NEXTING_DEVICE_INFO_VECTOR_RESULT EQUAL 0)
   message(FATAL_ERROR "Could not generate C Device Info vectors")
 endif()
 
+set(NEXTING_DEVICE_INTERACTION_VECTOR_HEADER
+    "${CMAKE_CURRENT_BINARY_DIR}/generated_interaction_vectors.h")
+execute_process(
+  COMMAND "${NEXTING_DEVICE_NODE_EXECUTABLE}"
+          "${CMAKE_CURRENT_SOURCE_DIR}/tests/generate_interaction_vectors.mjs"
+          "${CMAKE_CURRENT_SOURCE_DIR}/../../protocol/vectors"
+          "${NEXTING_DEVICE_INTERACTION_VECTOR_HEADER}"
+  RESULT_VARIABLE NEXTING_DEVICE_INTERACTION_VECTOR_RESULT
+)
+if(NOT NEXTING_DEVICE_INTERACTION_VECTOR_RESULT EQUAL 0)
+  message(FATAL_ERROR "Could not generate C interaction vectors")
+endif()
+
 add_library(nexting_device STATIC src/nexting_device.c)
 target_include_directories(nexting_device PUBLIC include)
 target_compile_options(nexting_device PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -63,7 +76,7 @@ if(NEXTING_DEVICE_SANITIZE AND CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
 endif()
 
 enable_testing()
-foreach(test_name IN ITEMS codec stream relay status device_info)
+foreach(test_name IN ITEMS codec stream relay status device_info interactions)
   add_executable(test_${test_name} tests/test_${test_name}.c)
   target_include_directories(test_${test_name} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
   target_link_libraries(test_${test_name} PRIVATE nexting_device)

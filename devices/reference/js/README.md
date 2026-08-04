@@ -2,7 +2,7 @@
 
 This package is the executable, human-readable reference for Nexting Device Protocol Experimental 0.2. Use it to understand the wire contract, generate conformance fixtures, and compare another SDK or firmware port with the canonical behavior.
 
-It is deliberately marked `private`. Experimental 0.2 does not publish this package to npm, and a product should not make its runtime depend on the reference implementation. Product hosts should use `NextingDeviceKit` or implement the public specification; firmware should use the portable C99 core.
+It is deliberately marked `private`. Experimental 0.2 does not publish this package to npm, and a product should not make its runtime depend on the reference implementation. Use it for protocol tests, fixture generation, and a portable implementation reference; firmware should use the C99 device core. The official Nexting App owns Bluetooth enrollment, authorization, and Agent actions.
 
 ## Explicit entry points
 

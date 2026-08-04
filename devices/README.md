@@ -2,9 +2,18 @@
 
 Open interfaces for building physical control surfaces for AI agents.
 
-Nexting Devices lets a button, wearable, desk panel, macropad, or custom product show one pending AI approval and return a real user's Allow or Deny choice through a trusted Host/App.
+Nexting Devices lets a button, wearable, desk panel, macropad, or custom
+product control and display bounded AI Agent interactions through the official
+Nexting App.
 
-**Nearby device, agent anywhere.** The device talks to the Host App over Bluetooth LE; the Host reaches the user's agent wherever it runs — the computer across the room or across the internet. Every device built on this contract is a remote control surface for its owner's agents, not a desk-bound accessory.
+**New here?**
+[Understand the connection and run your first interaction](QUICKSTART.md).
+Hardware developers can then
+[build the reference approval controller](docs/reference-approval-controller.md).
+App availability is machine-readable in
+[`docs/availability.json`](docs/availability.json).
+
+**Nearby device, agent anywhere.** The device talks to the official Nexting App over Bluetooth LE; the App reaches the user's agent wherever it runs — the computer across the room or across the internet. Every device built on this contract is a remote control surface for its owner's agents, not a desk-bound accessory.
 
 ## The first product experience
 
@@ -18,32 +27,41 @@ The device does not run the Agent session and does not receive Agent credentials
 
 ## Choose your path
 
-| You want to…                                 | Start here                                                                                                                                                 |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Get ideas for what to build                  | [Browse the use cases](docs/use-cases.md)                                                                                                                  |
-| Build and flash a supported board            | [Run the first approval](docs/first-approval.md), then use the [reference-board track](docs/implementation-tracks.md#track-1-run-a-reference-board)        |
-| Prepare an ILX MultiPad USB device           | Read the [MultiPad USB guide](docs/multipad-usb.md); confirm the PCB before any flash write                                                                |
-| Reproduce the first public hardware case     | Follow the [ILX MultiPad case](docs/cases/multipad-first-case.md); build the upstream firmware before adding Nexting                                       |
-| Add a physical control surface to a Host/App | [Browse every public interface](docs/interfaces.md), then use the [Host integration track](docs/implementation-tracks.md#track-2-integrate-a-host-or-app)  |
-| Port a new MCU, RTOS, or chip family         | [Build the public foundation](docs/foundation-development.md), then use the [MCU port track](docs/implementation-tracks.md#track-3-port-a-new-mcu-or-rtos) |
-| Implement another language SDK               | Use the [language SDK track](docs/implementation-tracks.md#track-4-maintain-a-new-language-sdk)                                                            |
-| Make a compatibility claim                   | [Understand compatibility evidence](docs/conformance.md)                                                                                                   |
-| Upgrade an Experimental 0.1 integration      | [Read the 0.2 migration guide](docs/migration-0.1-to-0.2.md)                                                                                               |
+| You want to… | Start here |
+| --- | --- |
+| Understand and connect Nexting | [Follow the public Quickstart](QUICKSTART.md) |
+| Build the XIAO approval reference | [Build the reference approval controller](docs/reference-approval-controller.md) |
+| Get ideas for what to build | [Browse the use cases](docs/use-cases.md) |
+| Build and flash a supported board | [Run the first approval](docs/first-approval.md), then use the [reference-board track](docs/implementation-tracks.md#track-1-run-a-reference-board) |
+| Understand the device connection contract | [Browse every public interface](docs/interfaces.md) |
+| Port a new MCU, RTOS, or chip family | [Build the public foundation](docs/foundation-development.md), then use the [MCU port track](docs/implementation-tracks.md#track-3-port-a-new-mcu-or-rtos) |
+| Implement another protocol tool | Use the [protocol-tooling track](docs/implementation-tracks.md#track-3-maintain-protocol-tooling) |
+| Make a compatibility claim | [Understand compatibility evidence](docs/conformance.md) |
+| Upgrade an Experimental 0.1 integration | [Read the 0.2 migration guide](docs/migration-0.1-to-0.2.md) |
 
-## Experimental 0.2
+## Experimental 0.2.0-experimental.2
 
-The first two profiles remain deliberately small: one active `approval/1`
-request with Allow and Deny, plus bounded `status/1` Agent indicators over
-Bluetooth LE. Version 0.2 adds extensible Device Info and Android SDK parity
-without changing wire major 1.
+The release keeps wire major 1 and publishes nine independently negotiated
+profiles. A device declares only the profiles and hardware it implements:
+
+| Profile | What it carries |
+| --- | --- |
+| `approval/1` | One active Allow/Deny request with TTL |
+| `status/1` | Volatile Agent state for up to eight slots |
+| `navigation/1` | Bounded options, cursor movement, and selection |
+| `keys/1` | Host-defined key labels/light state and generic key events |
+| `rotary/1` | Host-defined dial labels plus relative turn/press events |
+| `voice/1` | Push-to-talk start/stop/cancel control; no audio |
+| `text/1` | Bounded plain text for a device display |
+| `usage/1` | Model label and bounded usage counters |
+| `config/1` | Versioned atomic configuration and result |
 
 Public:
 
 - BLE GATT and wire specification;
 - shared schema and valid/hostile vectors;
 - JavaScript readable reference;
-- Swift and Kotlin Host SDKs plus a portable C99 device SDK;
-- macOS BLE simulator;
+- portable C99 device SDK and JavaScript protocol reference;
 - equal Zephyr references for nRF52840 and ESP32;
 - conformance tests, build workflows, and developer documentation.
 
@@ -56,14 +74,18 @@ Not public:
 
 The wire format may change before 1.0. Developer Reference devices are not production security certifications.
 
-## The capability direction
+## Extensible physical controls
 
-Experimental 0.2 is the first tile, not the ceiling. Device Info can already
-describe identity, buttons, rotary controls, display, haptics, standard battery
-support, and inert vendor facts so iOS and Android can render one extensible
-information table. Interactive command keys, navigation, rotary events, text,
-voice, and configuration remain separate future profiles. See [the capability
-roadmap](docs/foundation-development.md#beyond-experimental-02-the-capability-roadmap).
+Device Info describes identity, buttons, rotary controls, display, haptics,
+standard battery support, inert vendor facts, and the exact versioned profiles
+the device supports. The Host rejects traffic for undeclared profiles.
+
+The profiles carry generic physical intent, not private Agent commands. The
+trusted Host's Agent adapter decides whether key 3 means `fork`, whether a dial
+switches a session or model, and which bounded text is safe to display.
+`voice/1` carries only push-to-talk control: capture, permission, audio, and
+transcription stay on the Host microphone. This lets DIY hardware remain useful
+without receiving Agent credentials, internal session IDs, or account data.
 
 Two identity tiers share the contract: Nexting first-party products (PIN, Ring) carry production identity and the full capability set; third-party and DIY devices use the same protocol under explicit, revocable user authorization in the Host App.
 
@@ -78,6 +100,9 @@ All four share one Zephyr application and the portable C99 core. All four are Bu
 
 ## Documentation
 
+- [Understand the device–App–Agent connection](QUICKSTART.md)
+- [Build the reference approval controller](docs/reference-approval-controller.md)
+- [Troubleshoot setup, build, BLE, and Device Info](docs/troubleshooting.md)
 - [Documentation by task](docs/README.md)
 - [Browse the use cases](docs/use-cases.md)
 - [Build the public foundation](docs/foundation-development.md)
@@ -88,7 +113,6 @@ All four share one Zephyr application and the portable C99 core. All four are Bu
 - [Review the security model](SECURITY.md)
 - [Check current evidence and blockers](docs/project-status.md)
 - [Develop and test locally](docs/development.md)
-- [Prepare an ILX MultiPad](docs/multipad-usb.md)
 - [Give a coding Agent the repository rules](AGENTS.md)
 
 ## Repository status

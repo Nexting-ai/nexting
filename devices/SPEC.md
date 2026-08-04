@@ -1,6 +1,8 @@
 # Nexting Device Protocol — Experimental 0.2
 
-This document is normative for wire major `1`, profile `approval/1`, and profile `status/1`.
+This document is normative for wire major `1` and profiles `approval/1`,
+`status/1`, `navigation/1`, `keys/1`, `rotary/1`, `voice/1`, `text/1`,
+`usage/1`, and `config/1`.
 
 ## Product contract
 
@@ -17,12 +19,12 @@ Profile `approval/1` represents exactly two one-time actions: Allow maps to sour
 
 ## GATT service
 
-| Role        | UUID                                   | Required properties | Direction     |
-| ----------- | -------------------------------------- | ------------------- | ------------- |
-| Service     | `6EADC0DE-0001-4A21-9C5E-1B7F3D9E42A0` | Primary Service     | —             |
-| Downlink    | `6EADC0DE-0002-4A21-9C5E-1B7F3D9E42A0` | Write               | Host → device |
-| Uplink      | `6EADC0DE-0003-4A21-9C5E-1B7F3D9E42A0` | Notify              | Device → host |
-| Device Info | `6EADC0DE-0004-4A21-9C5E-1B7F3D9E42A0` | Read                | Device → host |
+| Role | UUID | Required properties | Direction |
+| --- | --- | --- | --- |
+| Service | `6EADC0DE-0001-4A21-9C5E-1B7F3D9E42A0` | Primary Service | — |
+| Downlink | `6EADC0DE-0002-4A21-9C5E-1B7F3D9E42A0` | Write | Host → device |
+| Uplink | `6EADC0DE-0003-4A21-9C5E-1B7F3D9E42A0` | Notify | Device → host |
+| Device Info | `6EADC0DE-0004-4A21-9C5E-1B7F3D9E42A0` | Read | Device → host |
 
 Write Without Response is optional. A host uses Write With Response by default and may use the optional mode only when it implements bounded flow control.
 
@@ -33,27 +35,7 @@ Approval traffic requires an encrypted, bonded BLE link. Device Info may be read
 The Device Info value is one compact UTF-8 JSON object:
 
 ```json
-{
-  "protocol": "nexting-device",
-  "spec": "0.2.0-experimental.0",
-  "wire": [1],
-  "profiles": ["approval/1", "status/1"],
-  "model": "multi-pad",
-  "fw": "0.2.0",
-  "max_message_bytes": 4096,
-  "max_summary_bytes": 240,
-  "statusSlots": 3,
-  "device_id": "5cc0a66e-a204-4c33-a3ef-b2b352a35489",
-  "manufacturer": "ILX",
-  "display_name": "Desk Controller",
-  "serial_number": "MP-0007",
-  "button_count": 12,
-  "approval_button_count": 2,
-  "custom_button_count": 10,
-  "rotary_count": 2,
-  "rotary_press_count": 2,
-  "battery_service": true
-}
+{"protocol":"nexting-device","spec":"0.2.0-experimental.2","wire":[1],"profiles":["approval/1","status/1","navigation/1","keys/1","rotary/1","voice/1","text/1","usage/1","config/1"],"model":"multi-pad","fw":"0.2.0","max_message_bytes":4096,"max_summary_bytes":240,"statusSlots":3,"device_id":"5cc0a66e-a204-4c33-a3ef-b2b352a35489","manufacturer":"ILX","display_name":"Desk Controller","serial_number":"MP-0007","button_count":12,"approval_button_count":2,"custom_button_count":10,"rotary_count":2,"rotary_press_count":2,"battery_service":true}
 ```
 
 The required fields remain `protocol`, `spec`, `wire`, `profiles`, `model`,
@@ -106,12 +88,7 @@ implies command-key, rotary-input, voice, text, or configuration profiles.
 DIY hardware may add one inert vendor section:
 
 ```json
-{
-  "vendor": {
-    "namespace": "com.ilx.multipad",
-    "facts": [{ "key": "layers", "label": "Key layers", "value": "4" }]
-  }
-}
+{"vendor":{"namespace":"com.ilx.multipad","facts":[{"key":"layers","label":"Key layers","value":"4"}]}}
 ```
 
 The section is at most 1024 encoded bytes, contains a reverse-domain namespace
@@ -135,7 +112,7 @@ Each logical message is one compact UTF-8 JSON object followed by a newline byte
 7. never executes a partial message;
 8. does not accept interleaved fragments from different logical messages.
 
-The official JavaScript, Swift, Kotlin, and portable C99 implementations cap a complete Experimental 0.2 frame at 4096 bytes even when Device Info advertises a larger capacity. A host may negotiate a smaller ceiling. Transport integrations must feed bounded radio or socket chunks rather than an arbitrarily large aggregate input buffer.
+The official JavaScript and portable C99 implementations cap a complete Experimental 0.2 frame at 4096 bytes even when Device Info advertises a larger capacity. The official Nexting App may negotiate a smaller ceiling. Transport integrations must feed bounded radio or socket chunks rather than an arbitrarily large aggregate input buffer.
 
 Downlink fragments are sent serially with Write With Response by default. Uplink answers use Notify and application-level retry: if a device does not receive `resolved` within one second, it may resend the exact same answer until resolution or local TTL expiry. It must not change the choice during retry. Answers are idempotent by request ID at the host.
 
@@ -157,14 +134,7 @@ All TTL comparisons use elapsed monotonic time. Wall-clock changes, time-zone ch
 ### Present
 
 ```json
-{
-  "v": 1,
-  "t": "present",
-  "id": "3bb7",
-  "sum": "Allow git push?",
-  "opt": ["allow", "deny"],
-  "ttl": 30000
-}
+{"v":1,"t":"present","id":"3bb7","sum":"Allow git push?","opt":["allow","deny"],"ttl":30000}
 ```
 
 - `sum`: 0–240 UTF-8 bytes.
@@ -178,7 +148,7 @@ A new present replaces the current request. The host resolves the old request as
 ### Answer
 
 ```json
-{ "v": 1, "t": "answer", "id": "3bb7", "ch": "allow" }
+{"v":1,"t":"answer","id":"3bb7","ch":"allow"}
 ```
 
 `ch` is `allow` or `deny`. The device sends an answer only for its currently visible request and then waits for resolution. Repeated identical answers are allowed; the host keeps the first hardware choice locked and permits at most one authoritative action-sink attempt at a time.
@@ -186,7 +156,7 @@ A new present replaces the current request. The host resolves the old request as
 ### Resolved
 
 ```json
-{ "v": 1, "t": "resolved", "id": "3bb7", "r": "answered" }
+{"v":1,"t":"resolved","id":"3bb7","r":"answered"}
 ```
 
 `r` is one of:
@@ -201,7 +171,7 @@ The device clears matching UI and cached retry state immediately.
 ### Error
 
 ```json
-{ "v": 1, "t": "error", "id": "3bb7", "code": "unknown_request" }
+{"v":1,"t":"error","id":"3bb7","code":"unknown_request"}
 ```
 
 Error codes:
@@ -221,11 +191,7 @@ An implementation may silently drop malformed or attacker-controlled input when 
 Profile `status/1`. The host sends this message on the Downlink characteristic only to a device that declared `statusSlots` of at least `1` in Device Info:
 
 ```json
-{
-  "v": 1,
-  "t": "status",
-  "agents": [{ "slot": 0, "state": "thinking", "label": "fix login bug" }]
-}
+{"v":1,"t":"status","agents":[{"slot":0,"state":"thinking","label":"fix login bug"}]}
 ```
 
 - `agents`: array of 0–8 entries. An empty array clears every slot.
@@ -238,6 +204,148 @@ Each status message carries the complete current state of every slot the host tr
 Status is volatile: disconnect, reboot, or a new bond clears all rendered slots to no display. A status message never creates, answers, expires, or resolves an approval request, and an approval message never changes status rendering.
 
 Fail closed: unknown `state`, duplicate `slot`, out-of-range `slot`, more than 8 `agents` entries, an oversized or control-character `label`, or any other malformed field discards the entire frame and keeps the previously rendered state.
+
+### Navigation
+
+Profile `navigation/1` presents 2–8 bounded choices without exposing the
+source Agent prompt. It shares exclusive interactive focus with `approval/1`.
+
+```json
+{"v":1,"t":"nav_present","id":"q7","items":["Fix it","Explain"],"cursor":0,"ttl":30000}
+{"v":1,"t":"nav_move","id":"q7","dir":"next","seq":12}
+{"v":1,"t":"nav_select","id":"q7","index":1,"seq":13}
+{"v":1,"t":"nav_resolved","id":"q7","r":"selected"}
+```
+
+- `id`: the common 1–64 byte request identifier.
+- `items`: 2–8 unique strings, each 1–64 UTF-8 bytes with no control
+  characters.
+- `cursor`: integer `0...items.count - 1`.
+- `ttl`: 1–300000 milliseconds.
+- `dir`: `prev`, `next`, `up`, `down`, `left`, or `right`.
+- `index`: integer 0–7. The Host additionally checks it against the current
+  presentation.
+- `seq`: unsigned 32-bit sequence number.
+- terminal `r`: `selected`, `cancelled`, `expired`, or `replaced`.
+
+Moves are advisory. The Host remains authoritative and replaces
+`nav_present` when cursor state changes. A selection is consumed at most once.
+
+### Keys
+
+Profile `keys/1` separates a physical slot from its private Host action:
+
+```json
+{"v":1,"t":"keymap","rev":4,"keys":[{"slot":0,"label":"Approve","enabled":true,"light":"solid","rgb":[0,200,90]}]}
+{"v":1,"t":"key_event","slot":0,"event":"press","seq":41}
+```
+
+`keymap` is a full volatile replacement with 0–64 unique slots in 0–63.
+`label` is 1–32 UTF-8 bytes with no control characters. `light` is `off`,
+`dim`, `solid`, or `pulse`. Optional `rgb` is exactly three integers in 0–255.
+`event` is `press`, `release`, `hold`, or `double`.
+
+A device emits no event for a disabled or undeclared slot. The Host maps a
+slot to an authorized action; labels are presentation only. Repeating an
+identical `rev` is idempotent. Conflicting content at the same revision is
+rejected.
+
+### Rotary
+
+Profile `rotary/1` reports bounded physical rotation and press gestures:
+
+```json
+{"v":1,"t":"rotary_map","rev":8,"controls":[{"slot":0,"label":"Model","value":2,"min":0,"max":3,"wrap":true}]}
+{"v":1,"t":"rotary_event","slot":0,"delta":1,"seq":52}
+{"v":1,"t":"rotary_press","slot":0,"event":"press","seq":53}
+```
+
+`rotary_map` is a full volatile replacement with 0–16 unique slots in 0–15.
+`label` is 1–32 UTF-8 bytes with no control characters. `min`, `max`, and
+`value` are integers in -1000000–1000000 with
+`min <= value <= max`. `wrap` is boolean. `delta` is a non-zero integer in
+-127–127. Rotary press uses the key gesture enum. The Host sends a replacement
+map after applying a delta; the device does not infer the authoritative value.
+
+### Voice control
+
+Profile `voice/1` controls a Host-owned microphone lifecycle:
+
+```json
+{"v":1,"t":"voice_event","event":"start","seq":61}
+{"v":1,"t":"voice_state","state":"listening","label":"Release to send"}
+```
+
+`voice_event.event` is `start`, `stop`, or `cancel`. `voice_state.state` is
+`idle`, `listening`, `transcribing`, `submitted`, or `error`. Optional `label`
+is 1–64 UTF-8 bytes with no control characters. `stop` and `cancel` require a
+currently accepted `start`.
+
+This profile never carries audio bytes, transcripts, or credentials. A future
+device-microphone transport requires a separate negotiated profile.
+
+### Text
+
+Profile `text/1` replaces one plain-text display channel:
+
+```json
+{"v":1,"t":"text","channel":0,"title":"Current task","content":"Waiting for approval"}
+```
+
+`channel` is 0–7. Optional `title` is 1–64 UTF-8 bytes with no control
+characters. `content` is 0–1024 UTF-8 bytes; line feed and tab are permitted
+and all other control characters are rejected. Empty content clears the
+channel. Content is never executable markup, a link, or an action. The Host
+privacy-filters it before transport.
+
+### Usage
+
+Profile `usage/1` publishes volatile model/token counters:
+
+```json
+{"v":1,"t":"usage","model":"GPT-5.6","input_tokens":1234,"output_tokens":567,"cached_tokens":89,"context_used":1800,"context_limit":128000}
+{"v":1,"t":"usage_clear"}
+```
+
+`model` is 1–64 UTF-8 bytes with no control characters. Counters are
+non-negative canonical integers at most 9007199254740991.
+`cached_tokens` is optional. `context_used` and `context_limit` are optional
+only as a pair and require `context_used <= context_limit`. Billing, price,
+plan, account, and organization data are not part of this profile.
+
+### Configuration
+
+Profile `config/1` proposes a complete atomic device-owned configuration:
+
+```json
+{"v":1,"t":"config","rev":7,"entries":[{"key":"key.0.mode","value":"momentary"},{"key":"display.brightness","value":70}]}
+{"v":1,"t":"config_result","rev":7,"status":"applied"}
+```
+
+`entries` contains 0–32 unique keys. A key is 1–48 ASCII characters matching
+`[A-Za-z0-9][A-Za-z0-9._-]*`. A value is a boolean, integer in
+-1000000–1000000, or string of 0–128 UTF-8 bytes with no control characters.
+Objects, arrays, floats, and null are rejected.
+
+The SDK validates the complete proposal before exposing it to device code.
+Device code validates every supported key and commits all entries or none.
+`config_result.status` is `applied` or `rejected`. An applied result has no
+`code`; a rejected result requires `unknown_key`, `invalid_value`,
+`storage_error`, or `unsupported`. Rejection preserves the previous revision
+and configuration.
+
+### Shared revision and sequence behavior
+
+`rev` and `seq` are canonical unsigned 32-bit integers. A receiver remembers
+the latest event sequence per physical source and connection. Repeating a
+sequence is idempotent; a lower sequence is stale and ignored. Wraparound
+starts a new epoch only after reconnect.
+
+Full-replacement messages accept a newer revision. Repeating an identical
+revision and content is idempotent; different content at that revision fails
+closed. Disconnect clears navigation, key/rotary presentation, voice state,
+text, usage, and sequence/revision memory. Only a successfully applied
+`config/1` payload may persist.
 
 ## State and races
 
@@ -267,7 +375,6 @@ After reconnect, the device never restores an approval from persistent storage. 
 
 Experimental releases may make breaking changes with a spec version, vector, and changelog update. After 1.0, wire major `1` only gains optional fields or new negotiated profiles. Implementations reject unsupported wire majors and profiles without guessing.
 
-The canonical examples and rejection cases are in
-`protocol/vectors/approval-v1.json`, `protocol/vectors/status-v1.json`, and
-`protocol/vectors/device-info-v1.json` and must produce identical behavior in
-every official SDK.
+The canonical examples and rejection cases are in the versioned files under
+`protocol/vectors/`. Every official SDK must produce identical behavior for
+all vector files.

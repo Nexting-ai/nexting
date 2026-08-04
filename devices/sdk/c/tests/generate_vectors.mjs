@@ -4,8 +4,7 @@ const [, , inputPath, outputPath] = process.argv;
 if (!inputPath || !outputPath) process.exit(2);
 
 const vectors = JSON.parse(readFileSync(inputPath, "utf8"));
-const invalidVectors =
-  vectors.invalid ?? vectors.invalidCore.map(({ wire }) => wire);
+const invalidVectors = vectors.invalid ?? vectors.invalidCore.map(({ wire }) => wire);
 
 function emitCString(value) {
   const fragments = [];
@@ -50,18 +49,12 @@ function emitArray(name, values) {
   ].join("\n");
 }
 
-writeFileSync(
-  outputPath,
-  [
-    "#ifndef NEXTING_DEVICE_GENERATED_VECTORS_H",
-    "#define NEXTING_DEVICE_GENERATED_VECTORS_H",
-    "#include <stddef.h>",
-    emitArray(
-      "nexting_device_valid_vectors",
-      vectors.valid.map(({ wire }) => wire),
-    ),
-    emitArray("nexting_device_invalid_vectors", invalidVectors),
-    "#endif",
-    "",
-  ].join("\n"),
-);
+writeFileSync(outputPath, [
+  "#ifndef NEXTING_DEVICE_GENERATED_VECTORS_H",
+  "#define NEXTING_DEVICE_GENERATED_VECTORS_H",
+  "#include <stddef.h>",
+  emitArray("nexting_device_valid_vectors", vectors.valid.map(({ wire }) => wire)),
+  emitArray("nexting_device_invalid_vectors", invalidVectors),
+  "#endif",
+  "",
+].join("\n"));

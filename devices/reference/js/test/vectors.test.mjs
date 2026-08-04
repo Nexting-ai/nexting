@@ -4,12 +4,41 @@ import test from "node:test";
 
 import {
   CHOICES,
+  decode,
   ERROR_CODES,
   MAX_REQUEST_ID_BYTES,
   MAX_SUMMARY_BYTES,
   MAX_TTL_MS,
   RESOLUTION_REASONS,
 } from "../src/protocol.mjs";
+
+const interactionProfiles = [
+  "navigation",
+  "keys",
+  "rotary",
+  "voice",
+  "text",
+  "usage",
+  "config",
+];
+
+test("interaction profile vectors share the strict reference decoder", async () => {
+  for (const profile of interactionProfiles) {
+    const raw = await readFile(
+      new URL(`../../../protocol/vectors/${profile}-v1.json`, import.meta.url),
+      "utf8",
+    );
+    const vectors = JSON.parse(raw);
+    assert.equal(vectors.wire, 1);
+    assert.equal(vectors.profile, `${profile}/1`);
+    for (const vector of vectors.valid) {
+      assert.deepEqual(decode(vector.wire), vector.decoded, vector.name);
+    }
+    for (const vector of vectors.invalid) {
+      assert.equal(decode(vector.wire), null, vector.name);
+    }
+  }
+});
 
 test("approval/1 vectors are versioned and cover every message type", async () => {
   const raw = await readFile(
@@ -26,27 +55,15 @@ test("approval/1 vectors are versioned and cover every message type", async () =
     ["answer", "error", "present", "resolved"],
   );
   assert.deepEqual(
-    [
-      ...new Set(
-        vectors.valid.map((item) => item.decoded.choice).filter(Boolean),
-      ),
-    ].sort(),
+    [...new Set(vectors.valid.map((item) => item.decoded.choice).filter(Boolean))].sort(),
     [...CHOICES].sort(),
   );
   assert.deepEqual(
-    [
-      ...new Set(
-        vectors.valid.map((item) => item.decoded.reason).filter(Boolean),
-      ),
-    ].sort(),
+    [...new Set(vectors.valid.map((item) => item.decoded.reason).filter(Boolean))].sort(),
     [...RESOLUTION_REASONS].sort(),
   );
   assert.deepEqual(
-    [
-      ...new Set(
-        vectors.valid.map((item) => item.decoded.code).filter(Boolean),
-      ),
-    ].sort(),
+    [...new Set(vectors.valid.map((item) => item.decoded.code).filter(Boolean))].sort(),
     [...ERROR_CODES].sort(),
   );
   assert.ok(vectors.invalid.length >= 8);
