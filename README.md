@@ -6,7 +6,8 @@
 
 <p align="center">
   <strong>Remote control for your own AI agents.</strong><br>
-  Connect to Claude Code and Codex on your Mac or Windows PC. View sessions, send tasks, and drive them remotely from your phone, PIN, or Ring.
+  Connect to Claude Code and Codex on your Mac or Windows PC.<br>
+  View sessions, send tasks, and drive them remotely from your phone, PIN, or Ring.
 </p>
 
 <p align="center">
