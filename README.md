@@ -22,7 +22,7 @@
 ---
 
 <p align="center">
-  <img src="public/remote-control-agent-dark.png" alt="Nexting Remote Control Agent — Mac, phone, and PIN control" width="100%">
+  <img src="public/remote-control-agent-dark.png" alt="Nexting Remote Control Agent — Mac, phone, and Ring control" width="100%">
 </p>
 
 You already have powerful agents — Claude Code, Codex, OpenClaw. They're locked to your desk. **Nexting is the channel between you and them**: a terminal you wear, so you can reach your own agent without pulling out your phone or opening an app. Tap it, say one sentence, and the task is **dispatched to your own agent**. It runs in the background and the result comes back when it's done.
@@ -42,14 +42,14 @@ You speak → Nexting PIN (BLE) → iPhone App (STT) → Cloud → your own agen
 
 ## What Makes Nexting Different
 
-| | |
-|---|---|
-| **Dispatch, not chat** | Fire-and-forget: say it once, your agent runs it in the background. Not Q&A. |
-| **Your own agent** | Drives the agents you already run — Claude Code, Codex, OpenClaw. Not a locked-in model. |
-| **Private by design** | Claude Code & Codex support optional end-to-end encryption — turn it on and Nexting relays ciphertext, not your session. |
-| **Delivers while you're offline** | Phone locked, on the move? The agent still finishes the job and pushes the result back. |
-| **Remote-control your agent** | Attach to a Claude Code or Codex session on your Mac or Windows PC and drive it from your pocket — live. |
-| **Deep iPhone integration** | Calendar, Reminders, Contacts, Health, HomeKit — all by voice. |
+|                                   |                                                                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Dispatch, not chat**            | Fire-and-forget: say it once, your agent runs it in the background. Not Q&A.                                             |
+| **Your own agent**                | Drives the agents you already run — Claude Code, Codex, OpenClaw. Not a locked-in model.                                 |
+| **Private by design**             | Claude Code & Codex support optional end-to-end encryption — turn it on and Nexting relays ciphertext, not your session. |
+| **Delivers while you're offline** | Phone locked, on the move? The agent still finishes the job and pushes the result back.                                  |
+| **Remote-control your agent**     | Attach to a Claude Code or Codex session on your Mac or Windows PC and drive it from your pocket — live.                 |
+| **Deep iPhone integration**       | Calendar, Reminders, Contacts, Health, HomeKit — all by voice.                                                           |
 
 Nexting isn't another voice assistant — it's the pocket control surface for your agent team.
 
@@ -65,13 +65,13 @@ Nexting isn't another voice assistant — it's the pocket control surface for yo
 
 Nexting is a terminal, not a model. Connect the agent you already run:
 
-| Mode | What It Is | Cost |
-|------|-----------|------|
-| **Claude Code** | Attach to a [Claude Code](https://claude.com/product/claude-code) session on your Mac or Windows PC and drive it from your PIN — live. | Free |
-| **Codex** | Attach to an OpenAI Codex CLI session on your Mac or Windows PC and drive it from your PIN — live. | Free |
-| **MyOpenClaw** | Run your own [OpenClaw](https://github.com/openclaw/openclaw) instance. We handle the relay. | Free |
-| **MyHermes** | Any OpenAI-compatible local AI — Hermes Agent, Ollama, vLLM, LM Studio. | Free |
-| **Nexting Pro** | Managed agent in the cloud. Latest Claude, GPT, and Gemini models, zero setup. | $29/mo or $279/yr |
+| Mode            | What It Is                                                                                                                             | Cost              |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| **Claude Code** | Attach to a [Claude Code](https://claude.com/product/claude-code) session on your Mac or Windows PC and drive it from your PIN — live. | Free              |
+| **Codex**       | Attach to an OpenAI Codex CLI session on your Mac or Windows PC and drive it from your PIN — live.                                     | Free              |
+| **MyOpenClaw**  | Run your own [OpenClaw](https://github.com/openclaw/openclaw) instance. We handle the relay.                                           | Free              |
+| **MyHermes**    | Any OpenAI-compatible local AI — Hermes Agent, Ollama, vLLM, LM Studio.                                                                | Free              |
+| **Nexting Pro** | Managed agent in the cloud. Latest Claude, GPT, and Gemini models, zero setup.                                                         | $29/mo or $279/yr |
 
 Buy the hardware once. Dispatch to whichever agent is yours. Expand your mode below for setup — each takes about a minute.
 
@@ -162,15 +162,15 @@ Full walkthrough for every mode — pairing, remote control, starting sessions b
 
 Purpose-built for voice-first interaction. No screen — by design.
 
-| Spec | Detail |
-|------|--------|
-| MCU | Seeed XIAO nRF52840 Sense (ARM Cortex-M4 @ 64MHz) |
-| Microphone | PDM MEMS (built into XIAO Sense) |
-| Audio | Opus codec over BLE 5.0, I2S speaker (MAX98357A) |
-| Feedback | RGB LED + speaker (no screen) |
-| Battery | 3.7V LiPo, USB-C charging (onboard BQ25101) |
-| Firmware | Zephyr RTOS v2.2.0 ([source + UF2](hardware-opensource/firmware/pinclaw_zephyr/)) |
-| Interaction | Single-button push-to-talk |
+| Spec        | Detail                                                                            |
+| ----------- | --------------------------------------------------------------------------------- |
+| MCU         | Seeed XIAO nRF52840 Sense (ARM Cortex-M4 @ 64MHz)                                 |
+| Microphone  | PDM MEMS (built into XIAO Sense)                                                  |
+| Audio       | Opus codec over BLE 5.0, I2S speaker (MAX98357A)                                  |
+| Feedback    | RGB LED + speaker (no screen)                                                     |
+| Battery     | 3.7V LiPo, USB-C charging (onboard BQ25101)                                       |
+| Firmware    | Zephyr RTOS v2.2.0 ([source + UF2](hardware-opensource/firmware/pinclaw_zephyr/)) |
+| Interaction | Single-button push-to-talk                                                        |
 
 The [`hardware-opensource/`](hardware-opensource/) directory is a complete **Co-Builder Edition**: firmware source, 3D-printable enclosure files, and a schematic PDF — everything you need to build a Nexting PIN yourself. Flash the UF2 binary via drag-and-drop — no programmer needed.
 
@@ -216,12 +216,12 @@ nexting/
 
 ## Links
 
-| | |
-|---|---|
-| Website | [nexting.ai](https://nexting.ai) |
-| iOS App | [App Store](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343) |
-| Docs | [nexting.ai/doc](https://nexting.ai/doc) |
-| Get a PIN | [nexting.ai/reserve](https://nexting.ai/reserve) |
+|           |                                                                                   |
+| --------- | --------------------------------------------------------------------------------- |
+| Website   | [nexting.ai](https://nexting.ai)                                                  |
+| iOS App   | [App Store](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343) |
+| Docs      | [nexting.ai/doc](https://nexting.ai/doc)                                          |
+| Get a PIN | [nexting.ai/reserve](https://nexting.ai/reserve)                                  |
 
 ## Contributing
 
