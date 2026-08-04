@@ -8,10 +8,19 @@ const decoder = new TextDecoder("utf-8", { fatal: true });
 const controlCharacterPattern = /[\u0000-\u001f\u007f]/;
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const namespacePattern =
-  /^[a-z0-9](?:[a-z0-9-]{0,62}\.)+[a-z0-9][a-z0-9-]{0,62}$/;
+const namespacePattern = /^[a-z0-9](?:[a-z0-9-]{0,62}\.)+[a-z0-9][a-z0-9-]{0,62}$/;
 const factKeyPattern = /^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$/;
 const inertTextPattern = /(?:<\/?[a-z]|https?:\/\/|www\.|[`*_#[\]()])/i;
+
+export function supportsProfile(deviceInfo, profile) {
+  return (
+    deviceInfo !== null &&
+    typeof deviceInfo === "object" &&
+    Array.isArray(deviceInfo.profiles) &&
+    typeof profile === "string" &&
+    deviceInfo.profiles.includes(profile)
+  );
+}
 
 const knownFields = new Set([
   "protocol",
@@ -234,8 +243,7 @@ function normalizeVendor(value) {
     if (!isObject(fact) || !factKeyPattern.test(fact.key ?? "")) return null;
     if (keys.has(fact.key)) return null;
     keys.add(fact.key);
-    if (!validText(fact.label, 64) || inertTextPattern.test(fact.label))
-      return null;
+    if (!validText(fact.label, 64) || inertTextPattern.test(fact.label)) return null;
     const normalizedValue = Number.isSafeInteger(fact.value)
       ? String(fact.value)
       : fact.value;
@@ -327,11 +335,7 @@ export function decodeDeviceInfo(raw) {
   ];
   for (const [field, item, maxBytes] of optionalIdentity) {
     if (item !== undefined && !validText(item, maxBytes)) return null;
-    if (
-      field === "device_id" &&
-      item !== undefined &&
-      !uuidPattern.test(item)
-    ) {
+    if (field === "device_id" && item !== undefined && !uuidPattern.test(item)) {
       return null;
     }
   }

@@ -1,16 +1,15 @@
 # Development workflow
 
-This guide covers local work on the public Nexting Devices boundary. It does not require the private Nexting App unless you are running the real-iPhone integration path.
+This guide covers local work on the public Nexting Devices boundary. The official Nexting App is only needed when you are checking a real-device enrollment path.
 
 For architecture and file ownership, start with [the foundation blueprint](foundation-development.md). For discoverable APIs use [the interface catalog](interfaces.md), and for goal-specific work use [the implementation tracks](implementation-tracks.md).
 
 ## Prerequisites
 
 - Node.js 22 or newer for the JavaScript reference and contract tests.
-- Swift 6 with macOS 13 or newer for `NextingDeviceKit` and the simulator.
 - CMake and a C99 compiler for the portable SDK.
 - A Zephyr or nRF Connect SDK workspace for reference firmware builds.
-- A real iPhone for Bluetooth host verification. The iOS Simulator cannot provide this BLE path.
+- A supported phone and the official Nexting App for real-device enrollment. Local protocol and firmware checks do not require either.
 
 ## Fast protocol loop
 
@@ -18,16 +17,7 @@ For architecture and file ownership, start with [the foundation blueprint](found
 npm run test:reference
 ```
 
-Current expected result: 33 tests pass, including the private JavaScript package-export contract. When changing protocol behavior, update `SPEC.md` and `protocol/vectors/approval-v1.json` before porting the behavior to Swift or C.
-
-## Swift SDK
-
-```sh
-swift test --package-path sdk/swift
-swift build --package-path sdk/swift
-```
-
-Current expected result: 41 tests pass and the `NextingDeviceKit` library builds.
+Current expected result: 33 tests pass, including the public JavaScript package-export contract. When changing protocol behavior, update `SPEC.md` and `protocol/vectors/approval-v1.json` before porting the behavior to C.
 
 ## Portable C99 SDK
 
@@ -68,12 +58,12 @@ npm run check:naming
 
 All four reference targets are Build verified in the pinned workflow:
 
-| Board                 | Target                        |
-| --------------------- | ----------------------------- |
-| nRF52840 DK           | `nrf52840dk/nrf52840`         |
-| XIAO nRF52840 / Sense | `xiao_ble/nrf52840/sense`     |
-| XIAO ESP32-C3         | `xiao_esp32c3/esp32c3`        |
-| XIAO ESP32-S3         | `xiao_esp32s3/esp32s3/procpu` |
+| Board | Target |
+| --- | --- |
+| nRF52840 DK | `nrf52840dk/nrf52840` |
+| XIAO nRF52840 / Sense | `xiao_ble/nrf52840/sense` |
+| XIAO ESP32-C3 | `xiao_esp32c3/esp32c3` |
+| XIAO ESP32-S3 | `xiao_esp32s3/esp32s3/procpu` |
 
 From a configured Zephyr workspace:
 
@@ -95,12 +85,8 @@ The ordinary `.github/workflows/ci.yml` runs language, simulator, and public-bou
 1. Change the normative spec if behavior changes.
 2. Add a shared vector that fails.
 3. Fix JavaScript.
-4. Fix Swift and C against the same vector.
+4. Fix C against the same vector.
 5. Run the sanitizer build.
-
-### Swift host transport
-
-Add a testable state transition before modifying CoreBluetooth delegate code. Verify authorization, Device Info negotiation, bounded queues, disconnect recovery, and stale-answer behavior.
 
 ### Firmware transport
 
@@ -116,7 +102,6 @@ Before a release candidate:
 
 ```sh
 npm run check
-swift test --package-path sdk/swift
 cmake -S sdk/c -B /tmp/nexting-device-release -DNEXTING_DEVICE_SANITIZE=ON
 cmake --build /tmp/nexting-device-release
 ctest --test-dir /tmp/nexting-device-release --output-on-failure

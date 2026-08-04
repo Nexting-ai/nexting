@@ -34,7 +34,7 @@ Do not import files from outside this repository root into public code. The expo
 
 - Interface or behavior change: `docs/foundation-development.md` → `docs/interfaces.md` → `SPEC.md` → vectors → component README.
 - New chip or board: `docs/foundation-development.md` → `docs/implementation-tracks.md` → `docs/porting-guide.md` → `docs/hardware-support.md` → `docs/conformance.md`.
-- Host product integration: `docs/interfaces.md` → the Host track in `docs/implementation-tracks.md` → `sdk/swift/README.md`. Keep the product adapter thin and private.
+- Device integration: `docs/interfaces.md` → the reference-board or MCU track in `docs/implementation-tracks.md`. The official Nexting App owns Host integration.
 - Documentation change: update the owning guide and the documentation-contract test in the same commit.
 
 ## Protocol change order
@@ -57,7 +57,6 @@ From the repository root:
 
 ```sh
 npm run test:reference
-swift test --package-path sdk/swift
 cmake -S sdk/c -B /tmp/nexting-device-c -DNEXTING_DEVICE_SANITIZE=ON
 cmake --build /tmp/nexting-device-c
 ctest --test-dir /tmp/nexting-device-c --output-on-failure
@@ -69,8 +68,7 @@ npm run check:naming
 `npm run check` is the final aggregate gate. At the 2026-07-27 snapshot it
 passes, including Device Info 0.2, the audited exporter, mandatory bonding,
 three-second bond reset, and notification fragmentation. Run
-`gradle test` in `sdk/kotlin` as the Android Host SDK gate. Do not weaken or
-delete those assertions; a source contract and compiler gate still do not
+Do not weaken or delete these assertions; a source contract and compiler gate still do not
 replace the real-board checklist.
 
 ## Hardware claims

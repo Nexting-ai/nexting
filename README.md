@@ -242,8 +242,8 @@ MIT
 
 ## Build hardware for Nexting
 
-The open hardware protocol, C99 device SDK, Swift and Kotlin host SDKs,
-conformance vectors, and reference firmware live in [`devices/`](devices/).
+The open hardware protocol, C99 device SDK, conformance vectors, and reference
+firmware live in [`devices/`](devices/).
 
 - Start with the [Devices SDK overview](devices/README.md).
 - Read the [wire protocol](devices/SPEC.md).

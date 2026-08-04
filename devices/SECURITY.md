@@ -11,13 +11,52 @@ The device receives only an opaque request ID, a bounded summary, fixed choices,
 ## Minimum transport controls
 
 - BLE LE Secure Connections and bonding;
-- encryption required for approval writes and notification subscription;
+- encrypted GATT permissions required for control writes and notification
+  subscription;
 - explicit user authorization and revocation in the App;
 - fail-closed parsing and bounded buffers;
 - relative expiry, single consumption, and duplicate suppression;
 - state and partial-frame clearing on disconnect;
 - production firmware signing;
 - no name-only authorization in release builds.
+
+## Protected local link
+
+The Zephyr Developer Reference enables BLE LE Secure Connections, bonding,
+controller privacy, and bonding-required policy. It requests
+`BT_SECURITY_L2` after connecting. Control writes require
+`BT_GATT_PERM_WRITE_ENCRYPT`; notification subscription requires encrypted read
+and write permissions.
+
+Device Info may remain readable for compatibility discovery. Reading identity
+and declared capabilities never authorizes a device or a physical action.
+
+## Authorization and freshness
+
+The trusted Host validates explicit authorization, current request identity,
+expiry, choice membership, sequence or revision, duplicate and replay state,
+and single consumption before it applies physical intent. Phone and hardware
+inputs compete for the same one-answer gate. Unsupported, stale, malformed, or
+already-consumed input fails closed.
+
+## Minimum disclosure
+
+Firmware receives bounded profile data such as an opaque request ID, short
+summary, fixed choices, relative lifetime, or volatile display state. Agent
+credentials, account, session, terminal, prompt and cloud route identifiers,
+and tokens remain on the trusted Host.
+
+`voice/1` controls the Host microphone lifecycle and never carries audio bytes or transcripts.
+Audio permission, capture, encoding, transport, and transcription remain Host
+responsibilities.
+
+## State and revocation
+
+State and partial-frame clearing on disconnect prevents a device from rendering
+or acting on an abandoned exchange. Disconnect, reboot, a new bond, or physical
+bond reset clears the applicable volatile requests, rendered state,
+sequence/revision memory, and partial frames defined by the protocol. The Host
+can revoke a previously authorized device independently of its BLE bond.
 
 ## Developer Reference is not certification
 

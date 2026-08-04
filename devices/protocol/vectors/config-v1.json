@@ -1,0 +1,36 @@
+{
+  "spec": "0.2.0-experimental.2",
+  "wire": 1,
+  "profile": "config/1",
+  "valid": [
+    {
+      "name": "atomic mixed configuration",
+      "wire": "{\"v\":1,\"t\":\"config\",\"rev\":7,\"entries\":[{\"key\":\"key.0.mode\",\"value\":\"momentary\"},{\"key\":\"display.brightness\",\"value\":70},{\"key\":\"haptics.enabled\",\"value\":true}]}\n",
+      "decoded": {"type":"config","revision":7,"entries":[{"key":"key.0.mode","value":"momentary"},{"key":"display.brightness","value":70},{"key":"haptics.enabled","value":true}]}
+    },
+    {
+      "name": "clear configuration",
+      "wire": "{\"v\":1,\"t\":\"config\",\"rev\":8,\"entries\":[]}\n",
+      "decoded": {"type":"config","revision":8,"entries":[]}
+    },
+    {
+      "name": "configuration applied",
+      "wire": "{\"v\":1,\"t\":\"config_result\",\"rev\":7,\"status\":\"applied\"}\n",
+      "decoded": {"type":"configResult","revision":7,"status":"applied"}
+    },
+    {
+      "name": "configuration rejected",
+      "wire": "{\"v\":1,\"t\":\"config_result\",\"rev\":8,\"status\":\"rejected\",\"code\":\"unknown_key\"}\n",
+      "decoded": {"type":"configResult","revision":8,"status":"rejected","code":"unknown_key"}
+    }
+  ],
+  "invalid": [
+    {"name":"duplicate keys","wire":"{\"v\":1,\"t\":\"config\",\"rev\":7,\"entries\":[{\"key\":\"a\",\"value\":1},{\"key\":\"a\",\"value\":2}]}\n"},
+    {"name":"bad key","wire":"{\"v\":1,\"t\":\"config\",\"rev\":7,\"entries\":[{\"key\":\"bad key\",\"value\":1}]}\n"},
+    {"name":"object value forbidden","wire":"{\"v\":1,\"t\":\"config\",\"rev\":7,\"entries\":[{\"key\":\"a\",\"value\":{\"private\":true}}]}\n"},
+    {"name":"null value forbidden","wire":"{\"v\":1,\"t\":\"config\",\"rev\":7,\"entries\":[{\"key\":\"a\",\"value\":null}]}\n"},
+    {"name":"applied with code","wire":"{\"v\":1,\"t\":\"config_result\",\"rev\":7,\"status\":\"applied\",\"code\":\"unknown_key\"}\n"},
+    {"name":"rejected without code","wire":"{\"v\":1,\"t\":\"config_result\",\"rev\":7,\"status\":\"rejected\"}\n"},
+    {"name":"bad rejection code","wire":"{\"v\":1,\"t\":\"config_result\",\"rev\":7,\"status\":\"rejected\",\"code\":\"denied\"}\n"}
+  ]
+}

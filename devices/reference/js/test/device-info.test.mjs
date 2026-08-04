@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { MAX_DEVICE_INFO_BYTES, decodeDeviceInfo } from "../src/protocol.mjs";
+import {
+  MAX_DEVICE_INFO_BYTES,
+  decodeDeviceInfo,
+  supportsProfile,
+} from "../src/protocol.mjs";
 
 const vectorFile = JSON.parse(
   await readFile(
@@ -20,27 +24,15 @@ test("Device Info 0.2 valid vectors normalize identically", () => {
     const decoded = decodeDeviceInfo(item.wire);
     assert.ok(decoded, item.name);
     assert.equal(decoded.model, item.decoded.model, item.name);
-    assert.equal(
-      decoded.capabilities.statusSlots,
-      item.decoded.statusSlots,
-      item.name,
-    );
+    assert.equal(decoded.capabilities.statusSlots, item.decoded.statusSlots, item.name);
     assert.equal(decoded.identity.deviceId, item.decoded.deviceId, item.name);
-    assert.equal(
-      decoded.capabilities.buttonCount,
-      item.decoded.buttonCount,
-      item.name,
-    );
+    assert.equal(decoded.capabilities.buttonCount, item.decoded.buttonCount, item.name);
     assert.equal(
       decoded.capabilities.batteryService,
       item.decoded.batteryService,
       item.name,
     );
-    assert.equal(
-      decoded.vendor?.namespace ?? null,
-      item.decoded.vendorNamespace,
-      item.name,
-    );
+    assert.equal(decoded.vendor?.namespace ?? null, item.decoded.vendorNamespace, item.name);
   }
 });
 
@@ -87,24 +79,41 @@ test("vendor facts remain bounded, inert, and cannot override system fields", ()
     label: `Fact ${index}`,
     value: `${index}`,
   }));
-  const decoded = decodeDeviceInfo(
-    withVendor(core, {
-      namespace: "com.example.board",
-      facts: tooManyFacts,
-    }),
-  );
+  const decoded = decodeDeviceInfo(withVendor(core, {
+    namespace: "com.example.board",
+    facts: tooManyFacts,
+  }));
   assert.ok(decoded);
   assert.equal(decoded.vendor, null);
 
-  const override = decodeDeviceInfo(
-    withVendor(core, {
-      namespace: "com.example.board",
-      facts: [{ key: "battery", label: "Battery", value: "100%" }],
-    }),
-  );
+  const override = decodeDeviceInfo(withVendor(core, {
+    namespace: "com.example.board",
+    facts: [{ key: "battery", label: "Battery", value: "100%" }],
+  }));
   assert.ok(override);
   assert.deepEqual(override.vendor.facts, [
     { key: "battery", label: "Battery", value: "100%" },
   ]);
   assert.equal(override.capabilities.batteryService, false);
+});
+
+test("Device Info negotiates interaction profiles explicitly", () => {
+  const info = decodeDeviceInfo(
+    JSON.stringify({
+      ...JSON.parse(vectorFile.valid[0].wire),
+      profiles: [
+        "approval/1",
+        "navigation/1",
+        "keys/1",
+        "rotary/1",
+        "voice/1",
+        "text/1",
+        "usage/1",
+      ],
+    }),
+  );
+  assert.ok(info);
+  assert.equal(supportsProfile(info, "navigation/1"), true);
+  assert.equal(supportsProfile(info, "keys/1"), true);
+  assert.equal(supportsProfile(info, "config/1"), false);
 });

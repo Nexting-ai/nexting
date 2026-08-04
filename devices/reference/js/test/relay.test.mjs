@@ -46,11 +46,7 @@ test("authorized answer resolves only after commit and retries after failure", (
   const { relay, sent, answered } = harness();
   relay.present({ requestId: "r1", summary: "Allow?", ttlMs: 30_000 });
   assert.deepEqual(
-    relay.onDeviceAnswer({
-      requestId: "r1",
-      choice: "allow",
-      authorized: true,
-    }),
+    relay.onDeviceAnswer({ requestId: "r1", choice: "allow", authorized: true }),
     { accepted: true, choice: "allow" },
   );
   assert.deepEqual(answered, ["allow"]);
@@ -63,11 +59,7 @@ test("authorized answer resolves only after commit and retries after failure", (
     { accepted: false, reason: "choice_locked" },
   );
   assert.deepEqual(
-    relay.onDeviceAnswer({
-      requestId: "r1",
-      choice: "allow",
-      authorized: true,
-    }),
+    relay.onDeviceAnswer({ requestId: "r1", choice: "allow", authorized: true }),
     { accepted: true, choice: "allow" },
   );
   assert.deepEqual(answered, ["allow", "allow"]);
@@ -83,11 +75,7 @@ test("authorized answer resolves only after commit and retries after failure", (
   });
   assert.equal(relay.hasPending, false);
   assert.deepEqual(
-    relay.onDeviceAnswer({
-      requestId: "r1",
-      choice: "allow",
-      authorized: true,
-    }),
+    relay.onDeviceAnswer({ requestId: "r1", choice: "allow", authorized: true }),
     { accepted: false, reason: "no_pending" },
   );
   assert.deepEqual(answered, ["allow", "allow"]);
@@ -97,27 +85,15 @@ test("unauthorized, stale, and invalid answers fail closed", () => {
   const { relay, answered } = harness();
   relay.present({ requestId: "r1", summary: "Allow?", ttlMs: 30_000 });
   assert.deepEqual(
-    relay.onDeviceAnswer({
-      requestId: "r1",
-      choice: "allow",
-      authorized: false,
-    }),
+    relay.onDeviceAnswer({ requestId: "r1", choice: "allow", authorized: false }),
     { accepted: false, reason: "unauthorized" },
   );
   assert.deepEqual(
-    relay.onDeviceAnswer({
-      requestId: "stale",
-      choice: "allow",
-      authorized: true,
-    }),
+    relay.onDeviceAnswer({ requestId: "stale", choice: "allow", authorized: true }),
     { accepted: false, reason: "stale_or_unknown" },
   );
   assert.deepEqual(
-    relay.onDeviceAnswer({
-      requestId: "r1",
-      choice: "maybe",
-      authorized: true,
-    }),
+    relay.onDeviceAnswer({ requestId: "r1", choice: "maybe", authorized: true }),
     { accepted: false, reason: "bad_choice" },
   );
   assert.deepEqual(answered, []);
@@ -135,11 +111,7 @@ test("new present resolves the old request as replaced", () => {
   });
   assert.equal(relay.pendingRequestId, "r2");
   assert.deepEqual(
-    relay.onDeviceAnswer({
-      requestId: "r1",
-      choice: "allow",
-      authorized: true,
-    }),
+    relay.onDeviceAnswer({ requestId: "r1", choice: "allow", authorized: true }),
     { accepted: false, reason: "stale_or_unknown" },
   );
 });
@@ -200,11 +172,7 @@ test("expiry rejects a boundary-time answer and emits expired", () => {
   relay.present({ requestId: "r1", summary: "Allow?", ttlMs: 10 });
   setNow(1_010);
   assert.deepEqual(
-    relay.onDeviceAnswer({
-      requestId: "r1",
-      choice: "allow",
-      authorized: true,
-    }),
+    relay.onDeviceAnswer({ requestId: "r1", choice: "allow", authorized: true }),
     { accepted: false, reason: "expired" },
   );
   assert.equal(sent.at(-1).reason, "expired");

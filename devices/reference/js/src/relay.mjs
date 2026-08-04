@@ -5,10 +5,7 @@ export function createApprovalRelay({
   answerPrompt,
   now = () => performance.now(),
 }) {
-  if (
-    typeof sendToDevice !== "function" ||
-    typeof answerPrompt !== "function"
-  ) {
+  if (typeof sendToDevice !== "function" || typeof answerPrompt !== "function") {
     throw new TypeError("sendToDevice and answerPrompt are required");
   }
 
@@ -55,14 +52,12 @@ export function createApprovalRelay({
     },
 
     onDeviceAnswer({ requestId, choice, authorized }) {
-      if (authorized !== true)
-        return { accepted: false, reason: "unauthorized" };
+      if (authorized !== true) return { accepted: false, reason: "unauthorized" };
       if (pending === null) return { accepted: false, reason: "no_pending" };
       if (requestId !== pending.requestId) {
         return { accepted: false, reason: "stale_or_unknown" };
       }
-      if (!CHOICES.includes(choice))
-        return { accepted: false, reason: "bad_choice" };
+      if (!CHOICES.includes(choice)) return { accepted: false, reason: "bad_choice" };
       if (now() >= pending.deadlineMs) {
         finish("expired");
         return { accepted: false, reason: "expired" };
@@ -104,10 +99,7 @@ export function createApprovalRelay({
     },
 
     cancel(requestId) {
-      if (
-        pending !== null &&
-        (requestId === undefined || pending.requestId === requestId)
-      ) {
+      if (pending !== null && (requestId === undefined || pending.requestId === requestId)) {
         finish("cancelled");
       }
     },

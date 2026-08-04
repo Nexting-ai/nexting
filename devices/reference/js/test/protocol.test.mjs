@@ -55,20 +55,14 @@ test("direct codec reserves one byte for the required newline", () => {
   const exactPayload = `${prefix}${"x".repeat(
     MAX_MESSAGE_BYTES - 1 - prefix.length - suffix.length,
   )}${suffix}`;
-  assert.equal(
-    Buffer.byteLength(`${exactPayload}\n`, "utf8"),
-    MAX_MESSAGE_BYTES,
-  );
+  assert.equal(Buffer.byteLength(`${exactPayload}\n`, "utf8"), MAX_MESSAGE_BYTES);
   assert.equal(decode(`${exactPayload}\n`)?.type, "answer");
   assert.equal(decode(exactPayload)?.type, "answer");
 
   const tooLargeWithoutNewline = `${prefix}${"x".repeat(
     MAX_MESSAGE_BYTES - prefix.length - suffix.length,
   )}${suffix}`;
-  assert.equal(
-    Buffer.byteLength(tooLargeWithoutNewline, "utf8"),
-    MAX_MESSAGE_BYTES,
-  );
+  assert.equal(Buffer.byteLength(tooLargeWithoutNewline, "utf8"), MAX_MESSAGE_BYTES);
   assert.equal(decode(tooLargeWithoutNewline), null);
 });
 
@@ -144,9 +138,7 @@ test("decoder ignores unknown fields but rejects unknown types and extra lines",
   );
   const longUnknownKey = "k".repeat(241);
   assert.equal(
-    decode(
-      `{"v":1,"t":"answer","id":"r1","ch":"allow","${longUnknownKey}":true}`,
-    )?.choice,
+    decode(`{"v":1,"t":"answer","id":"r1","ch":"allow","${longUnknownKey}":true}`)?.choice,
     "allow",
   );
   assert.equal(decode('{"v":1,"t":"future","id":"r1"}\n'), null);

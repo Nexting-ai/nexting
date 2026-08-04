@@ -38,8 +38,8 @@ test("reference package stays private and exposes explicit entry points", async 
 });
 
 test("public release identity is Experimental 0.2", () => {
-  assert.equal(releasePackageJSON.version, "0.2.0-experimental.0");
-  assert.equal(packageJSON.version, "0.2.0-experimental.0");
-  assert.match(changelog, /## 0\.2\.0-experimental\.0/);
+  assert.equal(releasePackageJSON.version, "0.2.0-experimental.2");
+  assert.equal(packageJSON.version, "0.2.0-experimental.2");
+  assert.match(changelog, /## 0\.2\.0-experimental\.1/);
   assert.match(readme, /## Experimental 0\.2/);
 });
