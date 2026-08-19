@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Remote control for your own AI agents.</strong><br>
-  Connect to Claude Code and Codex on your Mac or Windows PC.<br>
+  Connect to Claude Code, Codex, Grok, and Cursor on your Mac or Windows PC.<br>
   View sessions, send tasks, and drive them remotely from your phone, PIN, or Ring.
 </p>
 
@@ -26,7 +26,7 @@
   <img src="public/remote-control-agent-dark.png" alt="Nexting Remote Control Agent — Mac, phone, and Ring control" width="100%">
 </p>
 
-You already have powerful agents — Claude Code, Codex, OpenClaw — running on your computer. **Nexting connects you to them remotely**: view live sessions, send tasks, and drive Claude Code or Codex from your phone, PIN, or Ring, wherever you are. When you only need to send an idea, speak once and let your own agent work in the background.
+You already have powerful agents — Claude Code, Codex, Grok, Cursor, OpenClaw — running on your computer. **Nexting connects you to them remotely**: view live sessions, send tasks, and drive Claude Code, Codex, Grok, or Cursor from your phone, PIN, or Ring, wherever you are. When you only need to send an idea, speak once and let your own agent work in the background.
 
 **Remote control, not just dispatch — view, send, drive.**
 
@@ -34,7 +34,7 @@ Nexting comes in two form factors, one capability. The **PIN** ($129, shipping n
 
 ```
 You speak → Nexting PIN (BLE) → iPhone App (STT) → Cloud → your own agent
-                                                          (Claude Code / Codex / OpenClaw)
+                                                          (Claude Code / Codex / Grok / Cursor / OpenClaw)
                                                                ↓
  Result pushed back ← iPhone App ← ── ── agent runs it in the background
 ```
@@ -45,10 +45,10 @@ You speak → Nexting PIN (BLE) → iPhone App (STT) → Cloud → your own agen
 
 | | |
 |---|---|
-| **Remote control** | Attach to a Claude Code or Codex session on your Mac or Windows PC, view it live, send tasks, and drive it remotely from your phone or wearable. |
+| **Remote control** | Attach to a Claude Code, Codex, Grok, or Cursor session on your Mac or Windows PC, view it live, send tasks, and drive it remotely from your phone or wearable. |
 | **Dispatch, not chat** | Fire-and-forget: say it once, your agent runs it in the background. Not Q&A. |
-| **Your own agent** | Drives the agents you already run — Claude Code, Codex, OpenClaw. Not a locked-in model. |
-| **Private by design** | Claude Code & Codex support optional end-to-end encryption — turn it on and Nexting relays ciphertext, not your session. |
+| **Your own agent** | Drives the agents you already run — Claude Code, Codex, Grok, Cursor, OpenClaw. Not a locked-in model. |
+| **Private by design** | Claude Code, Codex, Grok, and Cursor support optional end-to-end encryption — turn it on and Nexting relays ciphertext, not your session. |
 | **Delivers while you're offline** | Phone locked, on the move? The agent still finishes the job and pushes the result back. |
 | **Deep iPhone integration** | Calendar, Reminders, Contacts, Health, HomeKit — all by voice. |
 
@@ -59,7 +59,7 @@ Nexting isn't another voice assistant — it's the pocket control surface for yo
 1. **Get a PIN** ($129, shipping now) — or join the [Ring private beta](https://nexting.ai/reserve).
 2. **Install the [Nexting iOS app](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343)** and sign in.
 3. **Pair your PIN** over Bluetooth.
-4. **Connect your agent** — Claude Code, Codex, OpenClaw, a local model, or managed Nexting Pro (see below).
+4. **Connect your agent** — Claude Code, Codex, Grok, Cursor, OpenClaw, a local model, or managed Nexting Pro (see below).
 5. **Press, speak, dispatch.**
 
 ## Bring Your Own Agent
@@ -70,6 +70,8 @@ Nexting is a terminal, not a model. Connect the agent you already run:
 |------|-----------|------|
 | **Claude Code** | Attach to a [Claude Code](https://claude.com/product/claude-code) session on your Mac or Windows PC and drive it from your PIN — live. | Free |
 | **Codex** | Attach to an OpenAI Codex CLI session on your Mac or Windows PC and drive it from your PIN — live. | Free |
+| **Grok** | Attach to a [Grok Build](https://grok.com) session on your Mac and drive it from your PIN — live. | Free |
+| **Cursor** | Attach to a [Cursor](https://cursor.com) Desktop session on your Mac and drive it from your PIN — live. | Free |
 | **MyOpenClaw** | Run your own [OpenClaw](https://github.com/openclaw/openclaw) instance. We handle the relay. | Free |
 | **MyHermes** | Any OpenAI-compatible local AI — Hermes Agent, Ollama, vLLM, LM Studio. | Free |
 | **Nexting Pro** | Managed agent in the cloud. Latest Claude, GPT, and Gemini models, zero setup. | $29/mo or $279/yr |
@@ -117,6 +119,34 @@ irm https://nexting.ai/install-codex.ps1 | iex
 ```
 
 Then just run `codex` as usual — your sessions appear in the Nexting app, live. Uninstall anytime: `nexting-cc-bridge codex-uninstall`.
+
+</details>
+
+<details>
+<summary><img src="public/logos/grok.svg" width="16" alt="" /> <strong>Grok</strong> — same idea, for Grok Build on your Mac</summary>
+<br>
+
+One command to sign in and install:
+
+```bash
+curl -fsSL https://nexting.ai/install-grok | bash
+```
+
+Then just run `grok` as usual — your sessions appear in the Nexting app, live. Uninstall anytime: `nexting-cc-bridge grok-uninstall`.
+
+</details>
+
+<details>
+<summary><img src="public/logos/cursor.svg" width="16" alt="" /> <strong>Cursor</strong> — same idea, for Cursor Desktop on your Mac</summary>
+<br>
+
+One command to sign in and install:
+
+```bash
+curl -fsSL https://nexting.ai/install-cursor | bash
+```
+
+Your Cursor Desktop sessions appear in the Nexting app, live. Uninstall anytime: `nexting-cc-bridge cursor-uninstall`.
 
 </details>
 
@@ -193,7 +223,7 @@ All data stays on your iPhone. You control every permission.
 
 ## Privacy
 
-- Claude Code & Codex support **end-to-end encryption** (opt-in) — with it enabled, Nexting relays ciphertext, not readable session content
+- Claude Code, Codex, Grok, and Cursor support **end-to-end encryption** (opt-in) — with it enabled, Nexting relays ciphertext, not readable session content
 - Raw audio is discarded immediately after transcription — never stored
 - Voice streams over encrypted WebSocket (WSS)
 - Self-hosted modes keep all data on your own infrastructure
