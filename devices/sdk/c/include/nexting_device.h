@@ -70,7 +70,13 @@ typedef enum {
   NEXTING_DEVICE_MESSAGE_USAGE,
   NEXTING_DEVICE_MESSAGE_USAGE_CLEAR,
   NEXTING_DEVICE_MESSAGE_CONFIG,
-  NEXTING_DEVICE_MESSAGE_CONFIG_RESULT
+  NEXTING_DEVICE_MESSAGE_CONFIG_RESULT,
+  NEXTING_DEVICE_MESSAGE_AUDIO_CONFIG,
+  NEXTING_DEVICE_MESSAGE_AUDIO_BEGIN,
+  NEXTING_DEVICE_MESSAGE_AUDIO_CREDIT,
+  NEXTING_DEVICE_MESSAGE_AUDIO_END,
+  NEXTING_DEVICE_MESSAGE_AUDIO_CANCEL,
+  NEXTING_DEVICE_MESSAGE_AUDIO_STATE
 } nexting_device_message_type_t;
 
 typedef enum {
@@ -186,6 +192,56 @@ typedef enum {
   NEXTING_DEVICE_CONFIG_UNSUPPORTED
 } nexting_device_config_error_t;
 
+typedef enum {
+  NEXTING_DEVICE_AUDIO_CONTROL_CODEC_NONE = 0,
+  NEXTING_DEVICE_AUDIO_CONTROL_CODEC_IMA_ADPCM
+} nexting_device_audio_codec_t;
+
+typedef enum {
+  NEXTING_DEVICE_AUDIO_END_NONE = 0,
+  NEXTING_DEVICE_AUDIO_END_SUBMITTED,
+  NEXTING_DEVICE_AUDIO_END_MAX_DURATION
+} nexting_device_audio_end_reason_t;
+
+typedef enum {
+  NEXTING_DEVICE_AUDIO_CANCEL_NONE = 0,
+  NEXTING_DEVICE_AUDIO_CANCEL_LOCAL,
+  NEXTING_DEVICE_AUDIO_CANCEL_HOST,
+  NEXTING_DEVICE_AUDIO_CANCEL_DISCONNECT,
+  NEXTING_DEVICE_AUDIO_CANCEL_TRANSPORT,
+  NEXTING_DEVICE_AUDIO_CANCEL_TIMEOUT,
+  NEXTING_DEVICE_AUDIO_CANCEL_HARDWARE,
+  NEXTING_DEVICE_AUDIO_CANCEL_REJECTED
+} nexting_device_audio_cancel_reason_t;
+
+typedef enum {
+  NEXTING_DEVICE_AUDIO_STATE_NONE = 0,
+  NEXTING_DEVICE_AUDIO_STATE_READY,
+  NEXTING_DEVICE_AUDIO_STATE_RECEIVING,
+  NEXTING_DEVICE_AUDIO_STATE_TRANSCRIBING,
+  NEXTING_DEVICE_AUDIO_STATE_SUBMITTED,
+  NEXTING_DEVICE_AUDIO_STATE_ERROR
+} nexting_device_audio_state_t;
+
+typedef struct {
+  uint32_t epoch;
+  bool has_stream_id;
+  uint32_t stream_id;
+  nexting_device_audio_codec_t codec;
+  uint32_t sample_rate;
+  uint8_t channels;
+  uint16_t frame_ms;
+  uint32_t max_duration_ms;
+  uint16_t startup_buffer_ms;
+  uint8_t credits;
+  uint32_t ack_sequence;
+  uint32_t last_sequence;
+  uint32_t sample_count;
+  nexting_device_audio_end_reason_t end_reason;
+  nexting_device_audio_cancel_reason_t cancel_reason;
+  nexting_device_audio_state_t state;
+} nexting_device_audio_control_payload_t;
+
 typedef struct {
   size_t item_count;
   char items[NEXTING_DEVICE_NAV_MAX_ITEMS][NEXTING_DEVICE_NAV_ITEM_CAPACITY];
@@ -272,6 +328,7 @@ typedef struct {
   nexting_device_config_payload_t config;
   nexting_device_config_status_t config_status;
   nexting_device_config_error_t config_error;
+  nexting_device_audio_control_payload_t audio;
 } nexting_device_interaction_payload_t;
 
 typedef struct {
@@ -336,6 +393,7 @@ typedef struct {
   size_t haptic_count;
   char haptics[NEXTING_DEVICE_INFO_MAX_HAPTICS]
                [NEXTING_DEVICE_INFO_HAPTIC_CAPACITY];
+  bool has_device_audio;
   bool has_vendor;
   char vendor_namespace[NEXTING_DEVICE_INFO_VENDOR_NAMESPACE_CAPACITY];
   size_t vendor_fact_count;
@@ -350,6 +408,7 @@ typedef struct {
   bool supports_text_v1;
   bool supports_usage_v1;
   bool supports_config_v1;
+  bool supports_device_audio_v1;
 } nexting_device_info_t;
 
 nexting_device_result_t

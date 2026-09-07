@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(nexting_device_c VERSION 0.2.0 LANGUAGES C)
+project(nexting_device_c VERSION 0.3.0 LANGUAGES C)
 
 option(NEXTING_DEVICE_SANITIZE "Enable address and undefined behavior sanitizers" OFF)
 
@@ -66,7 +66,7 @@ if(NOT NEXTING_DEVICE_INTERACTION_VECTOR_RESULT EQUAL 0)
   message(FATAL_ERROR "Could not generate C interaction vectors")
 endif()
 
-add_library(nexting_device STATIC src/nexting_device.c)
+add_library(nexting_device STATIC src/nexting_device.c src/nexting_device_audio.c)
 target_include_directories(nexting_device PUBLIC include)
 target_compile_options(nexting_device PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
@@ -76,7 +76,7 @@ if(NEXTING_DEVICE_SANITIZE AND CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
 endif()
 
 enable_testing()
-foreach(test_name IN ITEMS codec stream relay status device_info interactions)
+foreach(test_name IN ITEMS codec stream relay status device_info interactions audio)
   add_executable(test_${test_name} tests/test_${test_name}.c)
   target_include_directories(test_${test_name} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
   target_link_libraries(test_${test_name} PRIVATE nexting_device)

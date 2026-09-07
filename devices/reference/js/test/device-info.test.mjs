@@ -24,15 +24,27 @@ test("Device Info 0.2 valid vectors normalize identically", () => {
     const decoded = decodeDeviceInfo(item.wire);
     assert.ok(decoded, item.name);
     assert.equal(decoded.model, item.decoded.model, item.name);
-    assert.equal(decoded.capabilities.statusSlots, item.decoded.statusSlots, item.name);
+    assert.equal(
+      decoded.capabilities.statusSlots,
+      item.decoded.statusSlots,
+      item.name,
+    );
     assert.equal(decoded.identity.deviceId, item.decoded.deviceId, item.name);
-    assert.equal(decoded.capabilities.buttonCount, item.decoded.buttonCount, item.name);
+    assert.equal(
+      decoded.capabilities.buttonCount,
+      item.decoded.buttonCount,
+      item.name,
+    );
     assert.equal(
       decoded.capabilities.batteryService,
       item.decoded.batteryService,
       item.name,
     );
-    assert.equal(decoded.vendor?.namespace ?? null, item.decoded.vendorNamespace, item.name);
+    assert.equal(
+      decoded.vendor?.namespace ?? null,
+      item.decoded.vendorNamespace,
+      item.name,
+    );
   }
 });
 
@@ -79,17 +91,21 @@ test("vendor facts remain bounded, inert, and cannot override system fields", ()
     label: `Fact ${index}`,
     value: `${index}`,
   }));
-  const decoded = decodeDeviceInfo(withVendor(core, {
-    namespace: "com.example.board",
-    facts: tooManyFacts,
-  }));
+  const decoded = decodeDeviceInfo(
+    withVendor(core, {
+      namespace: "com.example.board",
+      facts: tooManyFacts,
+    }),
+  );
   assert.ok(decoded);
   assert.equal(decoded.vendor, null);
 
-  const override = decodeDeviceInfo(withVendor(core, {
-    namespace: "com.example.board",
-    facts: [{ key: "battery", label: "Battery", value: "100%" }],
-  }));
+  const override = decodeDeviceInfo(
+    withVendor(core, {
+      namespace: "com.example.board",
+      facts: [{ key: "battery", label: "Battery", value: "100%" }],
+    }),
+  );
   assert.ok(override);
   assert.deepEqual(override.vendor.facts, [
     { key: "battery", label: "Battery", value: "100%" },
@@ -116,4 +132,64 @@ test("Device Info negotiates interaction profiles explicitly", () => {
   assert.equal(supportsProfile(info, "navigation/1"), true);
   assert.equal(supportsProfile(info, "keys/1"), true);
   assert.equal(supportsProfile(info, "config/1"), false);
+});
+
+test("Device Info advertises a real device microphone separately from voice/1", () => {
+  const core = JSON.parse(vectorFile.valid[0].wire);
+  const audio = {
+    source: "device_microphone",
+    codecs: ["ima_adpcm"],
+    sample_rates: [16000],
+    channels: 1,
+    frame_ms: [20],
+    max_duration_ms: 120000,
+    startup_buffer_ms: 200,
+  };
+  const decoded = decodeDeviceInfo(
+    JSON.stringify({
+      ...core,
+      spec: "0.4.0-experimental.1",
+      profiles: ["approval/1", "device-audio/1"],
+      audio,
+    }),
+  );
+  assert.ok(decoded);
+  assert.equal(supportsProfile(decoded, "device-audio/1"), true);
+  assert.equal(supportsProfile(decoded, "voice/1"), false);
+  assert.deepEqual(decoded.capabilities.audio, {
+    source: "device_microphone",
+    codecs: ["ima_adpcm"],
+    sampleRates: [16000],
+    channels: 1,
+    frameMs: [20],
+    maxDurationMs: 120000,
+    startupBufferMs: 200,
+  });
+
+  assert.equal(
+    decodeDeviceInfo(
+      JSON.stringify({ ...core, profiles: ["approval/1", "device-audio/1"] }),
+    ),
+    null,
+  );
+  assert.equal(decodeDeviceInfo(JSON.stringify({ ...core, audio })), null);
+  assert.equal(
+    decodeDeviceInfo(
+      JSON.stringify({
+        ...core,
+        profiles: ["approval/1", "device-audio/1"],
+        audio: { ...audio, source: "host_microphone" },
+      }),
+    ),
+    null,
+  );
+  const duplicateAudioField =
+    `{\"protocol\":\"nexting-device\",\"spec\":\"0.4.0-experimental.1\",` +
+    `\"wire\":[1],\"profiles\":[\"approval/1\",\"device-audio/1\"],` +
+    `\"model\":\"audio-ref\",\"fw\":\"1\",\"max_message_bytes\":4096,` +
+    `\"max_summary_bytes\":240,\"audio\":{\"source\":\"device_microphone\",` +
+    `\"source\":\"device_microphone\",\"codecs\":[\"ima_adpcm\"],` +
+    `\"sample_rates\":[16000],\"channels\":1,\"frame_ms\":[20],` +
+    `\"max_duration_ms\":120000,\"startup_buffer_ms\":200}}`;
+  assert.equal(decodeDeviceInfo(duplicateAudioField), null);
 });

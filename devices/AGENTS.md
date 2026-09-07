@@ -53,7 +53,7 @@ Do not create language-specific behavior that is absent from the shared contract
 
 ## Required local gates
 
-From the repository root:
+From this package directory:
 
 ```sh
 npm run test:reference
@@ -65,11 +65,11 @@ npm run check:boundary
 npm run check:naming
 ```
 
-`npm run check` is the final aggregate gate. At the 2026-07-27 snapshot it
-passes, including Device Info 0.2, the audited exporter, mandatory bonding,
-three-second bond reset, and notification fragmentation. Run
-Do not weaken or delete these assertions; a source contract and compiler gate still do not
-replace the real-board checklist.
+`npm run check` is the final aggregate gate. The 2026-07-27 snapshot passed,
+including Device Info 0.2, the audited exporter, mandatory bonding,
+three-second bond reset, and notification fragmentation. Run it before shipping.
+Do not weaken or delete these assertions; a source contract and compiler gate
+still do not replace the real-board checklist.
 
 ## Hardware claims
 

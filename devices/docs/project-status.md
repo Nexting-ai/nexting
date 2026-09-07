@@ -1,32 +1,36 @@
 # Project status
 
-Snapshot: 2026-07-29. Release `0.2.0-experimental.2` is implemented as the open
+Snapshot: 2026-09-07. Release `0.4.0-experimental.1` is implemented as the open
 Devices SDK inside the existing `Nexting-ai/nexting` repository under
 `devices/`.
 
 ## Current evidence
 
-| Area | Evidence | Status |
-| --- | --- | --- |
-| Wire and vectors | Nine negotiated profiles, bounded Device Info 0.2, JSON Schema, valid and hostile vectors | Passing; wire major remains `1` |
-| JavaScript reference | Protocol, framing, relay, Device Info, documentation, and export tests | Passing |
-| Portable C99 SDK | Fixed-buffer nine-profile protocol, approval/status state, Device Info, ASan/UBSan suites | Passing |
-| Cloud metadata | Account-owned custom name, optional number, and notes by stable instance key; owner-only RLS | Route/service tests pass |
-| Public export | Allowlisted deterministic `devices/` export, README marker block, SHA-256 manifest, hostile-path/content/symlink tests | Passing |
-| nRF52840 DK | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact | Build verified; physical checklist pending |
-| XIAO nRF52840 / Sense | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact | Build verified; physical checklist pending |
-| XIAO ESP32-C3 | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact | Build verified; physical checklist pending |
-| XIAO ESP32-S3 | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact | Build verified; physical checklist pending |
+| Area                  | Evidence                                                                                                               | Status                                     |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Wire and vectors      | Ten negotiated profiles, bounded Device Info, strict audio/tunnel schemas, valid and hostile vectors                  | Passing; wire major remains `1`            |
+| JavaScript reference  | Protocol, audio, tunnel, framing, relay, Device Info, documentation, and export tests                                  | Passing                                    |
+| Portable C99 SDK      | Fixed-buffer ten-profile protocol, IMA ADPCM/CRC32C frames, Device Info, ASan/UBSan suites                             | Passing                                    |
+| Device-audio simulator | Physical-only start, press/hold, credits, loss, timeout, duration, cancellation, and RAM cleanup                      | Core tested; no board claim                |
+| Cloud metadata        | Account-owned custom name, optional number, and notes by stable instance key; owner-only RLS                           | Route/service tests pass                   |
+| Public export         | Allowlisted deterministic `devices/` export, README marker block, SHA-256 manifest, hostile-path/content/symlink tests | Passing                                    |
+| nRF52840 DK           | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact                                                                     | Build verified; physical checklist pending |
+| XIAO nRF52840 / Sense | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact                                                                     | Build verified; physical checklist pending |
+| XIAO ESP32-C3         | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact                                                                     | Build verified; physical checklist pending |
+| XIAO ESP32-S3         | Pinned Zephyr 4.3.0 / SDK 0.17.4 workflow artifact                                                                     | Build verified; physical checklist pending |
+| AhaKey X1             | CH582-facing tunnel/audio port, physical-only lifecycle, C codec, descriptor, injected hardware tests                  | Core tested; production PCM hook and board evidence pending |
 
-## What 0.2 adds
+## What 0.3 adds
 
 - Frozen `navigation/1`, `keys/1`, `rotary/1`, `voice/1`, `text/1`,
   `usage/1`, and `config/1` interaction contracts alongside `approval/1` and
   `status/1`.
 - Strict profile negotiation and sequence gates so undeclared, replayed, or
   out-of-order physical input is discarded.
-- Official-App-only microphone capture for push-to-talk: `voice/1` carries control
-  events and acknowledgement, never audio or transcripts.
+- `voice/1` remains Host-microphone control. `device-audio/1` independently
+  carries microphone audio sampled by hardware after a physical input.
+- Compatibility Tunnel v1 maps constrained existing BLE command transports to
+  the same logical contracts without vendor code in the official App core.
 - Atomic remote configuration. One invalid setting rejects the complete update
   without changing the active configuration.
 - Optional typed identity and hardware capabilities: buttons, approval/custom
@@ -46,7 +50,7 @@ Devices SDK inside the existing `Nexting-ai/nexting` repository under
 
 ## Remaining physical evidence
 
-No Android or iPhone BLE device was attached to the 2026-07-29 verification
+No Android or iPhone BLE device was attached to the 2026-08-13 verification
 environment. Therefore:
 
 - no real-radio, pairing, reconnect, battery, button, or cross-platform

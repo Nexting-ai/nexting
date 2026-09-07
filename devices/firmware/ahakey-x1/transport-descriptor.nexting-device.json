@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "integration_id": "ai.ahakey.x1",
+  "display_name": "AhaKey X1",
+  "discovery": {
+    "service_uuid": "00007340-0000-1000-8000-00805f9b34fb"
+  },
+  "envelope": {
+    "strategy": "opcode-prefix-v1",
+    "max_payload_bytes": 243
+  },
+  "channels": {
+    "control_down": {
+      "characteristic_uuid": "00007343-0000-1000-8000-00805f9b34fb",
+      "property": "write",
+      "opcode": 160
+    },
+    "control_up": {
+      "characteristic_uuid": "00007344-0000-1000-8000-00805f9b34fb",
+      "property": "notify",
+      "opcode": 161
+    },
+    "audio_up": {
+      "characteristic_uuid": "00007344-0000-1000-8000-00805f9b34fb",
+      "property": "notify",
+      "opcode": 162
+    },
+    "flow_down": {
+      "characteristic_uuid": "00007343-0000-1000-8000-00805f9b34fb",
+      "property": "write",
+      "opcode": 163
+    }
+  },
+  "requirements": {
+    "bonded": true,
+    "encrypted": true,
+    "min_att_payload": 64
+  }
+}

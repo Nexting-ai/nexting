@@ -6,13 +6,13 @@ Before adding a platform, read [the public foundation](foundation-development.md
 
 ## The five pieces
 
-| Piece | Reuse or implement | Responsibility |
-| --- | --- | --- |
-| Protocol and state | Reuse `sdk/c` | JSON, UTF-8 bounds, newline framing, TTL, choice locking, retry, resolution. |
-| BLE adapter | Implement | Four GATT UUIDs, encrypted writes, notifications, Device Info, connection lifecycle. |
-| Inputs | Implement | Convert two trustworthy local actions into `ALLOW` or `DENY`; debounce before calling the core. |
-| Output | Implement | Show Pending/Idle without treating an LED as authority. |
-| Product security | Implement and document | Pairing UX, bond storage/revocation, update path, physical threat model. |
+| Piece              | Reuse or implement     | Responsibility                                                                                  |
+| ------------------ | ---------------------- | ----------------------------------------------------------------------------------------------- |
+| Protocol and state | Reuse `sdk/c`          | JSON, UTF-8 bounds, newline framing, TTL, choice locking, retry, resolution.                    |
+| BLE adapter        | Implement              | Four GATT UUIDs, encrypted writes, notifications, Device Info, connection lifecycle.            |
+| Inputs             | Implement              | Convert two trustworthy local actions into `ALLOW` or `DENY`; debounce before calling the core. |
+| Output             | Implement              | Show Pending/Idle without treating an LED as authority.                                         |
+| Product security   | Implement and document | Pairing UX, bond storage/revocation, update path, physical threat model.                        |
 
 Do not copy the JavaScript reference into firmware and do not parse the protocol with substring searches. The C99 core exists to make ports behave identically.
 

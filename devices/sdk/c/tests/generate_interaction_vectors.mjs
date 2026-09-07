@@ -4,7 +4,15 @@ import { join } from "node:path";
 const [, , vectorDirectory, outputPath] = process.argv;
 if (!vectorDirectory || !outputPath) process.exit(2);
 
-const profiles = ["navigation", "keys", "rotary", "voice", "text", "usage", "config"];
+const profiles = [
+  "navigation",
+  "keys",
+  "rotary",
+  "voice",
+  "text",
+  "usage",
+  "config",
+];
 const valid = [];
 const invalid = [];
 for (const profile of profiles) {

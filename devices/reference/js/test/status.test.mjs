@@ -41,7 +41,9 @@ test("status/1 vectors are versioned and cover every state", () => {
     "must cover the empty clear message",
   );
   assert.ok(
-    vectors.valid.some((item) => item.decoded.agents.length === MAX_STATUS_AGENTS),
+    vectors.valid.some(
+      (item) => item.decoded.agents.length === MAX_STATUS_AGENTS,
+    ),
     "must cover the slot-count boundary",
   );
   assert.ok(
@@ -111,10 +113,7 @@ test("protocol exports the status profile identity", () => {
 
 test("status encode rejects bad slot, state, and label shapes", () => {
   const base = { type: "status", agents: [{ slot: 0, state: "idle" }] };
-  assert.equal(
-    encode({ ...base, agents: [{ slot: 8, state: "idle" }] }),
-    null,
-  );
+  assert.equal(encode({ ...base, agents: [{ slot: 8, state: "idle" }] }), null);
   assert.equal(
     encode({ ...base, agents: [{ slot: 0, state: "paused" }] }),
     null,

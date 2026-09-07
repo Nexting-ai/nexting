@@ -15,6 +15,8 @@ proof. If a checkpoint fails, use [Troubleshooting](troubleshooting.md).
 - [Foundation development blueprint](foundation-development.md): lifecycle, modules, dependency direction, exact files, change map, and the current capability set.
 - [Public interface catalog](interfaces.md): BLE, wire messages, and the portable C device API.
 - [Protocol specification](../SPEC.md): normative wire, BLE, state, limits, and versioning.
+- [Device audio](device-audio.md): physical-device microphone lifecycle, wire, flow control, and privacy.
+- [Compatibility Tunnel](compatibility-tunnel.md): constrained data-only adapters for existing BLE services.
 - [Security model](../SECURITY.md): trust boundary, minimum controls, threats, and non-claims.
 
 ## Run a working example
@@ -33,6 +35,10 @@ proof. If a checkpoint fails, use [Troubleshooting](troubleshooting.md).
 - [Portable C99 SDK](../sdk/c/README.md): fixed-buffer device codec, stream, and state.
 - [JavaScript reference](../reference/js/README.md): readable protocol, framing, and relay behavior.
 - [Zephyr reference firmware](../firmware/zephyr/README.md): shared Nordic and Espressif adapter.
+- [MultiPad USB CDC guide](multipad-usb.md): open-source STM32 adapter, board variant check, and fail-closed flash preparation.
+- [First case: ILX MultiPad](cases/multipad-first-case.md): reproduce the upstream build, add the public adapter, map the first two keys, and verify the flash path.
+- [AhaKey X1 case](cases/ahakey-x1-case.md): integrate a shipping BLE vibecoding keyboard natively or through a bridge dongle, mapping its keys, lever, LED, and OLED.
+- [AhaKey X1 integration kit](../firmware/ahakey-x1/README.md): portable C99 codec for the published AhaKey protocol plus the Nexting mapping adapter and Device Info template.
 - [Port a chip](porting-guide.md): platform contract and adapter rules.
 
 ## Verify and make claims

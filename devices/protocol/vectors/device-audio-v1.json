@@ -1,0 +1,115 @@
+{
+  "spec": "0.3.0-experimental.1",
+  "wire": 1,
+  "profile": "device-audio/1",
+  "format": {
+    "codec": "ima_adpcm",
+    "sample_rate": 16000,
+    "channels": 1,
+    "frame_ms": 20,
+    "samples_per_frame": 320
+  },
+  "crc32c": [
+    {
+      "name": "Castagnoli check value",
+      "utf8": "123456789",
+      "value": 3808858755
+    }
+  ],
+  "valid": [
+    {
+      "name": "zero PCM block in a complete logical frame",
+      "epoch": 287454020,
+      "stream_id": 2864434397,
+      "sequence": 0,
+      "sample_index": 0,
+      "step_index": 0,
+      "pcm_fill": 0,
+      "frame_hex": "0101010044332211ddccbbaa0000000000000000400100000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c78c4635"
+    }
+  ],
+  "invalid": [
+    {
+      "name": "truncated CRC",
+      "frame_hex": "0101010044332211ddccbbaa0000000000000000400100000000a000"
+    },
+    {
+      "name": "unknown codec",
+      "mutate": { "offset": 2, "value": 2 },
+      "recompute_crc": true
+    },
+    {
+      "name": "reserved flag set",
+      "mutate": { "offset": 3, "value": 1 },
+      "recompute_crc": true
+    },
+    {
+      "name": "step index above 88",
+      "mutate": { "offset": 24, "value": 89 },
+      "recompute_crc": true
+    },
+    {
+      "name": "non-zero reserved byte",
+      "mutate": { "offset": 25, "value": 1 },
+      "recompute_crc": true
+    },
+    {
+      "name": "sample index does not match sequence",
+      "mutate": { "offset": 16, "value": 1 },
+      "recompute_crc": true
+    },
+    {
+      "name": "corrupt CRC",
+      "mutate": { "offset": 191, "value": 0 }
+    }
+  ],
+  "control": {
+    "valid": [
+      {
+        "name": "host prepares a bounded receiver without opening the microphone",
+        "wire": "{\"v\":1,\"t\":\"audio_config\",\"epoch\":287454020,\"codec\":\"ima_adpcm\",\"sample_rate\":16000,\"channels\":1,\"frame_ms\":20,\"max_duration_ms\":120000,\"startup_buffer_ms\":200,\"credits\":8}\n",
+        "decoded": { "type": "audioConfig", "epoch": 287454020, "codec": "ima_adpcm", "sampleRate": 16000, "channels": 1, "frameMs": 20, "maxDurationMs": 120000, "startupBufferMs": 200, "credits": 8 }
+      },
+      {
+        "name": "device begins only after a physical input",
+        "wire": "{\"v\":1,\"t\":\"audio_begin\",\"epoch\":287454020,\"stream_id\":2864434397,\"codec\":\"ima_adpcm\",\"sample_rate\":16000,\"channels\":1,\"frame_ms\":20}\n",
+        "decoded": { "type": "audioBegin", "epoch": 287454020, "streamId": 2864434397, "codec": "ima_adpcm", "sampleRate": 16000, "channels": 1, "frameMs": 20 }
+      },
+      {
+        "name": "host cumulatively acknowledges consumed frames",
+        "wire": "{\"v\":1,\"t\":\"audio_credit\",\"epoch\":287454020,\"stream_id\":2864434397,\"ack_seq\":7,\"credits\":4}\n",
+        "decoded": { "type": "audioCredit", "epoch": 287454020, "streamId": 2864434397, "ackSequence": 7, "credits": 4 }
+      },
+      {
+        "name": "device drains and ends a submitted stream",
+        "wire": "{\"v\":1,\"t\":\"audio_end\",\"epoch\":287454020,\"stream_id\":2864434397,\"last_seq\":49,\"sample_count\":16000,\"reason\":\"submitted\"}\n",
+        "decoded": { "type": "audioEnd", "epoch": 287454020, "streamId": 2864434397, "lastSequence": 49, "sampleCount": 16000, "reason": "submitted" }
+      },
+      {
+        "name": "either endpoint cancels the matching stream",
+        "wire": "{\"v\":1,\"t\":\"audio_cancel\",\"epoch\":287454020,\"stream_id\":2864434397,\"reason\":\"rejected\"}\n",
+        "decoded": { "type": "audioCancel", "epoch": 287454020, "streamId": 2864434397, "reason": "rejected" }
+      },
+      {
+        "name": "host displays transcribing state",
+        "wire": "{\"v\":1,\"t\":\"audio_state\",\"epoch\":287454020,\"stream_id\":2864434397,\"state\":\"transcribing\"}\n",
+        "decoded": { "type": "audioState", "epoch": 287454020, "streamId": 2864434397, "state": "transcribing" }
+      },
+      {
+        "name": "host advertises receiver readiness outside a stream",
+        "wire": "{\"v\":1,\"t\":\"audio_state\",\"epoch\":287454020,\"state\":\"ready\"}\n",
+        "decoded": { "type": "audioState", "epoch": 287454020, "state": "ready" }
+      }
+    ],
+    "invalid": [
+      "{\"v\":1,\"t\":\"audio_config\",\"epoch\":1,\"codec\":\"pcm16\",\"sample_rate\":16000,\"channels\":1,\"frame_ms\":20,\"max_duration_ms\":120000,\"startup_buffer_ms\":200,\"credits\":8}\n",
+      "{\"v\":1,\"t\":\"audio_config\",\"epoch\":1,\"codec\":\"ima_adpcm\",\"sample_rate\":16000,\"channels\":1,\"frame_ms\":20,\"max_duration_ms\":120001,\"startup_buffer_ms\":200,\"credits\":8}\n",
+      "{\"v\":1,\"t\":\"audio_begin\",\"epoch\":1,\"stream_id\":1,\"codec\":\"ima_adpcm\",\"sample_rate\":16000,\"channels\":1,\"frame_ms\":20,\"remote_start\":true}\n",
+      "{\"v\":1,\"t\":\"audio_credit\",\"epoch\":1,\"stream_id\":1,\"ack_seq\":-1,\"credits\":1}\n",
+      "{\"v\":1,\"t\":\"audio_end\",\"epoch\":1,\"stream_id\":1,\"last_seq\":0,\"sample_count\":0,\"reason\":\"submitted\"}\n",
+      "{\"v\":1,\"t\":\"audio_end\",\"epoch\":1,\"stream_id\":1,\"last_seq\":1,\"sample_count\":320,\"reason\":\"submitted\"}\n",
+      "{\"v\":1,\"t\":\"audio_cancel\",\"epoch\":1,\"stream_id\":1,\"reason\":\"remote_start\"}\n",
+      "{\"v\":1,\"t\":\"audio_state\",\"epoch\":1,\"state\":\"receiving\"}\n"
+    ]
+  }
+}

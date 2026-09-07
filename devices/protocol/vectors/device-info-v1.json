@@ -79,8 +79,8 @@
       "vendor": {
         "namespace": "com.ilx.multipad",
         "facts": [
-          {"key": "layers", "label": "Layers", "value": "4"},
-          {"key": "layers", "label": "Other", "value": "5"}
+          { "key": "layers", "label": "Layers", "value": "4" },
+          { "key": "layers", "label": "Other", "value": "5" }
         ]
       }
     },
@@ -88,28 +88,32 @@
       "name": "html value",
       "vendor": {
         "namespace": "com.ilx.multipad",
-        "facts": [{"key": "layers", "label": "Layers", "value": "<b>4</b>"}]
+        "facts": [{ "key": "layers", "label": "Layers", "value": "<b>4</b>" }]
       }
     },
     {
       "name": "url value",
       "vendor": {
         "namespace": "com.ilx.multipad",
-        "facts": [{"key": "site", "label": "Site", "value": "https://example.com"}]
+        "facts": [
+          { "key": "site", "label": "Site", "value": "https://example.com" }
+        ]
       }
     },
     {
       "name": "bad namespace",
       "vendor": {
         "namespace": "multipad",
-        "facts": [{"key": "layers", "label": "Layers", "value": "4"}]
+        "facts": [{ "key": "layers", "label": "Layers", "value": "4" }]
       }
     },
     {
       "name": "object value",
       "vendor": {
         "namespace": "com.ilx.multipad",
-        "facts": [{"key": "layers", "label": "Layers", "value": {"count": 4}}]
+        "facts": [
+          { "key": "layers", "label": "Layers", "value": { "count": 4 } }
+        ]
       }
     }
   ]

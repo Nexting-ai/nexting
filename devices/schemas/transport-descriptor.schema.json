@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Nexting-ai/devices/schemas/transport-descriptor.schema.json",
+  "title": "Nexting Compatibility Tunnel v1 descriptor",
+  "$ref": "#/$defs/descriptor",
+  "$defs": {
+    "descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "integration_id",
+        "display_name",
+        "discovery",
+        "envelope",
+        "channels",
+        "requirements"
+      ],
+      "properties": {
+        "version": { "const": 1 },
+        "integration_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,31}(?:\\.[a-z0-9][a-z0-9-]{0,31})+$"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1,
+          "x-maxUtf8Bytes": 64
+        },
+        "discovery": { "$ref": "#/$defs/discovery" },
+        "envelope": { "$ref": "#/$defs/envelope" },
+        "channels": { "$ref": "#/$defs/channels" },
+        "requirements": { "$ref": "#/$defs/requirements" }
+      }
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["service_uuid"],
+      "properties": {
+        "service_uuid": { "$ref": "#/$defs/uuid" }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy", "max_payload_bytes"],
+      "properties": {
+        "strategy": { "enum": ["opcode-prefix-v1"] },
+        "max_payload_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 511
+        }
+      }
+    },
+    "writeChannel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["characteristic_uuid", "property", "opcode"],
+      "properties": {
+        "characteristic_uuid": { "$ref": "#/$defs/uuid" },
+        "property": { "const": "write" },
+        "opcode": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    },
+    "notifyChannel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["characteristic_uuid", "property", "opcode"],
+      "properties": {
+        "characteristic_uuid": { "$ref": "#/$defs/uuid" },
+        "property": { "const": "notify" },
+        "opcode": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    },
+    "channels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["control_down", "control_up", "audio_up", "flow_down"],
+      "properties": {
+        "control_down": { "$ref": "#/$defs/writeChannel" },
+        "control_up": { "$ref": "#/$defs/notifyChannel" },
+        "audio_up": { "$ref": "#/$defs/notifyChannel" },
+        "flow_down": { "$ref": "#/$defs/writeChannel" }
+      },
+      "$comment": "Conformance parsers also require all four opcodes to be distinct."
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bonded", "encrypted", "min_att_payload"],
+      "properties": {
+        "bonded": { "const": true },
+        "encrypted": { "const": true },
+        "min_att_payload": {
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 512
+        }
+      }
+    }
+  }
+}

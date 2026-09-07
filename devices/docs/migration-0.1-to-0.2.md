@@ -37,12 +37,12 @@ support, and vendor facts remain read-only values reported by the device.
 
 ## Compatibility
 
-| Pair | Expected behavior |
-| --- | --- |
-| Official App + valid 0.1 device | Approval/status continue; new metadata rows are absent |
-| Older App + 0.2 device | Required fields continue; unknown bounded optional fields are ignored |
-| Official App + malformed optional vendor block | Core Device Info remains; vendor block is dropped |
-| Unsupported wire/profile | Connection fails closed as before |
+| Pair                                           | Expected behavior                                                     |
+| ---------------------------------------------- | --------------------------------------------------------------------- |
+| Official App + valid 0.1 device                | Approval/status continue; new metadata rows are absent                |
+| Older App + 0.2 device                         | Required fields continue; unknown bounded optional fields are ignored |
+| Official App + malformed optional vendor block | Core Device Info remains; vendor block is dropped                     |
+| Unsupported wire/profile                       | Connection fails closed as before                                     |
 
 The 0.2 label describes the SDK and Device Info contract. It does not change
 wire major `1`, self-certify a board, or make production firmware public.

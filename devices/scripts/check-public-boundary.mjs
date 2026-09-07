@@ -4,7 +4,12 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const privateRepositoryRoot = resolve(root, "../..");
-const ignoredDirectories = new Set([".build", ".git", "build", "build-sanitize"]);
+const ignoredDirectories = new Set([
+  ".build",
+  ".git",
+  "build",
+  "build-sanitize",
+]);
 export const forbiddenPatterns = [
   new RegExp(["hardware", "internal/"].join("-")),
   new RegExp(["CCSession", "Model"].join("")),
@@ -27,9 +32,11 @@ async function collect(directory) {
     const path = join(directory, entry.name);
     const metadata = await lstat(path);
     if (metadata.isSymbolicLink()) {
-      throw new Error(`public subtree must not contain symlinks: ${relative(root, path)}`);
+      throw new Error(
+        `public subtree must not contain symlinks: ${relative(root, path)}`,
+      );
     }
-    if (metadata.isDirectory()) files.push(...await collect(path));
+    if (metadata.isDirectory()) files.push(...(await collect(path)));
     else if (metadata.isFile()) files.push(path);
   }
   return files;
@@ -48,7 +55,9 @@ for (const path of await collect(root)) {
 for (const path of obsoletePrivateSources) {
   try {
     await lstat(path);
-    failures.push(`${relative(privateRepositoryRoot, path)}: obsolete prototype still exists`);
+    failures.push(
+      `${relative(privateRepositoryRoot, path)}: obsolete prototype still exists`,
+    );
   } catch (error) {
     if (error?.code !== "ENOENT") throw error;
   }

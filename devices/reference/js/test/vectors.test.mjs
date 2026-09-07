@@ -55,15 +55,27 @@ test("approval/1 vectors are versioned and cover every message type", async () =
     ["answer", "error", "present", "resolved"],
   );
   assert.deepEqual(
-    [...new Set(vectors.valid.map((item) => item.decoded.choice).filter(Boolean))].sort(),
+    [
+      ...new Set(
+        vectors.valid.map((item) => item.decoded.choice).filter(Boolean),
+      ),
+    ].sort(),
     [...CHOICES].sort(),
   );
   assert.deepEqual(
-    [...new Set(vectors.valid.map((item) => item.decoded.reason).filter(Boolean))].sort(),
+    [
+      ...new Set(
+        vectors.valid.map((item) => item.decoded.reason).filter(Boolean),
+      ),
+    ].sort(),
     [...RESOLUTION_REASONS].sort(),
   );
   assert.deepEqual(
-    [...new Set(vectors.valid.map((item) => item.decoded.code).filter(Boolean))].sort(),
+    [
+      ...new Set(
+        vectors.valid.map((item) => item.decoded.code).filter(Boolean),
+      ),
+    ].sort(),
     [...ERROR_CODES].sort(),
   );
   assert.ok(vectors.invalid.length >= 8);

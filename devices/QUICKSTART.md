@@ -15,11 +15,11 @@ side of that contract; it does not provide a kit for building another App.
 
 ## What each layer does
 
-| Layer | Responsibility | Does not receive |
-| --- | --- | --- |
-| Nexting device | Report physical intent and render bounded state | Agent credentials, accounts, session routes |
-| Trusted Host | Authorize the device, validate fresh input, and map profiles to Agent actions | Unbounded or unauthenticated device commands |
-| Agent integration | Continue the Claude Code, Codex, or compatible Agent session | A direct connection from accessory firmware |
+| Layer             | Responsibility                                                                | Does not receive                             |
+| ----------------- | ----------------------------------------------------------------------------- | -------------------------------------------- |
+| Nexting device    | Report physical intent and render bounded state                               | Agent credentials, accounts, session routes  |
+| Trusted Host      | Authorize the device, validate fresh input, and map profiles to Agent actions | Unbounded or unauthenticated device commands |
+| Agent integration | Continue the Claude Code, Codex, or compatible Agent session                  | A direct connection from accessory firmware  |
 
 This separation lets one public device protocol support a button, wearable,
 macropad, desk panel, or custom display without placing private Agent logic in
@@ -27,10 +27,10 @@ firmware.
 
 ## Choose your path
 
-| Path | Start | First proof |
-| --- | --- | --- |
-| Use a supported first-party Nexting product | Follow that product's in-App onboarding, connect the Agent, then pair and authorize the product | The same Agent session receives one validated physical action |
-| Build with the Nexting SDK | Download the public SDK and run the protocol and firmware checks before adapting hardware | A deterministic profile exchange and a reproducible firmware build |
+| Path                                        | Start                                                                                           | First proof                                                        |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Use a supported first-party Nexting product | Follow that product's in-App onboarding, connect the Agent, then pair and authorize the product | The same Agent session receives one validated physical action      |
+| Build with the Nexting SDK                  | Download the public SDK and run the protocol and firmware checks before adapting hardware       | A deterministic profile exchange and a reproducible firmware build |
 
 First-party product onboarding does not authorize third-party or DIY hardware.
 If you do not own a supported product, use the SDK path today.
