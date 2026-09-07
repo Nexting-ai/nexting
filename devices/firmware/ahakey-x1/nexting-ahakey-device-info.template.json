@@ -1,0 +1,53 @@
+{
+  "protocol": "nexting-device",
+  "spec": "0.4.0-experimental.1",
+  "wire": [1],
+  "profiles": ["approval/1", "status/1", "keys/1", "text/1", "device-audio/1"],
+  "model": "ahakey-x1",
+  "fw": "REPLACE-WITH-PRODUCTION-FIRMWARE-VERSION",
+  "max_message_bytes": 4096,
+  "max_summary_bytes": 240,
+  "device_id": "REPLACE-WITH-PER-DEVICE-UUID",
+  "manufacturer": "AhaKey",
+  "display_name": "AhaKey X1",
+  "button_count": 4,
+  "approval_button_count": 2,
+  "custom_button_count": 2,
+  "statusSlots": 1,
+  "battery_service": true,
+  "display": { "type": "oled", "width": 160, "height": 80 },
+  "audio": {
+    "source": "device_microphone",
+    "codecs": ["ima_adpcm"],
+    "sample_rates": [16000],
+    "channels": 1,
+    "frame_ms": [20],
+    "max_duration_ms": 120000,
+    "startup_buffer_ms": 200
+  },
+  "vendor": {
+    "namespace": "ai.ahakey.x1",
+    "facts": [
+      {
+        "key": "integration",
+        "label": "Integration",
+        "value": "Nexting Compatibility Tunnel in AhaKey firmware"
+      },
+      {
+        "key": "key_mapping",
+        "label": "Key mapping",
+        "value": "F18 allow, F19 deny, F13-F16 slots 0-3"
+      },
+      {
+        "key": "lever",
+        "label": "Approval lever",
+        "value": "keys/1 slot 7 press/release"
+      },
+      {
+        "key": "audio_path",
+        "label": "Audio path",
+        "value": "On-device microphone to IMA ADPCM over encrypted BLE"
+      }
+    ]
+  }
+}

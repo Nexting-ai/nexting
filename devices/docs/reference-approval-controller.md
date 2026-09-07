@@ -10,10 +10,10 @@ firmware, live Agent mapping, or physical security.
 You need a Seeed XIAO nRF52840 or XIAO nRF52840 Sense, two normally-open
 momentary buttons, jumper wires, and a data-capable USB-C cable.
 
-| Button | Connect |
-| --- | --- |
-| Allow | D0 to GND |
-| Deny | D1 to GND |
+| Button | Connect   |
+| ------ | --------- |
+| Allow  | D0 to GND |
+| Deny   | D1 to GND |
 
 The reference firmware enables internal pull-ups. Do not connect either input
 to 3.3 V.

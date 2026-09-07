@@ -4,6 +4,53 @@ This file records changes to public protocol behavior, shared vectors, SDK surfa
 
 ## Unreleased
 
+## 0.4.0-experimental.1 — 2026-09-07
+
+Wire major 1 remains compatible. This release publishes the AhaKey X1
+production-port boundary and makes Experimental 0.4 the current public SDK
+identity.
+
+### Added
+
+- AhaKey X1 production-port boundary for `device-audio/1`: physical-only
+  microphone start, IMA ADPCM frames, bounded credit queue, fragmentation,
+  timeout/error wiping, and a data-only tunnel over its existing BLE service.
+- AhaKey transport descriptor and injectable host CTests for encryption gates,
+  stock-command coexistence, device PCM, and flow-control failure paths.
+
+## 0.3.0-experimental.1 — 2026-08-13
+
+Wire major 1 remains compatible. This release adds an independently negotiated
+device microphone profile and a data-only compatibility transport.
+
+### Added
+
+- `device-audio/1` control messages, Device Info capability, binary IMA ADPCM
+  frames, CRC32C, fragmentation, credits, hostile vectors, and JSON Schema.
+- Byte-identical JavaScript and fixed-buffer C99 audio codecs.
+- Compatibility Tunnel v1 descriptors with a single fixed-opcode envelope,
+  strict allowlisting, encryption/bonding requirements, and no executable
+  plugin surface.
+- A deterministic hardware-free simulator for physical-key capture, 120-second
+  limit, bounded RAM, credit stalls, cancellation, and missing-frame policy.
+
+### Changed
+
+- `voice/1` retains its existing meaning: it controls the Host microphone and
+  never carries audio. `device-audio/1` carries microphone audio sampled by the
+  physical device itself.
+- A Host can prepare, reject, cancel, or terminate a device-audio stream, but
+  cannot remotely start the device microphone.
+
+### Added
+
+- AhaKey X1 integration kit: a portable C99 codec for the published AhaKey
+  BLE configuration protocol (`firmware/ahakey-x1/ahakey_proto.*`), the
+  Nexting mapping adapter for its keys, approval lever, LED strip, and OLED
+  (`firmware/ahakey-x1/nexting_ahakey_adapter.*`), a Device Info template,
+  host-side CTest coverage including the published wire captures, and the
+  end-to-end case document (`docs/cases/ahakey-x1-case.md`).
+
 ### Changed
 
 - Reframed the Quickstart around the device–App–Agent architecture and split

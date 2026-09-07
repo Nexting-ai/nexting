@@ -2,9 +2,11 @@
 
 This SDK is the chip-neutral part of a Nexting-compatible device. It provides:
 
-- deterministic `0.2.0-experimental.2` message encoding and decoding for
+- deterministic `0.4.0-experimental.1` message encoding and decoding for
   `approval/1`, `status/1`, `navigation/1`, `keys/1`, `rotary/1`, `voice/1`,
-  `text/1`, `usage/1`, and `config/1`;
+  `text/1`, `usage/1`, `config/1`, and `device-audio/1`;
+- fixed-buffer CRC32C, 16 kHz mono IMA ADPCM, 192-byte logical audio frames,
+  and strict independent-frame decoding in `nexting_device_audio.h`;
 - fixed-buffer Device Info 0.2 parsing for typed identity, capabilities, and
   bounded inert vendor facts;
 - fixed-buffer newline framing for BLE writes and notifications;
@@ -62,4 +64,7 @@ if (nexting_device_encode(&event, wire, sizeof wire, &wire_length) ==
 
 Sequence counters are per source and monotonic for the current connection.
 Clear volatile interaction state on disconnect. `voice/1` uses the same pattern
-for start/stop/cancel control; it never carries audio or transcripts.
+for Host-microphone start/stop/cancel control; it never carries audio or
+transcripts. A physical microphone declares `device-audio/1`, encodes PCM with
+`nexting_device_audio_encode_frame`, obeys Host credits, and begins only from a
+local physical input. See [Device audio](../../docs/device-audio.md).

@@ -52,7 +52,20 @@ typedef struct {
 #define FIELD_CONTEXT_LIMIT (UINT64_C(1) << 31)
 #define FIELD_ENTRIES (UINT64_C(1) << 32)
 #define FIELD_STATUS (UINT64_C(1) << 33)
-#define FIELD_UNKNOWN (UINT64_C(1) << 34)
+#define FIELD_EPOCH (UINT64_C(1) << 34)
+#define FIELD_CODEC (UINT64_C(1) << 35)
+#define FIELD_SAMPLE_RATE (UINT64_C(1) << 36)
+#define FIELD_CHANNELS (UINT64_C(1) << 37)
+#define FIELD_FRAME_MS (UINT64_C(1) << 38)
+#define FIELD_MAX_DURATION_MS (UINT64_C(1) << 39)
+#define FIELD_STARTUP_BUFFER_MS (UINT64_C(1) << 40)
+#define FIELD_CREDITS (UINT64_C(1) << 41)
+#define FIELD_STREAM_ID (UINT64_C(1) << 42)
+#define FIELD_ACK_SEQ (UINT64_C(1) << 43)
+#define FIELD_LAST_SEQ (UINT64_C(1) << 44)
+#define FIELD_SAMPLE_COUNT (UINT64_C(1) << 45)
+#define FIELD_REASON (UINT64_C(1) << 46)
+#define FIELD_UNKNOWN (UINT64_C(1) << 47)
 
 static bool is_space(char value) {
   return value == ' ' || value == '\t' || value == '\n' || value == '\r';
@@ -748,6 +761,54 @@ static nexting_device_voice_state_t parse_voice_state(const char *value) {
   return NEXTING_DEVICE_VOICE_NONE;
 }
 
+static nexting_device_audio_codec_t parse_audio_codec(const char *value) {
+  return strcmp(value, "ima_adpcm") == 0
+             ? NEXTING_DEVICE_AUDIO_CONTROL_CODEC_IMA_ADPCM
+             : NEXTING_DEVICE_AUDIO_CONTROL_CODEC_NONE;
+}
+
+static nexting_device_audio_end_reason_t
+parse_audio_end_reason(const char *value) {
+  if (strcmp(value, "submitted") == 0)
+    return NEXTING_DEVICE_AUDIO_END_SUBMITTED;
+  if (strcmp(value, "max_duration") == 0)
+    return NEXTING_DEVICE_AUDIO_END_MAX_DURATION;
+  return NEXTING_DEVICE_AUDIO_END_NONE;
+}
+
+static nexting_device_audio_cancel_reason_t
+parse_audio_cancel_reason(const char *value) {
+  if (strcmp(value, "local") == 0)
+    return NEXTING_DEVICE_AUDIO_CANCEL_LOCAL;
+  if (strcmp(value, "host") == 0)
+    return NEXTING_DEVICE_AUDIO_CANCEL_HOST;
+  if (strcmp(value, "disconnect") == 0)
+    return NEXTING_DEVICE_AUDIO_CANCEL_DISCONNECT;
+  if (strcmp(value, "transport") == 0)
+    return NEXTING_DEVICE_AUDIO_CANCEL_TRANSPORT;
+  if (strcmp(value, "timeout") == 0)
+    return NEXTING_DEVICE_AUDIO_CANCEL_TIMEOUT;
+  if (strcmp(value, "hardware") == 0)
+    return NEXTING_DEVICE_AUDIO_CANCEL_HARDWARE;
+  if (strcmp(value, "rejected") == 0)
+    return NEXTING_DEVICE_AUDIO_CANCEL_REJECTED;
+  return NEXTING_DEVICE_AUDIO_CANCEL_NONE;
+}
+
+static nexting_device_audio_state_t parse_audio_state(const char *value) {
+  if (strcmp(value, "ready") == 0)
+    return NEXTING_DEVICE_AUDIO_STATE_READY;
+  if (strcmp(value, "receiving") == 0)
+    return NEXTING_DEVICE_AUDIO_STATE_RECEIVING;
+  if (strcmp(value, "transcribing") == 0)
+    return NEXTING_DEVICE_AUDIO_STATE_TRANSCRIBING;
+  if (strcmp(value, "submitted") == 0)
+    return NEXTING_DEVICE_AUDIO_STATE_SUBMITTED;
+  if (strcmp(value, "error") == 0)
+    return NEXTING_DEVICE_AUDIO_STATE_ERROR;
+  return NEXTING_DEVICE_AUDIO_STATE_NONE;
+}
+
 static nexting_device_config_status_t parse_config_status(const char *value) {
   if (strcmp(value, "applied") == 0)
     return NEXTING_DEVICE_CONFIG_APPLIED;
@@ -1207,6 +1268,7 @@ static bool parse_known_field(parser_t *parser, const char *key,
         !parse_string(parser, value, sizeof value))
       return false;
     message->interaction.voice_state = parse_voice_state(value);
+    message->interaction.audio.state = parse_audio_state(value);
     return true;
   }
   if (strcmp(key, "label") == 0) {
@@ -1277,6 +1339,87 @@ static bool parse_known_field(parser_t *parser, const char *key,
         !parse_string(parser, value, sizeof value))
       return false;
     message->interaction.config_status = parse_config_status(value);
+    return true;
+  }
+  if (strcmp(key, "epoch") == 0 || strcmp(key, "sample_rate") == 0 ||
+      strcmp(key, "max_duration_ms") == 0 ||
+      strcmp(key, "stream_id") == 0 || strcmp(key, "ack_seq") == 0 ||
+      strcmp(key, "last_seq") == 0 || strcmp(key, "sample_count") == 0) {
+    const uint64_t field =
+        strcmp(key, "epoch") == 0
+            ? FIELD_EPOCH
+            : strcmp(key, "sample_rate") == 0
+                  ? FIELD_SAMPLE_RATE
+                  : strcmp(key, "max_duration_ms") == 0
+                        ? FIELD_MAX_DURATION_MS
+                        : strcmp(key, "stream_id") == 0
+                              ? FIELD_STREAM_ID
+                              : strcmp(key, "ack_seq") == 0
+                                    ? FIELD_ACK_SEQ
+                                    : strcmp(key, "last_seq") == 0
+                                          ? FIELD_LAST_SEQ
+                                          : FIELD_SAMPLE_COUNT;
+    if (!claim_field(fields, field) || !parse_uint(parser, &number) ||
+        number > UINT32_MAX)
+      return false;
+    if (field == FIELD_EPOCH)
+      message->interaction.audio.epoch = (uint32_t)number;
+    else if (field == FIELD_SAMPLE_RATE)
+      message->interaction.audio.sample_rate = (uint32_t)number;
+    else if (field == FIELD_MAX_DURATION_MS)
+      message->interaction.audio.max_duration_ms = (uint32_t)number;
+    else if (field == FIELD_STREAM_ID) {
+      message->interaction.audio.stream_id = (uint32_t)number;
+      message->interaction.audio.has_stream_id = true;
+    } else if (field == FIELD_ACK_SEQ)
+      message->interaction.audio.ack_sequence = (uint32_t)number;
+    else if (field == FIELD_LAST_SEQ)
+      message->interaction.audio.last_sequence = (uint32_t)number;
+    else
+      message->interaction.audio.sample_count = (uint32_t)number;
+    return true;
+  }
+  if (strcmp(key, "channels") == 0 || strcmp(key, "frame_ms") == 0 ||
+      strcmp(key, "startup_buffer_ms") == 0 || strcmp(key, "credits") == 0) {
+    const uint64_t field =
+        strcmp(key, "channels") == 0
+            ? FIELD_CHANNELS
+            : strcmp(key, "frame_ms") == 0
+                  ? FIELD_FRAME_MS
+                  : strcmp(key, "startup_buffer_ms") == 0
+                        ? FIELD_STARTUP_BUFFER_MS
+                        : FIELD_CREDITS;
+    if (!claim_field(fields, field) || !parse_uint(parser, &number) ||
+        number > UINT16_MAX)
+      return false;
+    if (field == FIELD_CHANNELS) {
+      if (number > UINT8_MAX)
+        return false;
+      message->interaction.audio.channels = (uint8_t)number;
+    } else if (field == FIELD_FRAME_MS)
+      message->interaction.audio.frame_ms = (uint16_t)number;
+    else if (field == FIELD_STARTUP_BUFFER_MS)
+      message->interaction.audio.startup_buffer_ms = (uint16_t)number;
+    else {
+      if (number > UINT8_MAX)
+        return false;
+      message->interaction.audio.credits = (uint8_t)number;
+    }
+    return true;
+  }
+  if (strcmp(key, "codec") == 0) {
+    if (!claim_field(fields, FIELD_CODEC) ||
+        !parse_string(parser, value, sizeof value))
+      return false;
+    message->interaction.audio.codec = parse_audio_codec(value);
+    return true;
+  }
+  if (strcmp(key, "reason") == 0) {
+    if (!claim_field(fields, FIELD_REASON) ||
+        !parse_string(parser, value, sizeof value))
+      return false;
+    message->interaction.audio.end_reason = parse_audio_end_reason(value);
+    message->interaction.audio.cancel_reason = parse_audio_cancel_reason(value);
     return true;
   }
   *fields |= FIELD_UNKNOWN;
@@ -1491,6 +1634,82 @@ static bool validate_message(nexting_device_message_t *message,
     message->type = NEXTING_DEVICE_MESSAGE_CONFIG_RESULT;
     return true;
   }
+  if (strcmp(type, "audio_config") == 0) {
+    const uint64_t required =
+        FIELD_V | FIELD_T | FIELD_EPOCH | FIELD_CODEC | FIELD_SAMPLE_RATE |
+        FIELD_CHANNELS | FIELD_FRAME_MS | FIELD_MAX_DURATION_MS |
+        FIELD_STARTUP_BUFFER_MS | FIELD_CREDITS;
+    if (fields != required ||
+        message->interaction.audio.codec !=
+            NEXTING_DEVICE_AUDIO_CONTROL_CODEC_IMA_ADPCM ||
+        message->interaction.audio.sample_rate != 16000U ||
+        message->interaction.audio.channels != 1U ||
+        message->interaction.audio.frame_ms != 20U ||
+        message->interaction.audio.max_duration_ms != 120000U ||
+        message->interaction.audio.startup_buffer_ms != 200U ||
+        message->interaction.audio.credits != 8U)
+      return false;
+    message->type = NEXTING_DEVICE_MESSAGE_AUDIO_CONFIG;
+    return true;
+  }
+  if (strcmp(type, "audio_begin") == 0) {
+    const uint64_t required =
+        FIELD_V | FIELD_T | FIELD_EPOCH | FIELD_STREAM_ID | FIELD_CODEC |
+        FIELD_SAMPLE_RATE | FIELD_CHANNELS | FIELD_FRAME_MS;
+    if (fields != required ||
+        message->interaction.audio.codec !=
+            NEXTING_DEVICE_AUDIO_CONTROL_CODEC_IMA_ADPCM ||
+        message->interaction.audio.sample_rate != 16000U ||
+        message->interaction.audio.channels != 1U ||
+        message->interaction.audio.frame_ms != 20U)
+      return false;
+    message->type = NEXTING_DEVICE_MESSAGE_AUDIO_BEGIN;
+    return true;
+  }
+  if (strcmp(type, "audio_credit") == 0) {
+    const uint64_t required = FIELD_V | FIELD_T | FIELD_EPOCH |
+                              FIELD_STREAM_ID | FIELD_ACK_SEQ | FIELD_CREDITS;
+    if (fields != required || message->interaction.audio.credits < 1U ||
+        message->interaction.audio.credits > 32U)
+      return false;
+    message->type = NEXTING_DEVICE_MESSAGE_AUDIO_CREDIT;
+    return true;
+  }
+  if (strcmp(type, "audio_end") == 0) {
+    const uint64_t required = FIELD_V | FIELD_T | FIELD_EPOCH |
+                              FIELD_STREAM_ID | FIELD_LAST_SEQ |
+                              FIELD_SAMPLE_COUNT | FIELD_REASON;
+    if (fields != required ||
+        message->interaction.audio.last_sequence >= 6000U ||
+        message->interaction.audio.sample_count !=
+            (message->interaction.audio.last_sequence + 1U) * 320U ||
+        message->interaction.audio.end_reason == NEXTING_DEVICE_AUDIO_END_NONE)
+      return false;
+    message->type = NEXTING_DEVICE_MESSAGE_AUDIO_END;
+    return true;
+  }
+  if (strcmp(type, "audio_cancel") == 0) {
+    const uint64_t required = FIELD_V | FIELD_T | FIELD_EPOCH |
+                              FIELD_STREAM_ID | FIELD_REASON;
+    if (fields != required ||
+        message->interaction.audio.cancel_reason ==
+            NEXTING_DEVICE_AUDIO_CANCEL_NONE)
+      return false;
+    message->type = NEXTING_DEVICE_MESSAGE_AUDIO_CANCEL;
+    return true;
+  }
+  if (strcmp(type, "audio_state") == 0) {
+    const uint64_t base = FIELD_V | FIELD_T | FIELD_EPOCH | FIELD_STATE;
+    const bool ready = message->interaction.audio.state ==
+                       NEXTING_DEVICE_AUDIO_STATE_READY;
+    if ((fields != base && fields != (base | FIELD_STREAM_ID)) ||
+        message->interaction.audio.state == NEXTING_DEVICE_AUDIO_STATE_NONE ||
+        (ready && (fields & FIELD_STREAM_ID) != 0U) ||
+        (!ready && (fields & FIELD_STREAM_ID) == 0U))
+      return false;
+    message->type = NEXTING_DEVICE_MESSAGE_AUDIO_STATE;
+    return true;
+  }
   return false;
 }
 
@@ -1525,7 +1744,7 @@ nexting_device_decode(const char *wire, size_t wire_length,
   if (take(&parser, '}'))
     return NEXTING_DEVICE_BAD_MESSAGE;
   for (;;) {
-    char key[16];
+    char key[24];
     if (!parse_object_key(&parser, key, sizeof key) || !take(&parser, ':') ||
         !parse_known_field(&parser, key, &fields, &version, type, sizeof type,
                            &message))
@@ -1566,7 +1785,8 @@ enum {
   DI_FIELD_BATTERY_SERVICE = 1U << 18,
   DI_FIELD_DISPLAY = 1U << 19,
   DI_FIELD_HAPTICS = 1U << 20,
-  DI_FIELD_VENDOR = 1U << 21
+  DI_FIELD_VENDOR = 1U << 21,
+  DI_FIELD_AUDIO = 1U << 22
 };
 
 static bool parse_boolean(parser_t *parser, bool *value) {
@@ -1640,6 +1860,88 @@ static bool parse_haptics(parser_t *parser, nexting_device_info_t *info) {
     if (!take(parser, ','))
       return false;
   }
+}
+
+static bool parse_audio_string_array(parser_t *parser,
+                                     const char *expected) {
+  char value[24];
+  return take(parser, '[') &&
+         parse_string(parser, value, sizeof value) &&
+         strcmp(value, expected) == 0 && take(parser, ']');
+}
+
+static bool parse_audio_uint_array(parser_t *parser, uint64_t expected) {
+  uint64_t value = 0U;
+  return take(parser, '[') && parse_uint(parser, &value) &&
+         value == expected && take(parser, ']');
+}
+
+static bool parse_audio_capabilities(parser_t *parser,
+                                     nexting_device_info_t *info) {
+  enum {
+    AUDIO_SOURCE = 1U << 0,
+    AUDIO_CODECS = 1U << 1,
+    AUDIO_SAMPLE_RATES = 1U << 2,
+    AUDIO_CHANNELS = 1U << 3,
+    AUDIO_FRAME_MS = 1U << 4,
+    AUDIO_MAX_DURATION = 1U << 5,
+    AUDIO_STARTUP_BUFFER = 1U << 6
+  };
+  uint8_t fields = 0U;
+  if (!take(parser, '{'))
+    return false;
+  for (;;) {
+    char key[24];
+    uint8_t bit = 0U;
+    uint64_t number = 0U;
+    char value[24];
+    if (!parse_object_key(parser, key, sizeof key) || !take(parser, ':'))
+      return false;
+    if (strcmp(key, "source") == 0) {
+      bit = AUDIO_SOURCE;
+      if (!parse_string(parser, value, sizeof value) ||
+          strcmp(value, "device_microphone") != 0)
+        return false;
+    } else if (strcmp(key, "codecs") == 0) {
+      bit = AUDIO_CODECS;
+      if (!parse_audio_string_array(parser, "ima_adpcm"))
+        return false;
+    } else if (strcmp(key, "sample_rates") == 0) {
+      bit = AUDIO_SAMPLE_RATES;
+      if (!parse_audio_uint_array(parser, 16000U))
+        return false;
+    } else if (strcmp(key, "channels") == 0) {
+      bit = AUDIO_CHANNELS;
+      if (!parse_uint(parser, &number) || number != 1U)
+        return false;
+    } else if (strcmp(key, "frame_ms") == 0) {
+      bit = AUDIO_FRAME_MS;
+      if (!parse_audio_uint_array(parser, 20U))
+        return false;
+    } else if (strcmp(key, "max_duration_ms") == 0) {
+      bit = AUDIO_MAX_DURATION;
+      if (!parse_uint(parser, &number) || number != 120000U)
+        return false;
+    } else if (strcmp(key, "startup_buffer_ms") == 0) {
+      bit = AUDIO_STARTUP_BUFFER;
+      if (!parse_uint(parser, &number) || number != 200U)
+        return false;
+    } else {
+      return false;
+    }
+    if ((fields & bit) != 0U)
+      return false;
+    fields |= bit;
+    skip_space(parser);
+    if (take(parser, '}'))
+      break;
+    if (!take(parser, ','))
+      return false;
+  }
+  if (fields != UINT8_C(0x7f))
+    return false;
+  info->has_device_audio = true;
+  return true;
 }
 
 static bool parse_display(parser_t *parser, nexting_device_info_t *info) {
@@ -1987,6 +2289,8 @@ static bool validate_device_info(nexting_device_info_t *info,
       info->status_slots > NEXTING_DEVICE_STATUS_MAX_AGENTS ||
       (info->status_slots > 0U &&
        !list_contains_profile(info, "status/1")) ||
+      (info->has_device_audio !=
+       list_contains_profile(info, "device-audio/1")) ||
       (info->has_approval_button_count && info->has_button_count &&
        info->approval_button_count > info->button_count) ||
       (info->has_custom_button_count && info->has_button_count &&
@@ -2005,6 +2309,9 @@ static bool validate_device_info(nexting_device_info_t *info,
   info->supports_text_v1 = list_contains_profile(info, "text/1");
   info->supports_usage_v1 = list_contains_profile(info, "usage/1");
   info->supports_config_v1 = list_contains_profile(info, "config/1");
+  info->supports_device_audio_v1 =
+      info->has_device_audio &&
+      list_contains_profile(info, "device-audio/1");
   return true;
 }
 
@@ -2125,6 +2432,9 @@ static bool parse_device_info_field(parser_t *parser, const char *key,
   if (strcmp(key, "haptics") == 0)
     return CLAIM_INFO_FIELD(DI_FIELD_HAPTICS) &&
            parse_haptics(parser, info);
+  if (strcmp(key, "audio") == 0)
+    return CLAIM_INFO_FIELD(DI_FIELD_AUDIO) &&
+           parse_audio_capabilities(parser, info);
   if (strcmp(key, "vendor") == 0) {
     const size_t start = parser->position;
     nexting_device_info_t candidate = {0};
@@ -2422,6 +2732,59 @@ config_error_string(nexting_device_config_error_t error) {
   }
 }
 
+static const char *audio_codec_string(nexting_device_audio_codec_t codec) {
+  return codec == NEXTING_DEVICE_AUDIO_CONTROL_CODEC_IMA_ADPCM ? "ima_adpcm"
+                                                               : NULL;
+}
+
+static const char *
+audio_end_reason_string(nexting_device_audio_end_reason_t reason) {
+  if (reason == NEXTING_DEVICE_AUDIO_END_SUBMITTED)
+    return "submitted";
+  if (reason == NEXTING_DEVICE_AUDIO_END_MAX_DURATION)
+    return "max_duration";
+  return NULL;
+}
+
+static const char *
+audio_cancel_reason_string(nexting_device_audio_cancel_reason_t reason) {
+  switch (reason) {
+  case NEXTING_DEVICE_AUDIO_CANCEL_LOCAL:
+    return "local";
+  case NEXTING_DEVICE_AUDIO_CANCEL_HOST:
+    return "host";
+  case NEXTING_DEVICE_AUDIO_CANCEL_DISCONNECT:
+    return "disconnect";
+  case NEXTING_DEVICE_AUDIO_CANCEL_TRANSPORT:
+    return "transport";
+  case NEXTING_DEVICE_AUDIO_CANCEL_TIMEOUT:
+    return "timeout";
+  case NEXTING_DEVICE_AUDIO_CANCEL_HARDWARE:
+    return "hardware";
+  case NEXTING_DEVICE_AUDIO_CANCEL_REJECTED:
+    return "rejected";
+  default:
+    return NULL;
+  }
+}
+
+static const char *audio_state_string(nexting_device_audio_state_t state) {
+  switch (state) {
+  case NEXTING_DEVICE_AUDIO_STATE_READY:
+    return "ready";
+  case NEXTING_DEVICE_AUDIO_STATE_RECEIVING:
+    return "receiving";
+  case NEXTING_DEVICE_AUDIO_STATE_TRANSCRIBING:
+    return "transcribing";
+  case NEXTING_DEVICE_AUDIO_STATE_SUBMITTED:
+    return "submitted";
+  case NEXTING_DEVICE_AUDIO_STATE_ERROR:
+    return "error";
+  default:
+    return NULL;
+  }
+}
+
 static bool valid_message_for_encode(const nexting_device_message_t *message) {
   if (message == NULL)
     return false;
@@ -2592,6 +2955,44 @@ static bool valid_message_for_encode(const nexting_device_message_t *message) {
             (message->interaction.config_status ==
                  NEXTING_DEVICE_CONFIG_REJECTED &&
              config_error_string(message->interaction.config_error) != NULL));
+  case NEXTING_DEVICE_MESSAGE_AUDIO_CONFIG:
+    return !message->interaction.audio.has_stream_id &&
+           audio_codec_string(message->interaction.audio.codec) != NULL &&
+           message->interaction.audio.sample_rate == 16000U &&
+           message->interaction.audio.channels == 1U &&
+           message->interaction.audio.frame_ms == 20U &&
+           message->interaction.audio.max_duration_ms == 120000U &&
+           message->interaction.audio.startup_buffer_ms == 200U &&
+           message->interaction.audio.credits == 8U;
+  case NEXTING_DEVICE_MESSAGE_AUDIO_BEGIN:
+    return message->interaction.audio.has_stream_id &&
+           audio_codec_string(message->interaction.audio.codec) != NULL &&
+           message->interaction.audio.sample_rate == 16000U &&
+           message->interaction.audio.channels == 1U &&
+           message->interaction.audio.frame_ms == 20U;
+  case NEXTING_DEVICE_MESSAGE_AUDIO_CREDIT:
+    return message->interaction.audio.has_stream_id &&
+           message->interaction.audio.credits >= 1U &&
+           message->interaction.audio.credits <= 32U;
+  case NEXTING_DEVICE_MESSAGE_AUDIO_END:
+    return message->interaction.audio.has_stream_id &&
+           message->interaction.audio.last_sequence < 6000U &&
+           message->interaction.audio.sample_count ==
+               (message->interaction.audio.last_sequence + 1U) * 320U &&
+           audio_end_reason_string(message->interaction.audio.end_reason) !=
+               NULL;
+  case NEXTING_DEVICE_MESSAGE_AUDIO_CANCEL:
+    return message->interaction.audio.has_stream_id &&
+           audio_cancel_reason_string(
+               message->interaction.audio.cancel_reason) != NULL;
+  case NEXTING_DEVICE_MESSAGE_AUDIO_STATE:
+    return audio_state_string(message->interaction.audio.state) != NULL &&
+           ((message->interaction.audio.state ==
+                 NEXTING_DEVICE_AUDIO_STATE_READY &&
+             !message->interaction.audio.has_stream_id) ||
+            (message->interaction.audio.state !=
+                 NEXTING_DEVICE_AUDIO_STATE_READY &&
+             message->interaction.audio.has_stream_id));
   default:
     return false;
   }
@@ -2913,6 +3314,101 @@ nexting_device_encode(const nexting_device_message_t *message, char *output,
       write_json_string(
           &writer, config_error_string(message->interaction.config_error));
     }
+    break;
+  case NEXTING_DEVICE_MESSAGE_AUDIO_CONFIG:
+    write_text(&writer, "{\"v\":1,\"t\":\"audio_config\",\"epoch\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.epoch);
+    write_text(&writer, number);
+    write_text(&writer, ",\"codec\":");
+    write_json_string(&writer,
+                      audio_codec_string(message->interaction.audio.codec));
+    write_text(&writer, ",\"sample_rate\":16000,\"channels\":1,\"frame_ms\":20,"
+                        "\"max_duration_ms\":120000,\"startup_buffer_ms\":200,"
+                        "\"credits\":8");
+    break;
+  case NEXTING_DEVICE_MESSAGE_AUDIO_BEGIN:
+    write_text(&writer, "{\"v\":1,\"t\":\"audio_begin\",\"epoch\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.epoch);
+    write_text(&writer, number);
+    write_text(&writer, ",\"stream_id\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.stream_id);
+    write_text(&writer, number);
+    write_text(&writer, ",\"codec\":");
+    write_json_string(&writer,
+                      audio_codec_string(message->interaction.audio.codec));
+    write_text(&writer,
+               ",\"sample_rate\":16000,\"channels\":1,\"frame_ms\":20");
+    break;
+  case NEXTING_DEVICE_MESSAGE_AUDIO_CREDIT:
+    write_text(&writer, "{\"v\":1,\"t\":\"audio_credit\",\"epoch\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.epoch);
+    write_text(&writer, number);
+    write_text(&writer, ",\"stream_id\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.stream_id);
+    write_text(&writer, number);
+    write_text(&writer, ",\"ack_seq\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.ack_sequence);
+    write_text(&writer, number);
+    write_text(&writer, ",\"credits\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   (unsigned)message->interaction.audio.credits);
+    write_text(&writer, number);
+    break;
+  case NEXTING_DEVICE_MESSAGE_AUDIO_END:
+    write_text(&writer, "{\"v\":1,\"t\":\"audio_end\",\"epoch\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.epoch);
+    write_text(&writer, number);
+    write_text(&writer, ",\"stream_id\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.stream_id);
+    write_text(&writer, number);
+    write_text(&writer, ",\"last_seq\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.last_sequence);
+    write_text(&writer, number);
+    write_text(&writer, ",\"sample_count\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.sample_count);
+    write_text(&writer, number);
+    write_text(&writer, ",\"reason\":");
+    write_json_string(
+        &writer, audio_end_reason_string(message->interaction.audio.end_reason));
+    break;
+  case NEXTING_DEVICE_MESSAGE_AUDIO_CANCEL:
+    write_text(&writer, "{\"v\":1,\"t\":\"audio_cancel\",\"epoch\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.epoch);
+    write_text(&writer, number);
+    write_text(&writer, ",\"stream_id\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.stream_id);
+    write_text(&writer, number);
+    write_text(&writer, ",\"reason\":");
+    write_json_string(
+        &writer,
+        audio_cancel_reason_string(message->interaction.audio.cancel_reason));
+    break;
+  case NEXTING_DEVICE_MESSAGE_AUDIO_STATE:
+    write_text(&writer, "{\"v\":1,\"t\":\"audio_state\",\"epoch\":");
+    (void)snprintf(number, sizeof number, "%u",
+                   message->interaction.audio.epoch);
+    write_text(&writer, number);
+    if (message->interaction.audio.has_stream_id) {
+      write_text(&writer, ",\"stream_id\":");
+      (void)snprintf(number, sizeof number, "%u",
+                     message->interaction.audio.stream_id);
+      write_text(&writer, number);
+    }
+    write_text(&writer, ",\"state\":");
+    write_json_string(&writer,
+                      audio_state_string(message->interaction.audio.state));
     break;
   default:
     return NEXTING_DEVICE_BAD_MESSAGE;

@@ -27,34 +27,35 @@ The device does not run the Agent session and does not receive Agent credentials
 
 ## Choose your path
 
-| You want to… | Start here |
-| --- | --- |
-| Understand and connect Nexting | [Follow the public Quickstart](QUICKSTART.md) |
-| Build the XIAO approval reference | [Build the reference approval controller](docs/reference-approval-controller.md) |
-| Get ideas for what to build | [Browse the use cases](docs/use-cases.md) |
-| Build and flash a supported board | [Run the first approval](docs/first-approval.md), then use the [reference-board track](docs/implementation-tracks.md#track-1-run-a-reference-board) |
-| Understand the device connection contract | [Browse every public interface](docs/interfaces.md) |
-| Port a new MCU, RTOS, or chip family | [Build the public foundation](docs/foundation-development.md), then use the [MCU port track](docs/implementation-tracks.md#track-3-port-a-new-mcu-or-rtos) |
-| Implement another protocol tool | Use the [protocol-tooling track](docs/implementation-tracks.md#track-3-maintain-protocol-tooling) |
-| Make a compatibility claim | [Understand compatibility evidence](docs/conformance.md) |
-| Upgrade an Experimental 0.1 integration | [Read the 0.2 migration guide](docs/migration-0.1-to-0.2.md) |
+| You want to…                              | Start here                                                                                                                                                 |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Understand and connect Nexting            | [Follow the public Quickstart](QUICKSTART.md)                                                                                                              |
+| Build the XIAO approval reference         | [Build the reference approval controller](docs/reference-approval-controller.md)                                                                           |
+| Get ideas for what to build               | [Browse the use cases](docs/use-cases.md)                                                                                                                  |
+| Build and flash a supported board         | [Run the first approval](docs/first-approval.md), then use the [reference-board track](docs/implementation-tracks.md#track-1-run-a-reference-board)        |
+| Understand the device connection contract | [Browse every public interface](docs/interfaces.md)                                                                                                        |
+| Port a new MCU, RTOS, or chip family      | [Build the public foundation](docs/foundation-development.md), then use the [MCU port track](docs/implementation-tracks.md#track-3-port-a-new-mcu-or-rtos) |
+| Implement another protocol tool           | Use the [protocol-tooling track](docs/implementation-tracks.md#track-3-maintain-protocol-tooling)                                                          |
+| Make a compatibility claim                | [Understand compatibility evidence](docs/conformance.md)                                                                                                   |
+| Upgrade an Experimental 0.1 integration   | [Read the 0.2 migration guide](docs/migration-0.1-to-0.2.md)                                                                                               |
 
-## Experimental 0.2.0-experimental.2
+## Experimental 0.4.0-experimental.1
 
-The release keeps wire major 1 and publishes nine independently negotiated
+The release keeps wire major 1 and publishes ten independently negotiated
 profiles. A device declares only the profiles and hardware it implements:
 
-| Profile | What it carries |
-| --- | --- |
-| `approval/1` | One active Allow/Deny request with TTL |
-| `status/1` | Volatile Agent state for up to eight slots |
-| `navigation/1` | Bounded options, cursor movement, and selection |
-| `keys/1` | Host-defined key labels/light state and generic key events |
-| `rotary/1` | Host-defined dial labels plus relative turn/press events |
-| `voice/1` | Push-to-talk start/stop/cancel control; no audio |
-| `text/1` | Bounded plain text for a device display |
-| `usage/1` | Model label and bounded usage counters |
-| `config/1` | Versioned atomic configuration and result |
+| Profile        | What it carries                                            |
+| -------------- | ---------------------------------------------------------- |
+| `approval/1`   | One active Allow/Deny request with TTL                     |
+| `status/1`     | Volatile Agent state for up to eight slots                 |
+| `navigation/1` | Bounded options, cursor movement, and selection            |
+| `keys/1`       | Host-defined key labels/light state and generic key events |
+| `rotary/1`     | Host-defined dial labels plus relative turn/press events   |
+| `voice/1`      | Start/stop/cancel control for the Host microphone; no audio |
+| `device-audio/1` | Physical-device microphone audio with credits and cancellation |
+| `text/1`       | Bounded plain text for a device display                    |
+| `usage/1`      | Model label and bounded usage counters                     |
+| `config/1`     | Versioned atomic configuration and result                  |
 
 Public:
 
@@ -83,9 +84,13 @@ the device supports. The Host rejects traffic for undeclared profiles.
 The profiles carry generic physical intent, not private Agent commands. The
 trusted Host's Agent adapter decides whether key 3 means `fork`, whether a dial
 switches a session or model, and which bounded text is safe to display.
-`voice/1` carries only push-to-talk control: capture, permission, audio, and
-transcription stay on the Host microphone. This lets DIY hardware remain useful
-without receiving Agent credentials, internal session IDs, or account data.
+`voice/1` carries only Host-microphone control. `device-audio/1` is separate:
+it carries IMA ADPCM sampled by a microphone on the physical device, and only a
+local physical input can begin a stream. Both paths reuse the official App's
+speech-to-text and isolated Agent routing without giving hardware Agent
+credentials, internal session IDs, or account data. See
+[Device audio](docs/device-audio.md) and the
+[Compatibility Tunnel](docs/compatibility-tunnel.md).
 
 Two identity tiers share the contract: Nexting first-party products (PIN, Ring) carry production identity and the full capability set; third-party and DIY devices use the same protocol under explicit, revocable user authorization in the Host App.
 

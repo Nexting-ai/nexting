@@ -1,8 +1,8 @@
-# Nexting Device Protocol — Experimental 0.2
+# Nexting Device Protocol — Experimental 0.4
 
 This document is normative for wire major `1` and profiles `approval/1`,
 `status/1`, `navigation/1`, `keys/1`, `rotary/1`, `voice/1`, `text/1`,
-`usage/1`, and `config/1`.
+`usage/1`, `config/1`, and `device-audio/1`.
 
 ## Product contract
 
@@ -14,17 +14,19 @@ Profile `approval/1` represents exactly two one-time actions: Allow maps to sour
 
 - Device: BLE peripheral and GATT server.
 - Host: Nexting App acting as BLE central and GATT client.
-- Public transport: BLE only in Experimental 0.2.
+- Public transport: BLE only in Experimental 0.4, through native Nexting GATT
+  or an audited Compatibility Tunnel v1 descriptor.
 - Public TCP, UDP, HTTP, MQTT, and cloud API ports: none.
 
 ## GATT service
 
-| Role | UUID | Required properties | Direction |
-| --- | --- | --- | --- |
-| Service | `6EADC0DE-0001-4A21-9C5E-1B7F3D9E42A0` | Primary Service | — |
-| Downlink | `6EADC0DE-0002-4A21-9C5E-1B7F3D9E42A0` | Write | Host → device |
-| Uplink | `6EADC0DE-0003-4A21-9C5E-1B7F3D9E42A0` | Notify | Device → host |
-| Device Info | `6EADC0DE-0004-4A21-9C5E-1B7F3D9E42A0` | Read | Device → host |
+| Role        | UUID                                   | Required properties | Direction     |
+| ----------- | -------------------------------------- | ------------------- | ------------- |
+| Service     | `6EADC0DE-0001-4A21-9C5E-1B7F3D9E42A0` | Primary Service     | —             |
+| Downlink    | `6EADC0DE-0002-4A21-9C5E-1B7F3D9E42A0` | Write               | Host → device |
+| Uplink      | `6EADC0DE-0003-4A21-9C5E-1B7F3D9E42A0` | Notify              | Device → host |
+| Device Info | `6EADC0DE-0004-4A21-9C5E-1B7F3D9E42A0` | Read                | Device → host |
+| Audio Uplink | `6EADC0DE-0005-4A21-9C5E-1B7F3D9E42A0` | Encrypted Notify    | Device → host |
 
 Write Without Response is optional. A host uses Write With Response by default and may use the optional mode only when it implements bounded flow control.
 
@@ -35,7 +37,47 @@ Approval traffic requires an encrypted, bonded BLE link. Device Info may be read
 The Device Info value is one compact UTF-8 JSON object:
 
 ```json
-{"protocol":"nexting-device","spec":"0.2.0-experimental.2","wire":[1],"profiles":["approval/1","status/1","navigation/1","keys/1","rotary/1","voice/1","text/1","usage/1","config/1"],"model":"multi-pad","fw":"0.2.0","max_message_bytes":4096,"max_summary_bytes":240,"statusSlots":3,"device_id":"5cc0a66e-a204-4c33-a3ef-b2b352a35489","manufacturer":"ILX","display_name":"Desk Controller","serial_number":"MP-0007","button_count":12,"approval_button_count":2,"custom_button_count":10,"rotary_count":2,"rotary_press_count":2,"battery_service":true}
+{
+  "protocol": "nexting-device",
+  "spec": "0.4.0-experimental.1",
+  "wire": [1],
+  "profiles": [
+    "approval/1",
+    "status/1",
+    "navigation/1",
+    "keys/1",
+    "rotary/1",
+    "voice/1",
+    "text/1",
+    "usage/1",
+    "config/1",
+    "device-audio/1"
+  ],
+  "model": "multi-pad",
+  "fw": "0.2.0",
+  "max_message_bytes": 4096,
+  "max_summary_bytes": 240,
+  "statusSlots": 3,
+  "device_id": "5cc0a66e-a204-4c33-a3ef-b2b352a35489",
+  "manufacturer": "ILX",
+  "display_name": "Desk Controller",
+  "serial_number": "MP-0007",
+  "button_count": 12,
+  "approval_button_count": 2,
+  "custom_button_count": 10,
+  "rotary_count": 2,
+  "rotary_press_count": 2,
+  "battery_service": true,
+  "audio": {
+    "source": "device_microphone",
+    "codecs": ["ima_adpcm"],
+    "sample_rates": [16000],
+    "channels": 1,
+    "frame_ms": [20],
+    "max_duration_ms": 120000,
+    "startup_buffer_ms": 200
+  }
+}
 ```
 
 The required fields remain `protocol`, `spec`, `wire`, `profiles`, `model`,
@@ -88,7 +130,12 @@ implies command-key, rotary-input, voice, text, or configuration profiles.
 DIY hardware may add one inert vendor section:
 
 ```json
-{"vendor":{"namespace":"com.ilx.multipad","facts":[{"key":"layers","label":"Key layers","value":"4"}]}}
+{
+  "vendor": {
+    "namespace": "com.ilx.multipad",
+    "facts": [{ "key": "layers", "label": "Key layers", "value": "4" }]
+  }
+}
 ```
 
 The section is at most 1024 encoded bytes, contains a reverse-domain namespace
@@ -112,7 +159,7 @@ Each logical message is one compact UTF-8 JSON object followed by a newline byte
 7. never executes a partial message;
 8. does not accept interleaved fragments from different logical messages.
 
-The official JavaScript and portable C99 implementations cap a complete Experimental 0.2 frame at 4096 bytes even when Device Info advertises a larger capacity. The official Nexting App may negotiate a smaller ceiling. Transport integrations must feed bounded radio or socket chunks rather than an arbitrarily large aggregate input buffer.
+The official JavaScript and portable C99 implementations cap a complete Experimental 0.4 control frame at 4096 bytes even when Device Info advertises a larger capacity. The official Nexting App may negotiate a smaller ceiling. Transport integrations must feed bounded radio chunks rather than an arbitrarily large aggregate input buffer.
 
 Downlink fragments are sent serially with Write With Response by default. Uplink answers use Notify and application-level retry: if a device does not receive `resolved` within one second, it may resend the exact same answer until resolution or local TTL expiry. It must not change the choice during retry. Answers are idempotent by request ID at the host.
 
@@ -134,7 +181,14 @@ All TTL comparisons use elapsed monotonic time. Wall-clock changes, time-zone ch
 ### Present
 
 ```json
-{"v":1,"t":"present","id":"3bb7","sum":"Allow git push?","opt":["allow","deny"],"ttl":30000}
+{
+  "v": 1,
+  "t": "present",
+  "id": "3bb7",
+  "sum": "Allow git push?",
+  "opt": ["allow", "deny"],
+  "ttl": 30000
+}
 ```
 
 - `sum`: 0–240 UTF-8 bytes.
@@ -148,7 +202,7 @@ A new present replaces the current request. The host resolves the old request as
 ### Answer
 
 ```json
-{"v":1,"t":"answer","id":"3bb7","ch":"allow"}
+{ "v": 1, "t": "answer", "id": "3bb7", "ch": "allow" }
 ```
 
 `ch` is `allow` or `deny`. The device sends an answer only for its currently visible request and then waits for resolution. Repeated identical answers are allowed; the host keeps the first hardware choice locked and permits at most one authoritative action-sink attempt at a time.
@@ -156,7 +210,7 @@ A new present replaces the current request. The host resolves the old request as
 ### Resolved
 
 ```json
-{"v":1,"t":"resolved","id":"3bb7","r":"answered"}
+{ "v": 1, "t": "resolved", "id": "3bb7", "r": "answered" }
 ```
 
 `r` is one of:
@@ -171,7 +225,7 @@ The device clears matching UI and cached retry state immediately.
 ### Error
 
 ```json
-{"v":1,"t":"error","id":"3bb7","code":"unknown_request"}
+{ "v": 1, "t": "error", "id": "3bb7", "code": "unknown_request" }
 ```
 
 Error codes:
@@ -191,7 +245,11 @@ An implementation may silently drop malformed or attacker-controlled input when 
 Profile `status/1`. The host sends this message on the Downlink characteristic only to a device that declared `statusSlots` of at least `1` in Device Info:
 
 ```json
-{"v":1,"t":"status","agents":[{"slot":0,"state":"thinking","label":"fix login bug"}]}
+{
+  "v": 1,
+  "t": "status",
+  "agents": [{ "slot": 0, "state": "thinking", "label": "fix login bug" }]
+}
 ```
 
 - `agents`: array of 0–8 entries. An empty array clears every slot.
@@ -281,15 +339,73 @@ Profile `voice/1` controls a Host-owned microphone lifecycle:
 is 1–64 UTF-8 bytes with no control characters. `stop` and `cancel` require a
 currently accepted `start`.
 
-This profile never carries audio bytes, transcripts, or credentials. A future
-device-microphone transport requires a separate negotiated profile.
+This profile never carries audio bytes, transcripts, or credentials. A
+physical device microphone uses the separately negotiated `device-audio/1`
+profile below.
+
+### Device microphone audio
+
+`device-audio/1` transports audio captured by a microphone on the physical
+device. It does not change `voice/1`, and the Host never silently substitutes
+its own microphone. The baseline capability is 16 kHz mono, 20 ms frames,
+IMA ADPCM, a 120-second maximum, and a 200 ms buffer that begins only after a
+physical voice-key input.
+
+The JSONL control messages are `audio_config` (Host prepares a receiver),
+`audio_begin` (device reports a locally started stream), `audio_credit`
+(cumulative acknowledgement plus credits), `audio_end`, `audio_cancel`, and
+`audio_state`. Their exact canonical forms and rejection cases are in
+`protocol/vectors/device-audio-v1.json`. `audio_config` cannot transition the
+device from Ready to Capturing; only a local physical input can do that.
+
+Each 192-byte logical audio frame is encoded explicitly in little-endian order:
+
+| Offset | Bytes | Field |
+| ---: | ---: | --- |
+| 0 | 1 | wire version `1` |
+| 1 | 1 | packet type `1` |
+| 2 | 1 | codec `1` (IMA ADPCM) |
+| 3 | 1 | reserved, zero |
+| 4 | 4 | connection epoch |
+| 8 | 4 | stream ID |
+| 12 | 4 | frame sequence |
+| 16 | 4 | starting sample index |
+| 20 | 2 | sample count `320` |
+| 22 | 2 | signed predictor (sample 0) |
+| 24 | 1 | initial step index `0...88` |
+| 25 | 1 | reserved, zero |
+| 26 | 2 | payload length `160` |
+| 28 | 160 | codes for samples 1...319, low nibble first |
+| 188 | 4 | CRC32C/Castagnoli over bytes 0...187 |
+
+The unused high nibble of the final payload byte is zero. Each frame is
+independently decodable. Sequence starts at zero, is at most 5999, and the
+starting sample index must equal `sequence × 320`. `audio_end.sample_count`
+must equal `(last_seq + 1) × 320`; inconsistent metadata is rejected. A
+fragment uses a 12-byte header (version `1`, type
+`2`, fragment index/count, stream ID, sequence) and carries a contiguous frame
+slice. Frames never interleave and never exceed four fragments.
+
+The Host grants eight initial frame credits and replenishes credit only after a
+complete frame is consumed. The device retains at most ten queued frames and
+cancels after 500 ms without restored credit. One missing frame becomes equal
+duration silence; three consecutive or ten total missing frames, malformed
+metadata, an invalid CRC, or inconsistent fragments terminate and erase the
+stream. Disconnect, Reject, cancellation, timeout, and failure are idempotent
+and clear volatile audio. See `docs/device-audio.md` for the complete lifecycle.
 
 ### Text
 
 Profile `text/1` replaces one plain-text display channel:
 
 ```json
-{"v":1,"t":"text","channel":0,"title":"Current task","content":"Waiting for approval"}
+{
+  "v": 1,
+  "t": "text",
+  "channel": 0,
+  "title": "Current task",
+  "content": "Waiting for approval"
+}
 ```
 
 `channel` is 0–7. Optional `title` is 1–64 UTF-8 bytes with no control

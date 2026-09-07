@@ -1,0 +1,56 @@
+{
+  "spec": "0.3.0-experimental.1",
+  "version": 1,
+  "valid": [
+    {
+      "name": "vendor-neutral fixed opcode tunnel",
+      "descriptor": {
+        "version": 1,
+        "integration_id": "example.controls-x1",
+        "display_name": "Example Controls X1",
+        "discovery": {
+          "service_uuid": "8f4e3d10-91b2-4c6d-a7e8-1029384756ab"
+        },
+        "envelope": {
+          "strategy": "opcode-prefix-v1",
+          "max_payload_bytes": 243
+        },
+        "channels": {
+          "control_down": {
+            "characteristic_uuid": "8f4e3d11-91b2-4c6d-a7e8-1029384756ab",
+            "property": "write",
+            "opcode": 16
+          },
+          "control_up": {
+            "characteristic_uuid": "8f4e3d12-91b2-4c6d-a7e8-1029384756ab",
+            "property": "notify",
+            "opcode": 17
+          },
+          "audio_up": {
+            "characteristic_uuid": "8f4e3d13-91b2-4c6d-a7e8-1029384756ab",
+            "property": "notify",
+            "opcode": 18
+          },
+          "flow_down": {
+            "characteristic_uuid": "8f4e3d14-91b2-4c6d-a7e8-1029384756ab",
+            "property": "write",
+            "opcode": 19
+          }
+        },
+        "requirements": {
+          "bonded": true,
+          "encrypted": true,
+          "min_att_payload": 64
+        }
+      }
+    }
+  ],
+  "invalid": [
+    { "name": "unknown envelope strategy", "path": "envelope.strategy", "value": "javascript" },
+    { "name": "URL is not an integration id", "path": "integration_id", "value": "https://vendor.example/plugin" },
+    { "name": "duplicate opcode", "path": "channels.audio_up.opcode", "value": 17 },
+    { "name": "audio cannot use write", "path": "channels.audio_up.property", "value": "write" },
+    { "name": "ATT payload below baseline", "path": "requirements.min_att_payload", "value": 63 },
+    { "name": "executable field", "path": "script", "value": "fetch('https://vendor.example')" }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Nexting-ai/devices/schemas/message.schema.json",
-  "title": "Nexting Device Protocol Experimental 0.2 message",
+  "title": "Nexting Device Protocol Experimental 0.4 message",
   "oneOf": [
     { "$ref": "#/$defs/present" },
     { "$ref": "#/$defs/answer" },
@@ -23,7 +23,13 @@
     { "$ref": "#/$defs/usage" },
     { "$ref": "#/$defs/usageClear" },
     { "$ref": "#/$defs/config" },
-    { "$ref": "#/$defs/configResult" }
+    { "$ref": "#/$defs/configResult" },
+    { "$ref": "#/$defs/audioConfig" },
+    { "$ref": "#/$defs/audioBegin" },
+    { "$ref": "#/$defs/audioCredit" },
+    { "$ref": "#/$defs/audioEnd" },
+    { "$ref": "#/$defs/audioCancel" },
+    { "$ref": "#/$defs/audioState" }
   ],
   "$defs": {
     "deviceInfo": {
@@ -111,8 +117,21 @@
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/profileName" }
         },
-        "vendor": { "$ref": "#/$defs/vendorInfo" }
+        "vendor": { "$ref": "#/$defs/vendorInfo" },
+        "audio": { "$ref": "#/$defs/deviceAudioCapabilities" }
       },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "profiles": { "contains": { "const": "device-audio/1" } }
+            },
+            "required": ["profiles"]
+          },
+          "then": { "required": ["audio"] },
+          "else": { "not": { "required": ["audio"] } }
+        }
+      ],
       "x-maxUtf8Bytes": 4096
     },
     "descriptor": {
@@ -159,6 +178,28 @@
         }
       },
       "x-maxUtf8Bytes": 1024
+    },
+    "deviceAudioCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "codecs",
+        "sample_rates",
+        "channels",
+        "frame_ms",
+        "max_duration_ms",
+        "startup_buffer_ms"
+      ],
+      "properties": {
+        "source": { "const": "device_microphone" },
+        "codecs": { "const": ["ima_adpcm"] },
+        "sample_rates": { "const": [16000] },
+        "channels": { "const": 1 },
+        "frame_ms": { "const": [20] },
+        "max_duration_ms": { "const": 120000 },
+        "startup_buffer_ms": { "const": 200 }
+      }
     },
     "id": {
       "type": "string",
@@ -425,7 +466,12 @@
         "v": { "const": 1 },
         "t": { "const": "rotary_event" },
         "slot": { "type": "integer", "minimum": 0, "maximum": 15 },
-        "delta": { "type": "integer", "minimum": -127, "maximum": 127, "not": { "const": 0 } },
+        "delta": {
+          "type": "integer",
+          "minimum": -127,
+          "maximum": 127,
+          "not": { "const": 0 }
+        },
         "seq": { "$ref": "#/$defs/u32" }
       }
     },
@@ -459,7 +505,9 @@
       "properties": {
         "v": { "const": 1 },
         "t": { "const": "voice_state" },
-        "state": { "enum": ["idle", "listening", "transcribing", "submitted", "error"] },
+        "state": {
+          "enum": ["idle", "listening", "transcribing", "submitted", "error"]
+        },
         "label": { "type": "string", "minLength": 1, "x-maxUtf8Bytes": 64 }
       }
     },
@@ -547,8 +595,105 @@
         "t": { "const": "config_result" },
         "rev": { "$ref": "#/$defs/u32" },
         "status": { "enum": ["applied", "rejected"] },
-        "code": { "enum": ["unknown_key", "invalid_value", "storage_error", "unsupported"] }
+        "code": {
+          "enum": [
+            "unknown_key",
+            "invalid_value",
+            "storage_error",
+            "unsupported"
+          ]
+        }
       }
+    },
+    "audioConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v", "t", "epoch", "codec", "sample_rate", "channels", "frame_ms", "max_duration_ms", "startup_buffer_ms", "credits"],
+      "properties": {
+        "v": { "const": 1 },
+        "t": { "const": "audio_config" },
+        "epoch": { "$ref": "#/$defs/u32" },
+        "codec": { "const": "ima_adpcm" },
+        "sample_rate": { "const": 16000 },
+        "channels": { "const": 1 },
+        "frame_ms": { "const": 20 },
+        "max_duration_ms": { "const": 120000 },
+        "startup_buffer_ms": { "const": 200 },
+        "credits": { "const": 8 }
+      }
+    },
+    "audioBegin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v", "t", "epoch", "stream_id", "codec", "sample_rate", "channels", "frame_ms"],
+      "properties": {
+        "v": { "const": 1 },
+        "t": { "const": "audio_begin" },
+        "epoch": { "$ref": "#/$defs/u32" },
+        "stream_id": { "$ref": "#/$defs/u32" },
+        "codec": { "const": "ima_adpcm" },
+        "sample_rate": { "const": 16000 },
+        "channels": { "const": 1 },
+        "frame_ms": { "const": 20 }
+      }
+    },
+    "audioCredit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v", "t", "epoch", "stream_id", "ack_seq", "credits"],
+      "properties": {
+        "v": { "const": 1 },
+        "t": { "const": "audio_credit" },
+        "epoch": { "$ref": "#/$defs/u32" },
+        "stream_id": { "$ref": "#/$defs/u32" },
+        "ack_seq": { "$ref": "#/$defs/u32" },
+        "credits": { "type": "integer", "minimum": 1, "maximum": 32 }
+      }
+    },
+    "audioEnd": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v", "t", "epoch", "stream_id", "last_seq", "sample_count", "reason"],
+      "properties": {
+        "v": { "const": 1 },
+        "t": { "const": "audio_end" },
+        "epoch": { "$ref": "#/$defs/u32" },
+        "stream_id": { "$ref": "#/$defs/u32" },
+        "last_seq": { "type": "integer", "minimum": 0, "maximum": 5999 },
+        "sample_count": { "type": "integer", "minimum": 320, "maximum": 1920000, "multipleOf": 320 },
+        "reason": { "enum": ["submitted", "max_duration"] }
+      }
+    },
+    "audioCancel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v", "t", "epoch", "stream_id", "reason"],
+      "properties": {
+        "v": { "const": 1 },
+        "t": { "const": "audio_cancel" },
+        "epoch": { "$ref": "#/$defs/u32" },
+        "stream_id": { "$ref": "#/$defs/u32" },
+        "reason": { "enum": ["local", "host", "disconnect", "transport", "timeout", "hardware", "rejected"] }
+      }
+    },
+    "audioState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v", "t", "epoch", "state"],
+      "properties": {
+        "v": { "const": 1 },
+        "t": { "const": "audio_state" },
+        "epoch": { "$ref": "#/$defs/u32" },
+        "stream_id": { "$ref": "#/$defs/u32" },
+        "state": { "enum": ["ready", "receiving", "transcribing", "submitted", "error"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "state": { "const": "ready" } } },
+          "then": { "not": { "required": ["stream_id"] } },
+          "else": { "required": ["stream_id"] }
+        }
+      ]
     }
   }
 }

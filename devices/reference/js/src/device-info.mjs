@@ -1,3 +1,5 @@
+import { hasUniqueObjectKeys } from "./strict-json.mjs";
+
 export const MAX_DEVICE_INFO_BYTES = 4_096;
 export const MAX_DEVICE_INFO_STRING_BYTES = 64;
 export const MAX_VENDOR_FACTS = 16;
@@ -8,7 +10,8 @@ const decoder = new TextDecoder("utf-8", { fatal: true });
 const controlCharacterPattern = /[\u0000-\u001f\u007f]/;
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const namespacePattern = /^[a-z0-9](?:[a-z0-9-]{0,62}\.)+[a-z0-9][a-z0-9-]{0,62}$/;
+const namespacePattern =
+  /^[a-z0-9](?:[a-z0-9-]{0,62}\.)+[a-z0-9][a-z0-9-]{0,62}$/;
 const factKeyPattern = /^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$/;
 const inertTextPattern = /(?:<\/?[a-z]|https?:\/\/|www\.|[`*_#[\]()])/i;
 
@@ -44,6 +47,7 @@ const knownFields = new Set([
   "battery_service",
   "display",
   "haptics",
+  "audio",
   "vendor",
 ]);
 
@@ -217,6 +221,48 @@ function normalizeHaptics(value) {
   return [...value];
 }
 
+function normalizeAudio(value, profileDeclared) {
+  if (value === undefined) return profileDeclared ? undefined : null;
+  if (!profileDeclared || !isObject(value)) return undefined;
+  const fields = [
+    "source",
+    "codecs",
+    "sample_rates",
+    "channels",
+    "frame_ms",
+    "max_duration_ms",
+    "startup_buffer_ms",
+  ];
+  if (
+    Object.keys(value).length !== fields.length ||
+    !Object.keys(value).every((field) => fields.includes(field)) ||
+    value.source !== "device_microphone" ||
+    !Array.isArray(value.codecs) ||
+    value.codecs.length !== 1 ||
+    value.codecs[0] !== "ima_adpcm" ||
+    !Array.isArray(value.sample_rates) ||
+    value.sample_rates.length !== 1 ||
+    value.sample_rates[0] !== 16_000 ||
+    value.channels !== 1 ||
+    !Array.isArray(value.frame_ms) ||
+    value.frame_ms.length !== 1 ||
+    value.frame_ms[0] !== 20 ||
+    value.max_duration_ms !== 120_000 ||
+    value.startup_buffer_ms !== 200
+  ) {
+    return undefined;
+  }
+  return {
+    source: value.source,
+    codecs: [...value.codecs],
+    sampleRates: [...value.sample_rates],
+    channels: value.channels,
+    frameMs: [...value.frame_ms],
+    maxDurationMs: value.max_duration_ms,
+    startupBufferMs: value.startup_buffer_ms,
+  };
+}
+
 function normalizeVendor(value) {
   if (value === undefined) return null;
   if (!isObject(value)) return null;
@@ -243,7 +289,8 @@ function normalizeVendor(value) {
     if (!isObject(fact) || !factKeyPattern.test(fact.key ?? "")) return null;
     if (keys.has(fact.key)) return null;
     keys.add(fact.key);
-    if (!validText(fact.label, 64) || inertTextPattern.test(fact.label)) return null;
+    if (!validText(fact.label, 64) || inertTextPattern.test(fact.label))
+      return null;
     const normalizedValue = Number.isSafeInteger(fact.value)
       ? String(fact.value)
       : fact.value;
@@ -260,7 +307,12 @@ function normalizeVendor(value) {
 
 export function decodeDeviceInfo(raw) {
   const text = normalizeText(raw);
-  if (text === null || !safeTopLevelEncoding(text)) return null;
+  if (
+    text === null ||
+    !safeTopLevelEncoding(text) ||
+    !hasUniqueObjectKeys(text)
+  )
+    return null;
 
   let value;
   try {
@@ -302,6 +354,10 @@ export function decodeDeviceInfo(raw) {
   const rotaryPressCount = optionalCount(value.rotary_press_count, 64);
   const display = normalizeDisplay(value.display);
   const haptics = normalizeHaptics(value.haptics);
+  const audio = normalizeAudio(
+    value.audio,
+    value.profiles.includes("device-audio/1"),
+  );
   if (
     [
       statusSlots,
@@ -312,6 +368,7 @@ export function decodeDeviceInfo(raw) {
       rotaryPressCount,
       display,
       haptics,
+      audio,
     ].includes(undefined) ||
     (buttonCount !== null &&
       [approvalButtonCount, customButtonCount].some(
@@ -335,7 +392,11 @@ export function decodeDeviceInfo(raw) {
   ];
   for (const [field, item, maxBytes] of optionalIdentity) {
     if (item !== undefined && !validText(item, maxBytes)) return null;
-    if (field === "device_id" && item !== undefined && !uuidPattern.test(item)) {
+    if (
+      field === "device_id" &&
+      item !== undefined &&
+      !uuidPattern.test(item)
+    ) {
       return null;
     }
   }
@@ -367,6 +428,7 @@ export function decodeDeviceInfo(raw) {
       batteryService: value.battery_service ?? false,
       display,
       haptics,
+      audio,
     },
     vendor: normalizeVendor(value.vendor),
   };

@@ -12,12 +12,12 @@ Choose this track when you want a working two-button developer reference before 
 
 ### 1. Choose one exact target
 
-| Board | Zephyr target |
-| --- | --- |
-| nRF52840 DK | `nrf52840dk/nrf52840` |
-| XIAO nRF52840 / Sense | `xiao_ble/nrf52840/sense` |
-| XIAO ESP32-C3 | `xiao_esp32c3/esp32c3` |
-| XIAO ESP32-S3 | `xiao_esp32s3/esp32s3/procpu` |
+| Board                 | Zephyr target                 |
+| --------------------- | ----------------------------- |
+| nRF52840 DK           | `nrf52840dk/nrf52840`         |
+| XIAO nRF52840 / Sense | `xiao_ble/nrf52840/sense`     |
+| XIAO ESP32-C3         | `xiao_esp32c3/esp32c3`        |
+| XIAO ESP32-S3         | `xiao_esp32s3/esp32s3/procpu` |
 
 ### 2. Build from a configured Zephyr workspace
 

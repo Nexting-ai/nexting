@@ -44,15 +44,15 @@ shared vectors, and C99, Swift, Kotlin, and JavaScript codecs. Product actions
 still require a trusted Host adapter; a generic key event does not itself
 authorize or invoke an Agent command.
 
-| Scenario | Needs | Product shape |
-| --- | --- | --- |
+| Scenario              | Needs                 | Product shape                                                                                           |
+| --------------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
 | Full command macropad | `keys/1` + `status/1` | 8–13 generic keys mapped by the Host to approve, decline, fork, send, or fast, with status backlighting |
-| Menu navigator | `navigation/1` | Stick or wheel for bounded options; Host validates the selected request |
-| Rotary controller | `rotary/1` | Relative dial events for a Host-owned session or model list, without exposing internal IDs |
-| Reader device | `text/1` | Bounded plain text for a declared screen; no markup, file content, or secrets |
-| Talk-to-agent remote | `voice/1` | Push-to-talk control while the Host microphone performs capture and transcription; no BLE audio |
-| Usage display | `usage/1` | Model label and bounded counters that are informational rather than billing authority |
-| Reconfigurable pad | `config/1` + `keys/1` | Atomic key, lighting, and display preferences downloaded from the Host without reflashing |
+| Menu navigator        | `navigation/1`        | Stick or wheel for bounded options; Host validates the selected request                                 |
+| Rotary controller     | `rotary/1`            | Relative dial events for a Host-owned session or model list, without exposing internal IDs              |
+| Reader device         | `text/1`              | Bounded plain text for a declared screen; no markup, file content, or secrets                           |
+| Talk-to-agent remote  | `voice/1`             | Push-to-talk control while the Host microphone performs capture and transcription; no BLE audio         |
+| Usage display         | `usage/1`             | Model label and bounded counters that are informational rather than billing authority                   |
+| Reconfigurable pad    | `config/1` + `keys/1` | Atomic key, lighting, and display preferences downloaded from the Host without reflashing               |
 
 ## Rules every scenario inherits
 

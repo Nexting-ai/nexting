@@ -17,6 +17,7 @@ export const VOICE_PROFILE = "voice/1";
 export const TEXT_PROFILE = "text/1";
 export const USAGE_PROFILE = "usage/1";
 export const CONFIG_PROFILE = "config/1";
+export const DEVICE_AUDIO_PROFILE = "device-audio/1";
 export const INTERACTION_PROFILES = [
   NAVIGATION_PROFILE,
   KEYS_PROFILE,
@@ -25,6 +26,7 @@ export const INTERACTION_PROFILES = [
   TEXT_PROFILE,
   USAGE_PROFILE,
   CONFIG_PROFILE,
+  DEVICE_AUDIO_PROFILE,
 ];
 export const CHOICES = ["allow", "deny"];
 export const STATUS_STATES = [
@@ -65,13 +67,37 @@ const NAV_RESOLUTION_REASONS = ["selected", "cancelled", "expired", "replaced"];
 const GESTURES = ["press", "release", "hold", "double"];
 const LIGHT_STATES = ["off", "dim", "solid", "pulse"];
 const VOICE_EVENTS = ["start", "stop", "cancel"];
-const VOICE_STATES = ["idle", "listening", "transcribing", "submitted", "error"];
+const VOICE_STATES = [
+  "idle",
+  "listening",
+  "transcribing",
+  "submitted",
+  "error",
+];
 const CONFIG_STATUSES = ["applied", "rejected"];
 const CONFIG_ERROR_CODES = [
   "unknown_key",
   "invalid_value",
   "storage_error",
   "unsupported",
+];
+const AUDIO_CODEC = "ima_adpcm";
+const AUDIO_END_REASONS = ["submitted", "max_duration"];
+const AUDIO_CANCEL_REASONS = [
+  "local",
+  "host",
+  "disconnect",
+  "transport",
+  "timeout",
+  "hardware",
+  "rejected",
+];
+const AUDIO_STATES = [
+  "ready",
+  "receiving",
+  "transcribing",
+  "submitted",
+  "error",
 ];
 
 const idPattern = /^[A-Za-z0-9._:-]+$/;
@@ -112,6 +138,19 @@ const knownWireFields = new Set([
   "context_limit",
   "entries",
   "status",
+  "epoch",
+  "codec",
+  "sample_rate",
+  "channels",
+  "frame_ms",
+  "max_duration_ms",
+  "startup_buffer_ms",
+  "credits",
+  "stream_id",
+  "ack_seq",
+  "last_seq",
+  "sample_count",
+  "reason",
 ]);
 const canonicalUnsignedFields = new Set([
   "v",
@@ -127,6 +166,17 @@ const canonicalUnsignedFields = new Set([
   "cached_tokens",
   "context_used",
   "context_limit",
+  "epoch",
+  "sample_rate",
+  "channels",
+  "frame_ms",
+  "max_duration_ms",
+  "startup_buffer_ms",
+  "credits",
+  "stream_id",
+  "ack_seq",
+  "last_seq",
+  "sample_count",
 ]);
 
 // eslint-disable-next-line no-control-regex -- the protocol bans control characters on purpose
@@ -179,14 +229,16 @@ function validStatusAgents(value) {
   if (!Array.isArray(value) || value.length > MAX_STATUS_AGENTS) return false;
   const seenSlots = new Set();
   for (const agent of value) {
-    if (!agent || typeof agent !== "object" || Array.isArray(agent)) return false;
+    if (!agent || typeof agent !== "object" || Array.isArray(agent))
+      return false;
     if (!Number.isInteger(agent.slot) || agent.slot < 0 || agent.slot > 7) {
       return false;
     }
     if (seenSlots.has(agent.slot)) return false;
     seenSlots.add(agent.slot);
     if (!STATUS_STATES.includes(agent.state)) return false;
-    if (agent.label !== undefined && !validStatusLabel(agent.label)) return false;
+    if (agent.label !== undefined && !validStatusLabel(agent.label))
+      return false;
   }
   return true;
 }
@@ -196,7 +248,10 @@ function isObject(value) {
 }
 
 function hasOnlyFields(value, fields) {
-  return isObject(value) && Object.keys(value).every((field) => fields.includes(field));
+  return (
+    isObject(value) &&
+    Object.keys(value).every((field) => fields.includes(field))
+  );
 }
 
 function validBoundedText(value, minimum, maximum, allowNewlineAndTab = false) {
@@ -204,7 +259,8 @@ function validBoundedText(value, minimum, maximum, allowNewlineAndTab = false) {
     typeof value !== "string" ||
     byteLength(value) < minimum ||
     byteLength(value) > maximum
-  ) return false;
+  )
+    return false;
   const pattern = allowNewlineAndTab
     ? /[\u0000-\u0008\u000b-\u001f\u007f]/
     : controlCharacterPattern;
@@ -219,6 +275,32 @@ function validSafeCounter(value) {
   return Number.isSafeInteger(value) && value >= 0;
 }
 
+function validAudioFormat(message) {
+  return (
+    message.codec === AUDIO_CODEC &&
+    message.sampleRate === 16_000 &&
+    message.channels === 1 &&
+    message.frameMs === 20
+  );
+}
+
+function validAudioState(state, streamId) {
+  return (
+    AUDIO_STATES.includes(state) &&
+    ((state === "ready" && streamId === undefined) ||
+      (state !== "ready" && validU32(streamId)))
+  );
+}
+
+function validAudioEnd(lastSequence, sampleCount) {
+  return (
+    validU32(lastSequence) &&
+    lastSequence < 6_000 &&
+    Number.isInteger(sampleCount) &&
+    sampleCount === (lastSequence + 1) * 320
+  );
+}
+
 function validUniqueSlots(value, maximumItems, maximumSlot, validator) {
   if (!Array.isArray(value) || value.length > maximumItems) return false;
   const slots = new Set();
@@ -230,7 +312,8 @@ function validUniqueSlots(value, maximumItems, maximumSlot, validator) {
       item.slot > maximumSlot ||
       slots.has(item.slot) ||
       !validator(item)
-    ) return false;
+    )
+      return false;
     slots.add(item.slot);
   }
   return true;
@@ -247,28 +330,42 @@ function validNavigationItems(value) {
 }
 
 function validKeyPresentations(value) {
-  return validUniqueSlots(value, 64, 63, (item) =>
-    hasOnlyFields(item, ["slot", "label", "enabled", "light", "rgb"]) &&
-    validBoundedText(item.label, 1, 32) &&
-    typeof item.enabled === "boolean" &&
-    LIGHT_STATES.includes(item.light) &&
-    (item.rgb === undefined ||
-      (Array.isArray(item.rgb) &&
-        item.rgb.length === 3 &&
-        item.rgb.every((component) =>
-          Number.isInteger(component) && component >= 0 && component <= 255))),
+  return validUniqueSlots(
+    value,
+    64,
+    63,
+    (item) =>
+      hasOnlyFields(item, ["slot", "label", "enabled", "light", "rgb"]) &&
+      validBoundedText(item.label, 1, 32) &&
+      typeof item.enabled === "boolean" &&
+      LIGHT_STATES.includes(item.light) &&
+      (item.rgb === undefined ||
+        (Array.isArray(item.rgb) &&
+          item.rgb.length === 3 &&
+          item.rgb.every(
+            (component) =>
+              Number.isInteger(component) && component >= 0 && component <= 255,
+          ))),
   );
 }
 
 function validRotaryControls(value) {
-  return validUniqueSlots(value, 16, 15, (item) =>
-    hasOnlyFields(item, ["slot", "label", "value", "min", "max", "wrap"]) &&
-    validBoundedText(item.label, 1, 32) &&
-    [item.value, item.min, item.max].every((number) =>
-      Number.isInteger(number) && number >= -1_000_000 && number <= 1_000_000) &&
-    item.min <= item.value &&
-    item.value <= item.max &&
-    typeof item.wrap === "boolean",
+  return validUniqueSlots(
+    value,
+    16,
+    15,
+    (item) =>
+      hasOnlyFields(item, ["slot", "label", "value", "min", "max", "wrap"]) &&
+      validBoundedText(item.label, 1, 32) &&
+      [item.value, item.min, item.max].every(
+        (number) =>
+          Number.isInteger(number) &&
+          number >= -1_000_000 &&
+          number <= 1_000_000,
+      ) &&
+      item.min <= item.value &&
+      item.value <= item.max &&
+      typeof item.wrap === "boolean",
   );
 }
 
@@ -292,7 +389,8 @@ function validConfigEntries(value) {
       !configKeyPattern.test(entry.key) ||
       keys.has(entry.key) ||
       !validConfigValue(entry.value)
-    ) return false;
+    )
+      return false;
     keys.add(entry.key);
   }
   return true;
@@ -314,17 +412,19 @@ function normalizeRaw(raw) {
     } else if (raw instanceof Uint8Array) {
       if (
         raw.byteLength > MAX_MESSAGE_BYTES ||
-        (raw.byteLength === MAX_MESSAGE_BYTES && raw[raw.byteLength - 1] !== 0x0a)
-      ) return null;
+        (raw.byteLength === MAX_MESSAGE_BYTES &&
+          raw[raw.byteLength - 1] !== 0x0a)
+      )
+        return null;
       text = decoder.decode(raw);
-    }
-    else return null;
+    } else return null;
   } catch {
     return null;
   }
 
   if (text.endsWith("\n")) text = text.slice(0, -1);
-  if (text.length === 0 || text.includes("\n") || text.includes("\r")) return null;
+  if (text.length === 0 || text.includes("\n") || text.includes("\r"))
+    return null;
   return text;
 }
 
@@ -393,7 +493,7 @@ function rawObjectIsSafe(text) {
   let rootStarted = false;
   const seenKnownFields = new Set();
 
-  for (let index = 0; index < text.length; ) {
+  for (let index = 0; index < text.length;) {
     const value = text[index];
     if (value === '"') {
       const end = scanJSONString(text, index);
@@ -412,7 +512,8 @@ function rawObjectIsSafe(text) {
         if (
           canonicalUnsignedFields.has(key) &&
           !hasCanonicalUnsignedIntegerValue(text, end)
-        ) return false;
+        )
+          return false;
         expectingTopLevelKey = false;
       }
       index = end;
@@ -464,7 +565,8 @@ export function encode(message) {
       };
       break;
     case "answer":
-      if (!validId(message.requestId) || !CHOICES.includes(message.choice)) return null;
+      if (!validId(message.requestId) || !CHOICES.includes(message.choice))
+        return null;
       wire = {
         v: WIRE_VERSION,
         t: "answer",
@@ -487,8 +589,12 @@ export function encode(message) {
       };
       break;
     case "error": {
-      const hasId = message.requestId !== null && message.requestId !== undefined;
-      if ((hasId && !validId(message.requestId)) || !ERROR_CODES.includes(message.code)) {
+      const hasId =
+        message.requestId !== null && message.requestId !== undefined;
+      if (
+        (hasId && !validId(message.requestId)) ||
+        !ERROR_CODES.includes(message.code)
+      ) {
         return null;
       }
       wire = { v: WIRE_VERSION, t: "error" };
@@ -517,7 +623,8 @@ export function encode(message) {
         message.cursor < 0 ||
         message.cursor >= message.items.length ||
         !validTTL(message.ttlMs)
-      ) return null;
+      )
+        return null;
       wire = {
         v: WIRE_VERSION,
         t: "nav_present",
@@ -532,7 +639,8 @@ export function encode(message) {
         !validId(message.requestId) ||
         !NAV_DIRECTIONS.includes(message.direction) ||
         !validU32(message.sequence)
-      ) return null;
+      )
+        return null;
       wire = {
         v: WIRE_VERSION,
         t: "nav_move",
@@ -548,7 +656,8 @@ export function encode(message) {
         message.index < 0 ||
         message.index > 7 ||
         !validU32(message.sequence)
-      ) return null;
+      )
+        return null;
       wire = {
         v: WIRE_VERSION,
         t: "nav_select",
@@ -561,7 +670,8 @@ export function encode(message) {
       if (
         !validId(message.requestId) ||
         !NAV_RESOLUTION_REASONS.includes(message.reason)
-      ) return null;
+      )
+        return null;
       wire = {
         v: WIRE_VERSION,
         t: "nav_resolved",
@@ -587,7 +697,8 @@ export function encode(message) {
         message.slot > 63 ||
         !GESTURES.includes(message.event) ||
         !validU32(message.sequence)
-      ) return null;
+      )
+        return null;
       wire = {
         v: WIRE_VERSION,
         t: "key_event",
@@ -597,7 +708,8 @@ export function encode(message) {
       };
       break;
     case "rotaryMap":
-      if (!validU32(message.revision) || !Array.isArray(message.controls)) return null;
+      if (!validU32(message.revision) || !Array.isArray(message.controls))
+        return null;
       {
         const controls = message.controls.map((item) => ({
           slot: item.slot,
@@ -626,7 +738,8 @@ export function encode(message) {
         message.delta < -127 ||
         message.delta > 127 ||
         !validU32(message.sequence)
-      ) return null;
+      )
+        return null;
       wire = {
         v: WIRE_VERSION,
         t: "rotary_event",
@@ -642,7 +755,8 @@ export function encode(message) {
         message.slot > 15 ||
         !GESTURES.includes(message.event) ||
         !validU32(message.sequence)
-      ) return null;
+      )
+        return null;
       wire = {
         v: WIRE_VERSION,
         t: "rotary_press",
@@ -652,7 +766,10 @@ export function encode(message) {
       };
       break;
     case "voiceEvent":
-      if (!VOICE_EVENTS.includes(message.event) || !validU32(message.sequence)) {
+      if (
+        !VOICE_EVENTS.includes(message.event) ||
+        !validU32(message.sequence)
+      ) {
         return null;
       }
       wire = {
@@ -665,9 +782,9 @@ export function encode(message) {
     case "voiceState":
       if (
         !VOICE_STATES.includes(message.state) ||
-        (message.label !== undefined &&
-          !validBoundedText(message.label, 1, 64))
-      ) return null;
+        (message.label !== undefined && !validBoundedText(message.label, 1, 64))
+      )
+        return null;
       wire = { v: WIRE_VERSION, t: "voice_state", state: message.state };
       if (message.label !== undefined) wire.label = message.label;
       break;
@@ -679,7 +796,8 @@ export function encode(message) {
         (message.title !== undefined &&
           !validBoundedText(message.title, 1, 64)) ||
         !validBoundedText(message.content, 0, 1024, true)
-      ) return null;
+      )
+        return null;
       wire = { v: WIRE_VERSION, t: "text", channel: message.channel };
       if (message.title !== undefined) wire.title = message.title;
       wire.content = message.content;
@@ -691,13 +809,14 @@ export function encode(message) {
         !validSafeCounter(message.outputTokens) ||
         (message.cachedTokens !== undefined &&
           !validSafeCounter(message.cachedTokens)) ||
-        ((message.contextUsed === undefined) !==
-          (message.contextLimit === undefined)) ||
+        (message.contextUsed === undefined) !==
+          (message.contextLimit === undefined) ||
         (message.contextUsed !== undefined &&
           (!validSafeCounter(message.contextUsed) ||
             !validSafeCounter(message.contextLimit) ||
             message.contextUsed > message.contextLimit))
-      ) return null;
+      )
+        return null;
       wire = {
         v: WIRE_VERSION,
         t: "usage",
@@ -734,7 +853,8 @@ export function encode(message) {
         (message.status === "applied" && message.code !== undefined) ||
         (message.status === "rejected" &&
           !CONFIG_ERROR_CODES.includes(message.code))
-      ) return null;
+      )
+        return null;
       wire = {
         v: WIRE_VERSION,
         t: "config_result",
@@ -742,6 +862,106 @@ export function encode(message) {
         status: message.status,
       };
       if (message.code !== undefined) wire.code = message.code;
+      break;
+    case "audioConfig":
+      if (
+        !validU32(message.epoch) ||
+        !validAudioFormat(message) ||
+        message.maxDurationMs !== 120_000 ||
+        message.startupBufferMs !== 200 ||
+        message.credits !== 8
+      )
+        return null;
+      wire = {
+        v: WIRE_VERSION,
+        t: "audio_config",
+        epoch: message.epoch,
+        codec: message.codec,
+        sample_rate: message.sampleRate,
+        channels: message.channels,
+        frame_ms: message.frameMs,
+        max_duration_ms: message.maxDurationMs,
+        startup_buffer_ms: message.startupBufferMs,
+        credits: message.credits,
+      };
+      break;
+    case "audioBegin":
+      if (
+        !validU32(message.epoch) ||
+        !validU32(message.streamId) ||
+        !validAudioFormat(message)
+      )
+        return null;
+      wire = {
+        v: WIRE_VERSION,
+        t: "audio_begin",
+        epoch: message.epoch,
+        stream_id: message.streamId,
+        codec: message.codec,
+        sample_rate: message.sampleRate,
+        channels: message.channels,
+        frame_ms: message.frameMs,
+      };
+      break;
+    case "audioCredit":
+      if (
+        !validU32(message.epoch) ||
+        !validU32(message.streamId) ||
+        !validU32(message.ackSequence) ||
+        !Number.isInteger(message.credits) ||
+        message.credits < 1 ||
+        message.credits > 32
+      )
+        return null;
+      wire = {
+        v: WIRE_VERSION,
+        t: "audio_credit",
+        epoch: message.epoch,
+        stream_id: message.streamId,
+        ack_seq: message.ackSequence,
+        credits: message.credits,
+      };
+      break;
+    case "audioEnd":
+      if (
+        !validU32(message.epoch) ||
+        !validU32(message.streamId) ||
+        !validAudioEnd(message.lastSequence, message.sampleCount) ||
+        !AUDIO_END_REASONS.includes(message.reason)
+      )
+        return null;
+      wire = {
+        v: WIRE_VERSION,
+        t: "audio_end",
+        epoch: message.epoch,
+        stream_id: message.streamId,
+        last_seq: message.lastSequence,
+        sample_count: message.sampleCount,
+        reason: message.reason,
+      };
+      break;
+    case "audioCancel":
+      if (
+        !validU32(message.epoch) ||
+        !validU32(message.streamId) ||
+        !AUDIO_CANCEL_REASONS.includes(message.reason)
+      )
+        return null;
+      wire = {
+        v: WIRE_VERSION,
+        t: "audio_cancel",
+        epoch: message.epoch,
+        stream_id: message.streamId,
+        reason: message.reason,
+      };
+      break;
+    case "audioState":
+      if (!validU32(message.epoch) || !validAudioState(message.state, message.streamId)) {
+        return null;
+      }
+      wire = { v: WIRE_VERSION, t: "audio_state", epoch: message.epoch };
+      if (message.streamId !== undefined) wire.stream_id = message.streamId;
+      wire.state = message.state;
       break;
     default:
       return null;
@@ -784,11 +1004,13 @@ export function decode(raw) {
       if (!validId(wire.id) || !CHOICES.includes(wire.ch)) return null;
       return { type: "answer", requestId: wire.id, choice: wire.ch };
     case "resolved":
-      if (!validId(wire.id) || !RESOLUTION_REASONS.includes(wire.r)) return null;
+      if (!validId(wire.id) || !RESOLUTION_REASONS.includes(wire.r))
+        return null;
       return { type: "resolved", requestId: wire.id, reason: wire.r };
     case "error": {
       const hasId = Object.hasOwn(wire, "id");
-      if ((hasId && !validId(wire.id)) || !ERROR_CODES.includes(wire.code)) return null;
+      if ((hasId && !validId(wire.id)) || !ERROR_CODES.includes(wire.code))
+        return null;
       return {
         type: "error",
         requestId: hasId ? wire.id : null,
@@ -815,7 +1037,8 @@ export function decode(raw) {
         wire.cursor < 0 ||
         wire.cursor >= wire.items.length ||
         !validTTL(wire.ttl)
-      ) return null;
+      )
+        return null;
       return {
         type: "navPresent",
         requestId: wire.id,
@@ -829,7 +1052,8 @@ export function decode(raw) {
         !validId(wire.id) ||
         !NAV_DIRECTIONS.includes(wire.dir) ||
         !validU32(wire.seq)
-      ) return null;
+      )
+        return null;
       return {
         type: "navMove",
         requestId: wire.id,
@@ -844,7 +1068,8 @@ export function decode(raw) {
         wire.index < 0 ||
         wire.index > 7 ||
         !validU32(wire.seq)
-      ) return null;
+      )
+        return null;
       return {
         type: "navSelect",
         requestId: wire.id,
@@ -856,7 +1081,8 @@ export function decode(raw) {
         !hasOnlyFields(wire, ["v", "t", "id", "r"]) ||
         !validId(wire.id) ||
         !NAV_RESOLUTION_REASONS.includes(wire.r)
-      ) return null;
+      )
+        return null;
       return {
         type: "navResolved",
         requestId: wire.id,
@@ -867,11 +1093,15 @@ export function decode(raw) {
         !hasOnlyFields(wire, ["v", "t", "rev", "keys"]) ||
         !validU32(wire.rev) ||
         !validKeyPresentations(wire.keys)
-      ) return null;
+      )
+        return null;
       return {
         type: "keymap",
         revision: wire.rev,
-        keys: wire.keys.map((key) => ({ ...key, ...(key.rgb ? { rgb: [...key.rgb] } : {}) })),
+        keys: wire.keys.map((key) => ({
+          ...key,
+          ...(key.rgb ? { rgb: [...key.rgb] } : {}),
+        })),
       };
     case "key_event":
       if (
@@ -881,7 +1111,8 @@ export function decode(raw) {
         wire.slot > 63 ||
         !GESTURES.includes(wire.event) ||
         !validU32(wire.seq)
-      ) return null;
+      )
+        return null;
       return {
         type: "keyEvent",
         slot: wire.slot,
@@ -893,7 +1124,8 @@ export function decode(raw) {
         !hasOnlyFields(wire, ["v", "t", "rev", "controls"]) ||
         !validU32(wire.rev) ||
         !validRotaryControls(wire.controls)
-      ) return null;
+      )
+        return null;
       return {
         type: "rotaryMap",
         revision: wire.rev,
@@ -917,7 +1149,8 @@ export function decode(raw) {
         wire.delta < -127 ||
         wire.delta > 127 ||
         !validU32(wire.seq)
-      ) return null;
+      )
+        return null;
       return {
         type: "rotaryEvent",
         slot: wire.slot,
@@ -932,7 +1165,8 @@ export function decode(raw) {
         wire.slot > 15 ||
         !GESTURES.includes(wire.event) ||
         !validU32(wire.seq)
-      ) return null;
+      )
+        return null;
       return {
         type: "rotaryPress",
         slot: wire.slot,
@@ -944,7 +1178,8 @@ export function decode(raw) {
         !hasOnlyFields(wire, ["v", "t", "event", "seq"]) ||
         !VOICE_EVENTS.includes(wire.event) ||
         !validU32(wire.seq)
-      ) return null;
+      )
+        return null;
       return {
         type: "voiceEvent",
         event: wire.event,
@@ -955,7 +1190,8 @@ export function decode(raw) {
         !hasOnlyFields(wire, ["v", "t", "state", "label"]) ||
         !VOICE_STATES.includes(wire.state) ||
         (wire.label !== undefined && !validBoundedText(wire.label, 1, 64))
-      ) return null;
+      )
+        return null;
       const decoded = { type: "voiceState", state: wire.state };
       if (wire.label !== undefined) decoded.label = wire.label;
       return decoded;
@@ -968,7 +1204,8 @@ export function decode(raw) {
         wire.channel > 7 ||
         (wire.title !== undefined && !validBoundedText(wire.title, 1, 64)) ||
         !validBoundedText(wire.content, 0, 1024, true)
-      ) return null;
+      )
+        return null;
       const decoded = { type: "text", channel: wire.channel };
       if (wire.title !== undefined) decoded.title = wire.title;
       decoded.content = wire.content;
@@ -991,20 +1228,22 @@ export function decode(raw) {
         !validSafeCounter(wire.output_tokens) ||
         (wire.cached_tokens !== undefined &&
           !validSafeCounter(wire.cached_tokens)) ||
-        ((wire.context_used === undefined) !==
-          (wire.context_limit === undefined)) ||
+        (wire.context_used === undefined) !==
+          (wire.context_limit === undefined) ||
         (wire.context_used !== undefined &&
           (!validSafeCounter(wire.context_used) ||
             !validSafeCounter(wire.context_limit) ||
             wire.context_used > wire.context_limit))
-      ) return null;
+      )
+        return null;
       const decoded = {
         type: "usage",
         model: wire.model,
         inputTokens: wire.input_tokens,
         outputTokens: wire.output_tokens,
       };
-      if (wire.cached_tokens !== undefined) decoded.cachedTokens = wire.cached_tokens;
+      if (wire.cached_tokens !== undefined)
+        decoded.cachedTokens = wire.cached_tokens;
       if (wire.context_used !== undefined) {
         decoded.contextUsed = wire.context_used;
         decoded.contextLimit = wire.context_limit;
@@ -1019,7 +1258,8 @@ export function decode(raw) {
         !hasOnlyFields(wire, ["v", "t", "rev", "entries"]) ||
         !validU32(wire.rev) ||
         !validConfigEntries(wire.entries)
-      ) return null;
+      )
+        return null;
       return {
         type: "config",
         revision: wire.rev,
@@ -1032,13 +1272,161 @@ export function decode(raw) {
         !CONFIG_STATUSES.includes(wire.status) ||
         (wire.status === "applied" && wire.code !== undefined) ||
         (wire.status === "rejected" && !CONFIG_ERROR_CODES.includes(wire.code))
-      ) return null;
+      )
+        return null;
       const decoded = {
         type: "configResult",
         revision: wire.rev,
         status: wire.status,
       };
       if (wire.code !== undefined) decoded.code = wire.code;
+      return decoded;
+    }
+    case "audio_config":
+      if (
+        !hasOnlyFields(wire, [
+          "v",
+          "t",
+          "epoch",
+          "codec",
+          "sample_rate",
+          "channels",
+          "frame_ms",
+          "max_duration_ms",
+          "startup_buffer_ms",
+          "credits",
+        ]) ||
+        !validU32(wire.epoch) ||
+        !validAudioFormat({
+          codec: wire.codec,
+          sampleRate: wire.sample_rate,
+          channels: wire.channels,
+          frameMs: wire.frame_ms,
+        }) ||
+        wire.max_duration_ms !== 120_000 ||
+        wire.startup_buffer_ms !== 200 ||
+        wire.credits !== 8
+      )
+        return null;
+      return {
+        type: "audioConfig",
+        epoch: wire.epoch,
+        codec: wire.codec,
+        sampleRate: wire.sample_rate,
+        channels: wire.channels,
+        frameMs: wire.frame_ms,
+        maxDurationMs: wire.max_duration_ms,
+        startupBufferMs: wire.startup_buffer_ms,
+        credits: wire.credits,
+      };
+    case "audio_begin":
+      if (
+        !hasOnlyFields(wire, [
+          "v",
+          "t",
+          "epoch",
+          "stream_id",
+          "codec",
+          "sample_rate",
+          "channels",
+          "frame_ms",
+        ]) ||
+        !validU32(wire.epoch) ||
+        !validU32(wire.stream_id) ||
+        !validAudioFormat({
+          codec: wire.codec,
+          sampleRate: wire.sample_rate,
+          channels: wire.channels,
+          frameMs: wire.frame_ms,
+        })
+      )
+        return null;
+      return {
+        type: "audioBegin",
+        epoch: wire.epoch,
+        streamId: wire.stream_id,
+        codec: wire.codec,
+        sampleRate: wire.sample_rate,
+        channels: wire.channels,
+        frameMs: wire.frame_ms,
+      };
+    case "audio_credit":
+      if (
+        !hasOnlyFields(wire, [
+          "v",
+          "t",
+          "epoch",
+          "stream_id",
+          "ack_seq",
+          "credits",
+        ]) ||
+        !validU32(wire.epoch) ||
+        !validU32(wire.stream_id) ||
+        !validU32(wire.ack_seq) ||
+        !Number.isInteger(wire.credits) ||
+        wire.credits < 1 ||
+        wire.credits > 32
+      )
+        return null;
+      return {
+        type: "audioCredit",
+        epoch: wire.epoch,
+        streamId: wire.stream_id,
+        ackSequence: wire.ack_seq,
+        credits: wire.credits,
+      };
+    case "audio_end":
+      if (
+        !hasOnlyFields(wire, [
+          "v",
+          "t",
+          "epoch",
+          "stream_id",
+          "last_seq",
+          "sample_count",
+          "reason",
+        ]) ||
+        !validU32(wire.epoch) ||
+        !validU32(wire.stream_id) ||
+        !validAudioEnd(wire.last_seq, wire.sample_count) ||
+        !AUDIO_END_REASONS.includes(wire.reason)
+      )
+        return null;
+      return {
+        type: "audioEnd",
+        epoch: wire.epoch,
+        streamId: wire.stream_id,
+        lastSequence: wire.last_seq,
+        sampleCount: wire.sample_count,
+        reason: wire.reason,
+      };
+    case "audio_cancel":
+      if (
+        !hasOnlyFields(wire, ["v", "t", "epoch", "stream_id", "reason"]) ||
+        !validU32(wire.epoch) ||
+        !validU32(wire.stream_id) ||
+        !AUDIO_CANCEL_REASONS.includes(wire.reason)
+      )
+        return null;
+      return {
+        type: "audioCancel",
+        epoch: wire.epoch,
+        streamId: wire.stream_id,
+        reason: wire.reason,
+      };
+    case "audio_state": {
+      if (
+        !hasOnlyFields(wire, ["v", "t", "epoch", "stream_id", "state"]) ||
+        !validU32(wire.epoch) ||
+        !validAudioState(wire.state, wire.stream_id)
+      )
+        return null;
+      const decoded = {
+        type: "audioState",
+        epoch: wire.epoch,
+        state: wire.state,
+      };
+      if (wire.stream_id !== undefined) decoded.streamId = wire.stream_id;
       return decoded;
     }
     default:

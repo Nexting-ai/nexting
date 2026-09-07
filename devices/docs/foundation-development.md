@@ -53,14 +53,14 @@ Specifications and vectors flow down into implementations. Platform adapters nev
 
 ## Normative and reference files
 
-| File | Owns |
-| --- | --- |
-| `SPEC.md` | BLE roles, wire behavior, state, limits, and version rules |
-| `protocol/vectors/approval-v1.json` | Shared valid and hostile cases for every implementation |
-| `schemas/message.schema.json` | Machine-readable message shape and enums |
-| `reference/js/src/protocol.mjs` | Readable strict codec reference |
-| `reference/js/src/framing.mjs` | Bounded newline stream reference |
-| `reference/js/src/relay.mjs` | Host-authoritative one-prompt reference state |
+| File                                | Owns                                                       |
+| ----------------------------------- | ---------------------------------------------------------- |
+| `SPEC.md`                           | BLE roles, wire behavior, state, limits, and version rules |
+| `protocol/vectors/approval-v1.json` | Shared valid and hostile cases for every implementation    |
+| `schemas/message.schema.json`       | Machine-readable message shape and enums                   |
+| `reference/js/src/protocol.mjs`     | Readable strict codec reference                            |
+| `reference/js/src/framing.mjs`      | Bounded newline stream reference                           |
+| `reference/js/src/relay.mjs`        | Host-authoritative one-prompt reference state              |
 
 The schema describes shape, but UTF-8 byte ceilings and stream behavior remain normative in `SPEC.md` and the shared vectors.
 
@@ -74,12 +74,12 @@ bounded state, and emits generic physical intent.
 
 ## Device core and adapter files
 
-| File | Owns |
-| --- | --- |
-| `sdk/c/include/nexting_device.h` | Portable C ABI, capacities, messages, stream, and approval state |
-| `sdk/c/src/nexting_device.c` | Strict codec, fixed-buffer stream, and approval state machine |
-| `firmware/zephyr/src/main.c` | BLE/GATT, bonding, bond reset, GPIO, timers, and fixed transport buffers |
-| `firmware/zephyr/boards/*.overlay` | Board-specific Allow, Deny, and Pending pin aliases |
+| File                               | Owns                                                                     |
+| ---------------------------------- | ------------------------------------------------------------------------ |
+| `sdk/c/include/nexting_device.h`   | Portable C ABI, capacities, messages, stream, and approval state         |
+| `sdk/c/src/nexting_device.c`       | Strict codec, fixed-buffer stream, and approval state machine            |
+| `firmware/zephyr/src/main.c`       | BLE/GATT, bonding, bond reset, GPIO, timers, and fixed transport buffers |
+| `firmware/zephyr/boards/*.overlay` | Board-specific Allow, Deny, and Pending pin aliases                      |
 
 A new RTOS or MCU adapter reuses the C core. It implements BLE transport, a monotonic millisecond clock, two unambiguous inputs, a Pending output, encrypted bonding, local bond revocation, and volatile-state cleanup. It does not copy the JSON parser or approval state machine.
 
@@ -91,14 +91,14 @@ Build success proves compilation only. It does not prove Bluetooth delivery, bon
 
 ## What to change
 
-| Change | Start here | Then update | Minimum evidence |
-| --- | --- | --- | --- |
-| Wire field, enum, limit, or state | `SPEC.md` | vectors, JS, Swift, C | JS + Swift + C sanitizer suites |
-| Official App behavior | private Nexting App | public SPEC only when the device-facing contract changes | product integration tests |
-| Device codec or state | `nexting_device.h` / `nexting_device.c` | vectors and reference behavior | C ASan/UBSan + firmware contract |
-| Zephyr BLE, bond, timer, or GPIO | `firmware/zephyr/src/main.c` | board overlay when pins change | firmware contract + affected board builds |
-| New chip or RTOS | new platform adapter | hardware support and implementation track | core tests + exact target build |
-| Compatibility claim | conformance evidence | project status and changelog | evidence required by the claimed level |
+| Change                            | Start here                              | Then update                                              | Minimum evidence                          |
+| --------------------------------- | --------------------------------------- | -------------------------------------------------------- | ----------------------------------------- |
+| Wire field, enum, limit, or state | `SPEC.md`                               | vectors, JS, Swift, C                                    | JS + Swift + C sanitizer suites           |
+| Official App behavior             | private Nexting App                     | public SPEC only when the device-facing contract changes | product integration tests                 |
+| Device codec or state             | `nexting_device.h` / `nexting_device.c` | vectors and reference behavior                           | C ASan/UBSan + firmware contract          |
+| Zephyr BLE, bond, timer, or GPIO  | `firmware/zephyr/src/main.c`            | board overlay when pins change                           | firmware contract + affected board builds |
+| New chip or RTOS                  | new platform adapter                    | hardware support and implementation track                | core tests + exact target build           |
+| Compatibility claim               | conformance evidence                    | project status and changelog                             | evidence required by the claimed level    |
 
 ## Experimental 0.2: the capability set
 
@@ -116,18 +116,18 @@ explicitly through `navigation/1`, `keys/1`, `rotary/1`, `voice/1`, `text/1`,
 
 The current set, modeled on dedicated Agent macropads:
 
-| Capability | Direction | Product meaning |
-| --- | --- | --- |
-| `approval/1` (shipped) | both | One Allow/Deny request with TTL |
-| `status/1` (shipped) | Host → device | Per-agent idle/thinking/working/complete/needs-input/error states for LEDs or screens, full replacement, volatile |
-| `keys/1` (shipped) | both | Generic physical key events up; labels and light state down; the Host owns what each key means |
-| `navigation/1` (shipped) | both | Bounded option lists down; cursor movement and selection up |
-| `rotary/1` (shipped) | both | Relative dial/press events up; bounded label and state down |
-| `text/1` (shipped) | Host → device | Bounded plain text for declared screen regions |
-| `voice/1` (shipped) | both | Push-to-talk control only; capture and transcription stay on the Host microphone |
-| `usage/1` (shipped) | Host → device | Informational model label and bounded usage counters |
-| `config/1` (shipped) | both | Versioned atomic key, lighting, and display preferences |
-| Battery and device info (shipped) | device → Host | Identity, capabilities, limits, and charge state |
+| Capability                        | Direction     | Product meaning                                                                                                   |
+| --------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `approval/1` (shipped)            | both          | One Allow/Deny request with TTL                                                                                   |
+| `status/1` (shipped)              | Host → device | Per-agent idle/thinking/working/complete/needs-input/error states for LEDs or screens, full replacement, volatile |
+| `keys/1` (shipped)                | both          | Generic physical key events up; labels and light state down; the Host owns what each key means                    |
+| `navigation/1` (shipped)          | both          | Bounded option lists down; cursor movement and selection up                                                       |
+| `rotary/1` (shipped)              | both          | Relative dial/press events up; bounded label and state down                                                       |
+| `text/1` (shipped)                | Host → device | Bounded plain text for declared screen regions                                                                    |
+| `voice/1` (shipped)               | both          | Push-to-talk control only; capture and transcription stay on the Host microphone                                  |
+| `usage/1` (shipped)               | Host → device | Informational model label and bounded usage counters                                                              |
+| `config/1` (shipped)              | both          | Versioned atomic key, lighting, and display preferences                                                           |
+| Battery and device info (shipped) | device → Host | Identity, capabilities, limits, and charge state                                                                  |
 
 Wi-Fi, HTTP, MQTT, USB HID, persistent permission grants, multi-prompt queues, production device certificates, OTA signing, manufacturing provisioning, and the Nexting Compatible badge still require explicit future contracts.
 
