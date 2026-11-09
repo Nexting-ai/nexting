@@ -65,9 +65,9 @@ npm run check:boundary
 npm run check:naming
 ```
 
-`npm run check` is the final aggregate gate. The 2026-07-27 snapshot passed,
-including Device Info 0.2, the audited exporter, mandatory bonding,
-three-second bond reset, and notification fragmentation. Run it before shipping.
+`npm run check` is the final aggregate gate. Run it before shipping and record
+the tested commit and current protocol version; past snapshots do not establish
+that the present tree passes.
 Do not weaken or delete these assertions; a source contract and compiler gate
 still do not replace the real-board checklist.
 
@@ -76,7 +76,7 @@ still do not replace the real-board checklist.
 - `Core tested` means shared C behavior passes desktop tests.
 - `Build verified` means one exact board target compiled.
 - `Board verified` requires the complete real-iPhone checklist and recorded evidence.
-- `Nexting Compatible` is not available during Experimental 0.2.
+- `Nexting Compatible` requires the governed compatibility program; repository tests alone never grant that label.
 
 Never promote a label without the evidence required by `docs/hardware-support.md` and `docs/board-verification.md`.
 
