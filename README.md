@@ -7,7 +7,7 @@
 <p align="center">
   <strong>Remote control for your own AI agents.</strong><br>
   Connect to Claude Code, Codex, Grok, and Cursor on your Mac or Windows PC.<br>
-  View sessions, send tasks, and drive them remotely from your phone, PIN, or Ring.
+  View sessions, send tasks, and drive them remotely from your phone.
 </p>
 
 <p align="center">
@@ -26,17 +26,20 @@
   <img src="public/remote-control-agent-dark.png" alt="Nexting Remote Control Agent — Mac, phone, and Ring control" width="100%">
 </p>
 
-You already have powerful agents — Claude Code, Codex, Grok, Cursor, OpenClaw — running on your computer. **Nexting connects you to them remotely**: view live sessions, send tasks, and drive Claude Code, Codex, Grok, or Cursor from your phone, PIN, or Ring, wherever you are. When you only need to send an idea, speak once and let your own agent work in the background.
+You already have powerful agents — Claude Code, Codex, Grok, Cursor, OpenClaw — running on your computer. **Nexting connects you to them remotely**: view live sessions, send tasks, and drive Claude Code, Codex, Grok, or Cursor from your phone, wherever you are. When you only need to send an idea, speak once and let your own agent work in the background.
 
 **Remote control, not just dispatch — view, send, drive.**
 
-Nexting comes in two form factors, one capability. The **PIN** ($129, shipping now) pins to your collar — the one you can get today. The **Ring** — our flagship, in private beta — makes "raise your hand and dispatch an agent" as invisible as a ring on your finger. Same capabilities, two shapes. Your whole agent team, always on you.
+Nexting is software first: the apps and the agent connections are the product. Hardware is an optional way in.
+
+- **[Nexting Ring](https://nexting.ai/ring)** — in development. Hold a button to speak, move the pointer with your thumb, and flip a switch to choose your phone or your Mac.
+- **PIN** — an open DIY side project. The firmware, enclosure files, and schematic are in [`hardware-opensource/`](hardware-opensource/) for anyone to build. We don't sell it.
 
 ```
-You speak → Nexting PIN (BLE) → iPhone App (STT) → Cloud → your own agent
+You speak → phone or wearable → Nexting app (STT) → Cloud → your own agent
                                                           (Claude Code / Codex / Grok / Cursor / OpenClaw)
                                                                ↓
- Result pushed back ← iPhone App ← ── ── agent runs it in the background
+ Result pushed back ← Nexting app ← ── ── agent runs it in the background
 ```
 
 **3 seconds to dispatch a task** — vs. ~30s pulling out your phone, unlocking, and typing.
@@ -56,11 +59,11 @@ Nexting isn't another voice assistant — it's the pocket control surface for yo
 
 ## Get Started
 
-1. **Get a PIN** ($129, shipping now) — or join the [Ring private beta](https://nexting.ai/reserve).
-2. **Install the [Nexting iOS app](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343)** and sign in.
-3. **Pair your PIN** over Bluetooth.
-4. **Connect your agent** — Claude Code, Codex, Grok, Cursor, OpenClaw, a local model, or managed Nexting Pro (see below).
-5. **Press, speak, dispatch.**
+1. **Install the [Nexting iOS app](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343)** and sign in.
+2. **Connect your agent** — Claude Code, Codex, Grok, Cursor, OpenClaw, a local model, or managed Nexting Pro (see below).
+3. **Send a task** from your phone, by text or voice.
+
+No hardware is required. If you build a PIN from [`hardware-opensource/`](hardware-opensource/), pair it over Bluetooth in the app.
 
 ## Bring Your Own Agent
 
@@ -68,15 +71,15 @@ Nexting is a terminal, not a model. Connect the agent you already run:
 
 | Mode | What It Is | Cost |
 |------|-----------|------|
-| **Claude Code** | Attach to a [Claude Code](https://claude.com/product/claude-code) session on your Mac or Windows PC and drive it from your PIN — live. | Free |
-| **Codex** | Attach to an OpenAI Codex CLI session on your Mac or Windows PC and drive it from your PIN — live. | Free |
-| **Grok** | Attach to a [Grok Build](https://grok.com) session on your Mac and drive it from your PIN — live. | Free |
-| **Cursor** | Attach to a [Cursor](https://cursor.com) Desktop session on your Mac and drive it from your PIN — live. | Free |
+| **Claude Code** | Attach to a [Claude Code](https://claude.com/product/claude-code) session on your Mac or Windows PC and drive it from your phone — live. | Free |
+| **Codex** | Attach to an OpenAI Codex CLI session on your Mac or Windows PC and drive it from your phone — live. | Free |
+| **Grok** | Attach to a [Grok Build](https://grok.com) session on your Mac and drive it from your phone — live. | Free |
+| **Cursor** | Attach to a [Cursor](https://cursor.com) Desktop session on your Mac and drive it from your phone — live. | Free |
 | **MyOpenClaw** | Run your own [OpenClaw](https://github.com/openclaw/openclaw) instance. We handle the relay. | Free |
 | **MyHermes** | Any OpenAI-compatible local AI — Hermes Agent, Ollama, vLLM, LM Studio. | Free |
 | **Nexting Pro** | Managed agent in the cloud. Latest Claude, GPT, and Gemini models, zero setup. | $29/mo or $279/yr |
 
-Buy the hardware once. Dispatch to whichever agent is yours. Expand your mode below for setup — each takes about a minute.
+Dispatch to whichever agent is yours. Expand your mode below for setup — each takes about a minute.
 
 <details>
 <summary><img src="public/logos/anthropic.png" width="16" alt="" /> <strong>Claude Code</strong> — your Mac/PC sessions, mirrored to your phone, driveable live</summary>
@@ -154,7 +157,7 @@ Your Cursor Desktop sessions appear in the Nexting app, live. Uninstall anytime:
 <summary><img src="public/logos/openclaw.svg" width="16" alt="" /> <strong>MyOpenClaw</strong> — run your own OpenClaw; we handle the relay</summary>
 <br>
 
-Nexting is the first hardware product built for [OpenClaw](https://github.com/openclaw/openclaw). Install the plugin and link your account:
+Nexting connects to your own [OpenClaw](https://github.com/openclaw/openclaw) instance. Install the plugin and link your account:
 
 ```bash
 openclaw plugins install pinclaw --dangerously-force-unsafe-install
@@ -189,9 +192,9 @@ Subscribe in the Nexting app and it's ready to dispatch.
 
 Full walkthrough for every mode — pairing, remote control, starting sessions by voice: [nexting.ai/doc](https://nexting.ai/doc).
 
-## Hardware
+## Open Hardware: Build a PIN
 
-Purpose-built for voice-first interaction. No screen — by design.
+The PIN is a clip-on voice button you can build yourself. Nexting does not sell it; the design is published here as a DIY project. No screen — by design.
 
 | Spec | Detail |
 |------|--------|
@@ -203,7 +206,7 @@ Purpose-built for voice-first interaction. No screen — by design.
 | Firmware | Zephyr RTOS v2.2.0 ([source + UF2](hardware-opensource/firmware/pinclaw_zephyr/)) |
 | Interaction | Single-button push-to-talk |
 
-The [`hardware-opensource/`](hardware-opensource/) directory is a complete **Co-Builder Edition**: firmware source, 3D-printable enclosure files, and a schematic PDF — everything you need to build a Nexting PIN yourself. Flash the UF2 binary via drag-and-drop — no programmer needed.
+The [`hardware-opensource/`](hardware-opensource/) directory is a complete **Co-Builder Edition**: firmware source, 3D-printable enclosure files, and a schematic PDF — everything you need to build a PIN yourself. Flash the UF2 binary via drag-and-drop — no programmer needed.
 
 ## iPhone Integration
 
@@ -234,7 +237,7 @@ All data stays on your iPhone. You control every permission.
 
 ```
 nexting/
-├── hardware-opensource/       # DIY Co-Builder Kit
+├── hardware-opensource/       # DIY PIN (Co-Builder Edition)
 │   ├── firmware/              #   Zephyr firmware (source + UF2 binary)
 │   ├── enclosure/             #   3D printing files (STL + OpenSCAD)
 │   └── docs/                  #   Schematic PDF
@@ -252,7 +255,7 @@ nexting/
 | Website | [nexting.ai](https://nexting.ai) |
 | iOS App | [App Store](https://apps.apple.com/us/app/nexting-wearable-ai-agent/id6760344343) |
 | Docs | [nexting.ai/doc](https://nexting.ai/doc) |
-| Get a PIN | [nexting.ai/reserve](https://nexting.ai/reserve) |
+| Nexting Ring | [nexting.ai/ring](https://nexting.ai/ring) |
 
 ## Contributing
 
@@ -266,7 +269,7 @@ MIT
 
 <p align="center">
   <strong>Tap. Speak. Dispatch.</strong><br>
-  <a href="https://nexting.ai/reserve">Get the PIN →</a>
+  <a href="https://nexting.ai">nexting.ai →</a>
 </p>
 
 <!-- nexting-devices:start -->
